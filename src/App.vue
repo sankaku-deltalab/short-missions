@@ -2,6 +2,7 @@
   <v-app id="app">
     <Menu />
     <StageSelector />
+    <GameCanvas />
   </v-app>
 </template>
 
@@ -9,11 +10,13 @@
 import { Component, Vue } from "vue-property-decorator";
 import Menu from "./components/Menu.vue";
 import StageSelector from "./components/StageSelector.vue";
+import GameCanvas from "./components/GameCanvas.vue";
 
 @Component({
   components: {
     Menu,
-    StageSelector
+    StageSelector,
+    GameCanvas
   }
 })
 export default class App extends Vue {}
