@@ -8,7 +8,6 @@ import {
 
 export class STGGameManager {
   public readonly engine: ex.Engine;
-  private stgGameManager!: STGGameManager;
 
   public constructor(engine: ex.Engine) {
     this.engine = engine;

@@ -10,8 +10,10 @@
   },
   "dependencies": {
     "excalibur": "^0.23.0",
+    "guntree": "^0.6.2",
     "material-design-icons-iconfont": "^3.0.3",
     "roboto-fontface": "*",
+    "transform-matrix": "^0.0.4",
     "vue": "^2.6.10",
     "vue-class-component": "^7.0.2",
     "vue-property-decorator": "^8.1.0",
