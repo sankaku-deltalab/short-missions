@@ -8,9 +8,6 @@ export class BulletsPool {
   }
 
   public push(bullet: Bullet): void {
-    if (!bullet.isKilled()) {
-      bullet.kill();
-    }
     this.pooledBullets.push(bullet);
   }
 

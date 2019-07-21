@@ -9,6 +9,7 @@ export class Weapon {
   private player: gt.Player;
   private pooledMilliSeconds: number = 0;
   private isFiringInternal: boolean = false;
+  private isRequestedFiring: boolean = false;
 
   /**
    *
@@ -29,9 +30,23 @@ export class Weapon {
    * Start firing.
    */
   public startFiring(): void {
+    this.isRequestedFiring = true;
+    if (this.isFiringInternal) return;
+
     this.pooledMilliSeconds = 0;
     this.isFiringInternal = true;
     this.player.start();
+  }
+
+  /**
+   * Stop firing.
+   */
+  public stopFiring(immediately: boolean = false): void {
+    this.isRequestedFiring = false;
+
+    if (immediately) {
+      this.isFiringInternal = false;
+    }
   }
 
   /**
@@ -45,7 +60,16 @@ export class Weapon {
     this.pooledMilliSeconds += deltaMilliSeconds;
     while (this.pooledMilliSeconds >= frameMilliSec) {
       this.pooledMilliSeconds -= frameMilliSec;
-      this.player.tick();
+
+      if (this.isRequestedFiring && !this.player.isRunning) {
+        this.player.start();
+      } else {
+        this.player.tick();
+      }
+    }
+
+    if (!this.isRequestedFiring && !this.player.isRunning) {
+      this.isFiringInternal = false;
     }
   }
 }

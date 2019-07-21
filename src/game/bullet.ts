@@ -13,7 +13,9 @@ export class Bullet extends ex.Actor {
   public init(args: BulletInitializeArgs): void {
     this.pos = args.pos.clone();
     this.rotation = args.rotation;
-    this.vel = ex.Vector.fromAngle(this.rotation).scale(args.speed);
+    this.vel = ex.Vector.fromAngle(this.rotation - Math.PI / 2).scale(
+      args.speed
+    );
     this.isPlayerSide = args.isPlayerSide;
 
     if (this.isKilled()) {

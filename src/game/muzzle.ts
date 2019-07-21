@@ -62,7 +62,7 @@ export class Muzzle extends ex.Actor implements gt.Muzzle {
     bullet.init({
       pos,
       rotation,
-      speed,
+      speed: speed * this.coordinatesConverter.areaSizeInCanvas,
       isPlayerSide: this.isPlayerSide
     });
   }

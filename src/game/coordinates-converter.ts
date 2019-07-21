@@ -20,10 +20,12 @@ export interface CoordinatesConverterArgs {
  * Area is square, but visual area is rectangle.
  */
 export class CoordinatesConverter {
+  public readonly areaSizeInCanvas: number;
   private readonly areaToCanvasTrans: mat.Matrix;
   private readonly visualAreaToCanvasTrans: mat.Matrix;
 
   public constructor(args: CoordinatesConverterArgs) {
+    this.areaSizeInCanvas = args.areaSizeInCanvas;
     this.areaToCanvasTrans = mat.transform(
       mat.translate(...pointToArray(args.centerInCanvas)),
       mat.scale(args.areaSizeInCanvas),
