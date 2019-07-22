@@ -1,6 +1,7 @@
 import { simpleMock } from "../../test-util";
 import { Weapon } from "@/game/weapon";
 import { Character } from "@/game/character";
+import { createCollisionsMock } from "./test-game-util";
 
 describe("Character", (): void => {
   it("tick weapon when updated", (): void => {
@@ -11,7 +12,8 @@ describe("Character", (): void => {
     // And Character
     const character = new Character({
       weapon,
-      isPlayerSide: true
+      isPlayerSide: true,
+      collisions: createCollisionsMock()
     });
 
     // When update Character
@@ -31,7 +33,8 @@ describe("Character", (): void => {
     // And Character
     const character = new Character({
       weapon,
-      isPlayerSide: true
+      isPlayerSide: true,
+      collisions: createCollisionsMock()
     });
 
     // When Character was killed
@@ -43,4 +46,27 @@ describe("Character", (): void => {
     // Then weapon was ticked
     expect(weapon.stopFiring).toBeCalledWith(true);
   });
+
+  it.each`
+    isPlayerSide | collisionName
+    ${true}      | ${"player"}
+    ${false}     | ${"enemy"}
+  `(
+    "set collision as player if isPlayerSide",
+    ({ isPlayerSide, collisionName }): void => {
+      // Given collisions
+      const collisions = createCollisionsMock();
+
+      // And Character
+      const character = new Character({
+        isPlayerSide,
+        collisions
+      });
+
+      // Then character was set collision
+      const expectedCollision =
+        collisionName === "player" ? collisions.player : collisions.enemy;
+      expect(character.body.collider.group).toBe(expectedCollision);
+    }
+  );
 });

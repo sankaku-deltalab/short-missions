@@ -1,7 +1,8 @@
 import * as ex from "excalibur";
 import { Weapon } from "./weapon";
+import { ExtendedActorArgs } from "./util";
 
-export interface CharacterArgs extends ex.IActorArgs {
+export interface CharacterArgs extends ExtendedActorArgs {
   isPlayerSide: boolean;
   weapon?: Weapon;
 }
@@ -29,5 +30,11 @@ export class Character extends ex.Actor {
       if (this.weapon === undefined) return;
       this.weapon.stopFiring(true);
     });
+
+    // Setup collision
+    const collision = this.isPlayerSide
+      ? args.collisions.player
+      : args.collisions.enemy;
+    this.body.collider.group = collision;
   }
 }

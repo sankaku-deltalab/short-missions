@@ -11,11 +11,13 @@ import { CoordinatesConverter } from "./coordinates-converter";
 import { BulletsPool } from "./bullets-pool";
 import { Weapon } from "./weapon";
 import { Bullet } from "./bullet";
+import { Collisions } from "./collision-groups";
 
 export class STGGameManager {
   public readonly engine: ex.Engine;
   public readonly coordinatesConverter: CoordinatesConverter;
   public readonly bulletsPools: Map<string, BulletsPool> = new Map();
+  public readonly collisions: Collisions;
 
   public constructor(engine: ex.Engine) {
     this.engine = engine;
@@ -27,6 +29,7 @@ export class STGGameManager {
       visualAreaSizeInCanvas: { x: width, y: height },
       centerInCanvas: { x: width / 2, y: height / 2 }
     });
+    this.collisions = new Collisions();
   }
 
   public async playMission(_missionId: number): Promise<void> {
@@ -81,7 +84,8 @@ export class STGGameManager {
       const bullet = new Bullet({
         width: 30,
         height: 40,
-        color: ex.Color.Black
+        color: ex.Color.Black,
+        collisions: this.collisions
       });
       bullet.on("exitviewport", (): void => {
         bullet.kill();
@@ -118,7 +122,8 @@ export class STGGameManager {
       width: 50,
       height: 50,
       color: ex.Color.Azure,
-      isPlayerSide: true
+      isPlayerSide: true,
+      collisions: this.collisions
     });
 
     scene.add(pc);

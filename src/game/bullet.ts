@@ -1,4 +1,6 @@
 import * as ex from "excalibur";
+import { ExtendedActorArgs } from "./util";
+import { Collisions } from "./collision-groups";
 
 export interface BulletInitializeArgs {
   pos: ex.Vector;
@@ -9,6 +11,12 @@ export interface BulletInitializeArgs {
 
 export class Bullet extends ex.Actor {
   public isPlayerSide: boolean = true;
+  private readonly collisions: Collisions;
+
+  public constructor(args: ExtendedActorArgs) {
+    super(args);
+    this.collisions = args.collisions;
+  }
 
   public init(args: BulletInitializeArgs): void {
     this.pos = args.pos.clone();
@@ -17,6 +25,11 @@ export class Bullet extends ex.Actor {
       args.speed
     );
     this.isPlayerSide = args.isPlayerSide;
+
+    const collision = this.isPlayerSide
+      ? this.collisions.playerBullet
+      : this.collisions.enemyBullet;
+    this.body.collider.group = collision;
 
     if (this.isKilled()) {
       this.unkill();
