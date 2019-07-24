@@ -67,9 +67,8 @@ export class MovementInputReceiver {
     this.oldTouchPosition = null;
   }
 
-  public updatePointerMove(dest: ex.Vector): ex.Vector {
-    if (this.oldTouchPosition === null)
-      throw new Error("Pointer was moved but not down");
+  public updatePointerMove(dest: ex.Vector): ex.Vector | undefined {
+    if (this.oldTouchPosition === null) return undefined;
     const delta = dest.sub(this.oldTouchPosition);
     this.oldTouchPosition = dest;
     return delta;
@@ -95,6 +94,7 @@ export function convertInputHandlers(
   const move = (event: ex.GameEvent<any, any>): void => {
     const ev = event as ex.Input.PointerEvent;
     const delta = receiver.updatePointerMove(ev.pos);
+    if (delta === undefined) return;
     outerHandlers.move(ev, delta, receiver);
   };
 
