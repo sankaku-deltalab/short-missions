@@ -56,6 +56,16 @@ export class STGGameManager {
 
     // TODO: Setup haikei
     // TODO: Start game
+    const enemyPos = new ex.Vector(
+      this.engine.halfDrawWidth * (1 / 4),
+      this.engine.drawHeight * (1 / 4)
+    );
+    const _enemy = this.setupTestEnemy(
+      scene,
+      enemyPos,
+      this.coordinatesConverter
+    );
+
     this.engine.addScene("mission", scene);
     this.engine.goToScene("mission");
     if (pc.weapon !== undefined) pc.weapon.startFiring();
@@ -161,5 +171,64 @@ export class STGGameManager {
     receiver.enableInput(engineInput, convertInputHandlers(handlers, receiver));
 
     return receiver;
+  }
+
+  private setupTestEnemy(
+    scene: ex.Scene,
+    pos: ex.Vector,
+    _coordinatesConverter: CoordinatesConverter
+  ): Character {
+    // // Create Bullets
+    // const bulletsPool = new BulletsPool();
+    // for (const _ of Array(100)) {
+    //   const bullet = new Bullet({
+    //     width: 30,
+    //     height: 40,
+    //     color: ex.Color.Black,
+    //     collisions: this.collisions
+    //   });
+    //   bullet.on("exitviewport", (): void => {
+    //     bullet.kill();
+    //     bulletsPool.push(bullet);
+    //   });
+    //   bulletsPool.push(bullet);
+    // }
+    // this.bulletsPools.set("player", bulletsPool);
+
+    // // Create Muzzle
+    // const muzzle = new Muzzle({
+    //   bulletsPool,
+    //   coordinatesConverter,
+    //   isPlayerSide: true
+    // });
+
+    // // Create weapon
+    // const player = gt.createDefaultPlayer({
+    //   centerMuzzle: muzzle
+    // });
+    // player.setGunTree(
+    //   gt.concat(
+    //     gt.useMuzzle("centerMuzzle"),
+    //     gt.mltSpeed(2),
+    //     gt.repeat({ times: 1, interval: 4 }, gt.fire(gt.bullet()))
+    //   )
+    // );
+    // const weapon = new Weapon(player);
+
+    // Create player character
+    const enemy = new Character({
+      pos,
+      // weapon,
+      width: 100,
+      height: 100,
+      color: ex.Color.Rose,
+      isPlayerSide: false,
+      collisions: this.collisions
+    });
+
+    scene.add(enemy);
+    // scene.add(muzzle);
+    // enemy.add(muzzle);
+    return enemy;
   }
 }
