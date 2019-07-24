@@ -41,16 +41,13 @@ export class Collisions {
     if (Collisions.collisionGroupsWasSetup) return;
 
     Collisions.collisionGroupsWasSetup = true;
-    Collisions.player = ex.CollisionGroupManager.create("player", 0x11100); // 1
+    Collisions.player = ex.CollisionGroupManager.create("player", 4 + 8 + 16); // 1
     Collisions.playerBullet = ex.CollisionGroupManager.create(
       "playerBullet",
-      0x00100
+      4
     ); // 2
-    Collisions.enemy = ex.CollisionGroupManager.create("enemy", 0x00011); // 3
-    Collisions.enemyBullet = ex.CollisionGroupManager.create(
-      "enemyBullet",
-      0x00001
-    ); // 4
-    Collisions.item = ex.CollisionGroupManager.create("item", 0x00001); // 5
+    Collisions.enemy = ex.CollisionGroupManager.create("enemy", 1 + 2); // 4
+    Collisions.enemyBullet = ex.CollisionGroupManager.create("enemyBullet", 1); // 8
+    Collisions.item = ex.CollisionGroupManager.create("item", 1); // 16
   }
 }
