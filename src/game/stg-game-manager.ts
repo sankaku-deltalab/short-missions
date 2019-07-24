@@ -99,6 +99,8 @@ export class STGGameManager {
       });
       bullet.on("exitviewport", (): void => {
         bullet.kill();
+      });
+      bullet.on("postkill", (): void => {
         bulletsPool.push(bullet);
       });
       bulletsPool.push(bullet);
@@ -109,6 +111,7 @@ export class STGGameManager {
     const muzzle = new Muzzle({
       bulletsPool,
       coordinatesConverter,
+      pos: new ex.Vector(0, -50),
       isPlayerSide: true
     });
 

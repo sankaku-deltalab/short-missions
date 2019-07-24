@@ -1,6 +1,7 @@
 import * as ex from "excalibur";
 import { ExtendedActorArgs } from "./util";
 import { Collisions } from "./collision-groups";
+import { Character } from "./character";
 
 export interface BulletInitializeArgs {
   pos: ex.Vector;
@@ -16,6 +17,11 @@ export class Bullet extends ex.Actor {
   public constructor(args: ExtendedActorArgs) {
     super(args);
     this.collisions = args.collisions;
+
+    this.on("precollision", (event: ex.PreCollisionEvent<ex.Actor>): void => {
+      if (!(event.other instanceof Character)) return;
+      this.hitTo(event.other);
+    });
   }
 
   public init(args: BulletInitializeArgs): void {
@@ -34,5 +40,10 @@ export class Bullet extends ex.Actor {
     if (this.isKilled()) {
       this.unkill();
     }
+  }
+
+  public hitTo(_other: Character): void {
+    // TODO: Take damage to other
+    this.kill();
   }
 }
