@@ -1,3 +1,5 @@
+import { EventDispatcher } from "./event-dispatcher";
+
 /**
  * HealthComponent represent health for Character.
  */
@@ -5,6 +7,9 @@ export class HealthComponent {
   private internalHealth: number;
   private internalMaxHealth: number;
   private internalDead: boolean;
+  public readonly onTakeDamage: EventDispatcher<number>;
+  public readonly onHealed: EventDispatcher<number>;
+  public readonly onDied: EventDispatcher<void>;
 
   public constructor(initialHealth: number, maxHealth: number) {
     if (maxHealth <= 0) throw new Error("Max health <= 0");
@@ -15,6 +20,10 @@ export class HealthComponent {
     this.internalHealth = initialHealth;
     this.internalMaxHealth = maxHealth;
     this.internalDead = false;
+
+    this.onTakeDamage = new EventDispatcher();
+    this.onHealed = new EventDispatcher();
+    this.onDied = new EventDispatcher();
   }
 
   /**
@@ -46,6 +55,8 @@ export class HealthComponent {
   public takeDamage(damage: number): void {
     if (damage <= 0) return;
     this.internalHealth -= damage;
+    this.onTakeDamage.dispatch(damage);
+
     if (this.health <= 0) {
       this.die();
     }
@@ -59,10 +70,17 @@ export class HealthComponent {
    * @param healAmount Heal amount
    */
   public heal(healAmount: number): void {
-    if (healAmount <= 0) return;
-    if (this.isDead) return;
-    this.internalHealth += healAmount;
-    this.internalHealth = Math.min(this.maxHealth, this.internalHealth);
+    const healable = !this.isDead && healAmount > 0;
+    if (!healable) {
+      this.onHealed.dispatch(0);
+      return;
+    }
+
+    const maxHealing = this.maxHealth - this.internalHealth;
+    const healing = Math.min(maxHealing, healAmount);
+    this.internalHealth += healing;
+
+    this.onHealed.dispatch(healing);
   }
 
   /**
@@ -70,5 +88,6 @@ export class HealthComponent {
    */
   public die(): void {
     this.internalDead = true;
+    this.onDied.dispatch();
   }
 }

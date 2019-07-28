@@ -131,43 +131,69 @@ describe("HealthComponent", (): void => {
     expect(healthComponent.isDead).toBe(true);
   });
 
-  // it("use callback when damaged", (): void => {
-  //   // Given HealthComponent
-  //   const initialHealth = 100;
-  //   const maxHealth = 200;
-  //   const healthComponent = new HealthComponent(initialHealth, maxHealth);
+  it("use callback when damaged", (): void => {
+    // Given HealthComponent
+    const initialHealth = 100;
+    const maxHealth = 200;
+    const healthComponent = new HealthComponent(initialHealth, maxHealth);
 
-  //   // When set callback
-  //   const onTakeDamageFunc = jest.fn();
-  //   healthComponent.onTakeDamage((damage: number): void => {
-  //     onTakeDamageFunc(damage);
-  //   });
+    // When set callback
+    const onTakeDamageFunc = jest.fn();
+    healthComponent.onTakeDamage.add((damage: number): void => {
+      onTakeDamageFunc(damage);
+    });
 
-  //   // And damage
-  //   const damage = 50;
-  //   healthComponent.takeDamage(damage);
+    // And damage
+    const damage = 50;
+    healthComponent.takeDamage(damage);
 
-  //   // Then callback was called
-  //   expect(onTakeDamageFunc).toBeCalledWith(damage);
-  // });
+    // Then callback was called
+    expect(onTakeDamageFunc).toBeCalledWith(damage);
+  });
 
-  // it("use callback when died", (): void => {
-  //   // Given HealthComponent
-  //   const initialHealth = 100;
-  //   const maxHealth = 200;
-  //   const healthComponent = new HealthComponent(initialHealth, maxHealth);
+  it.each`
+    initialHealth | maxHealth | healAmount | expectedHealed
+    ${100}        | ${200}    | ${50}      | ${50}
+    ${100}        | ${100}    | ${50}      | ${0}
+    ${90}         | ${100}    | ${50}      | ${10}
+    ${90}         | ${100}    | ${-1}      | ${0}
+  `(
+    "use callback when healed",
+    ({ initialHealth, maxHealth, healAmount, expectedHealed }): void => {
+      // Given HealthComponent
+      const healthComponent = new HealthComponent(initialHealth, maxHealth);
 
-  //   // When set callback
-  //   const onDiedFunc = jest.fn();
-  //   healthComponent.onDied((): void => {
-  //     onDiedFunc();
-  //   });
+      // When set callback
+      const onHealedFunc = jest.fn();
+      healthComponent.onHealed.add((healed: number): void => {
+        onHealedFunc(healed);
+      });
 
-  //   // When damage grater or equal than initial health
-  //   const damage = initialHealth;
-  //   healthComponent.takeDamage(damage);
+      // And heal
+      healthComponent.heal(healAmount);
 
-  //   // Then callback was called
-  //   expect(onDiedFunc).toBeCalled();
-  // });
+      // Then callback was called
+      expect(onHealedFunc).toBeCalledWith(expectedHealed);
+    }
+  );
+
+  it("use callback when died", (): void => {
+    // Given HealthComponent
+    const initialHealth = 100;
+    const maxHealth = 200;
+    const healthComponent = new HealthComponent(initialHealth, maxHealth);
+
+    // When set callback
+    const onDiedFunc = jest.fn();
+    healthComponent.onDied.add((): void => {
+      onDiedFunc();
+    });
+
+    // When damage grater or equal than initial health
+    const damage = initialHealth;
+    healthComponent.takeDamage(damage);
+
+    // Then callback was called
+    expect(onDiedFunc).toBeCalled();
+  });
 });
