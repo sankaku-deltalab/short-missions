@@ -1,9 +1,11 @@
 import * as ex from "excalibur";
 import { Weapon } from "./weapon";
 import { ExtendedActorArgs } from "./util";
+import { HealthComponent } from "./health-component";
 
 export interface CharacterArgs extends ExtendedActorArgs {
   isPlayerSide: boolean;
+  health: HealthComponent;
   weapon?: Weapon;
 }
 
@@ -15,11 +17,13 @@ export interface CharacterArgs extends ExtendedActorArgs {
 export class Character extends ex.Actor {
   public readonly isPlayerSide: boolean;
   public readonly weapon: Weapon | undefined;
+  public readonly health: HealthComponent;
 
   public constructor(args: CharacterArgs) {
     super(args);
     this.isPlayerSide = args.isPlayerSide;
     this.weapon = args.weapon;
+    this.health = args.health;
 
     this.on("postupdate", (event: ex.PostUpdateEvent): void => {
       if (this.weapon === undefined) return;

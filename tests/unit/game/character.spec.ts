@@ -2,6 +2,7 @@ import { simpleMock } from "../../test-util";
 import { Weapon } from "@/game/weapon";
 import { Character } from "@/game/character";
 import { createCollisionsMock } from "./test-game-util";
+import { HealthComponent } from "@/game/health-component";
 
 describe("Character", (): void => {
   it("tick weapon when updated", (): void => {
@@ -13,6 +14,7 @@ describe("Character", (): void => {
     const character = new Character({
       weapon,
       isPlayerSide: true,
+      health: simpleMock<HealthComponent>(),
       collisions: createCollisionsMock()
     });
 
@@ -34,6 +36,7 @@ describe("Character", (): void => {
     const character = new Character({
       weapon,
       isPlayerSide: true,
+      health: simpleMock<HealthComponent>(),
       collisions: createCollisionsMock()
     });
 
@@ -60,7 +63,8 @@ describe("Character", (): void => {
       // And Character
       const character = new Character({
         isPlayerSide,
-        collisions
+        collisions,
+        health: simpleMock<HealthComponent>()
       });
 
       // Then character was set collision

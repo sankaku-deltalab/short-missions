@@ -2,6 +2,8 @@ import * as ex from "excalibur";
 import { Bullet } from "@/game/bullet";
 import { simpleMock } from "../../test-util";
 import { createCollisionsMock } from "./test-game-util";
+import { Character } from "@/game/character";
+import { HealthComponent } from "@/game/health-component";
 
 describe("Bullet", (): void => {
   it("must be initialized with pos, rotation, speed and isPlayerSide", (): void => {
@@ -13,6 +15,7 @@ describe("Bullet", (): void => {
     // When initialize bullet
     // Then error was not thrown
     const initArgs = {
+      damage: 1,
       pos: new ex.Vector(3, 5),
       rotation: 0,
       speed: 1,
@@ -40,6 +43,7 @@ describe("Bullet", (): void => {
 
     // And initialize bullet
     const initArgs = {
+      damage: 1,
       pos: new ex.Vector(3, 5),
       rotation: 0,
       speed: 1,
@@ -68,6 +72,7 @@ describe("Bullet", (): void => {
 
       // And initialize bullet
       const initArgs = {
+        damage: 1,
         pos: new ex.Vector(3, 5),
         isPlayerSide,
         rotation: 0,
@@ -83,4 +88,38 @@ describe("Bullet", (): void => {
       expect(bullet.body.collider.group).toBe(expectedCollision);
     }
   );
+
+  it("take damage when hit to character", (): void => {
+    // Given Bullet
+    const bulletIsPlayerSide = true;
+    const bullet = new Bullet({
+      collisions: simpleMock()
+    });
+    bullet.scene = simpleMock<ex.Scene>({ remove: jest.fn() });
+
+    // And Character
+    const healthComponent = simpleMock<HealthComponent>();
+    healthComponent.takeDamage = jest.fn();
+    const character = simpleMock<Character>({
+      health: healthComponent,
+      isPlayerSide: !bulletIsPlayerSide
+    });
+
+    // When initialize bullet
+    const damage = 10;
+    const initArgs = {
+      damage,
+      pos: new ex.Vector(3, 5),
+      rotation: 0,
+      speed: 1,
+      isPlayerSide: bulletIsPlayerSide
+    };
+    bullet.init(initArgs);
+
+    // When bullet hits to character
+    bullet.hitTo(character);
+
+    // Then character was damaged
+    expect(character.health.takeDamage).toBeCalledWith(damage);
+  });
 });

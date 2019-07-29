@@ -4,6 +4,7 @@ import { Collisions } from "./collision-groups";
 import { Character } from "./character";
 
 export interface BulletInitializeArgs {
+  damage: number;
   pos: ex.Vector;
   rotation: number;
   speed: number;
@@ -13,6 +14,7 @@ export interface BulletInitializeArgs {
 export class Bullet extends ex.Actor {
   public isPlayerSide: boolean = true;
   private readonly collisions: Collisions;
+  private damage: number = 0;
 
   public constructor(args: ExtendedActorArgs) {
     super(args);
@@ -25,6 +27,7 @@ export class Bullet extends ex.Actor {
   }
 
   public init(args: BulletInitializeArgs): void {
+    this.damage = args.damage;
     this.pos = args.pos.clone();
     this.rotation = args.rotation;
     this.vel = ex.Vector.fromAngle(this.rotation - Math.PI / 2).scale(
@@ -42,8 +45,8 @@ export class Bullet extends ex.Actor {
     }
   }
 
-  public hitTo(_other: Character): void {
-    // TODO: Take damage to other
+  public hitTo(other: Character): void {
+    other.health.takeDamage(this.damage);
     this.kill();
   }
 }
