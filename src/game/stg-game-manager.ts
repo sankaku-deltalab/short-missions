@@ -13,6 +13,7 @@ import { Weapon } from "./weapon";
 import { Bullet } from "./bullet";
 import { Collisions } from "./collision-groups";
 import { HealthComponent } from "./health-component";
+import { ZIndex } from "./z-index";
 
 export class STGGameManager {
   public readonly engine: ex.Engine;
@@ -33,15 +34,16 @@ export class STGGameManager {
 
     // TODO: Setup enemy setting
 
-    // TODO: Setup haikei
+    // TODO: Setup background
     const posPoint = this.coordinatesConverter.centerInCanvas;
-    const haikei = new ex.Actor({
+    const background = new ex.Actor({
       pos: new ex.Vector(posPoint.x, posPoint.y),
       width: this.coordinatesConverter.visualAreaSizeInCanvas.x,
       height: this.coordinatesConverter.visualAreaSizeInCanvas.y,
       color: ex.Color.LightGray
     });
-    scene.add(haikei);
+    scene.add(background);
+    background.setZIndex(ZIndex.background1);
 
     // Setup player character
     const pcPos = new ex.Vector(
@@ -65,7 +67,7 @@ export class STGGameManager {
       this.engine.halfDrawWidth * (1 / 4),
       this.engine.drawHeight * (1 / 4)
     );
-    const _enemy = this.setupTestEnemy(
+    const enemy = this.setupTestEnemy(
       scene,
       enemyPos,
       this.coordinatesConverter
@@ -76,10 +78,21 @@ export class STGGameManager {
     if (pc.weapon !== undefined) pc.weapon.startFiring();
 
     // TODO: Wait end game
+
+    // wait enemy died
+    const waitEnemyDied = (nodeCallback: (err: Error | null) => void): void => {
+      const f2 = (): void => {
+        nodeCallback(null);
+        enemy.health.onDied.remove(f2);
+      };
+      enemy.health.onDied.add(f2);
+    };
+    await promisify(waitEnemyDied)();
+
     const pause = promisify((milliSec: number, f: Function): void => {
       setTimeout(f, milliSec);
     });
-    await pause(10000);
+    await pause(2 * 1000);
 
     // TODO: Show result
     // Clear all
@@ -164,6 +177,7 @@ export class STGGameManager {
     scene.add(pc);
     scene.add(muzzle);
     pc.add(muzzle);
+    pc.setZIndex(ZIndex.player);
     return pc;
   }
 
@@ -255,6 +269,8 @@ export class STGGameManager {
     scene.add(enemy);
     // scene.add(muzzle);
     // enemy.add(muzzle);
+
+    enemy.setZIndex(ZIndex.enemy);
     return enemy;
   }
 }
