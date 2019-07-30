@@ -13,3 +13,7 @@ export function createCollisionsMock(): Collisions {
   );
   return new collisionsClass();
 }
+
+export function createSceneMock(): ex.Scene {
+  return simpleMock<ex.Scene>({ remove: jest.fn() });
+}

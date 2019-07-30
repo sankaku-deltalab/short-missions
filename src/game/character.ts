@@ -35,6 +35,10 @@ export class Character extends ex.Actor {
       this.weapon.stopFiring(true);
     });
 
+    this.health.onDied.add((): void => {
+      this.kill();
+    });
+
     // Setup collision
     const collision = this.isPlayerSide
       ? args.collisions.player

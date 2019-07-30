@@ -1,8 +1,12 @@
 import { simpleMock } from "../../test-util";
 import { Weapon } from "@/game/weapon";
 import { Character } from "@/game/character";
-import { createCollisionsMock } from "./test-game-util";
+import { createCollisionsMock, createSceneMock } from "./test-game-util";
 import { HealthComponent } from "@/game/health-component";
+
+function createHealthComponentMock(): HealthComponent {
+  return new HealthComponent(10, 10);
+}
 
 describe("Character", (): void => {
   it("tick weapon when updated", (): void => {
@@ -14,7 +18,7 @@ describe("Character", (): void => {
     const character = new Character({
       weapon,
       isPlayerSide: true,
-      health: simpleMock<HealthComponent>(),
+      health: createHealthComponentMock(),
       collisions: createCollisionsMock()
     });
 
@@ -36,7 +40,7 @@ describe("Character", (): void => {
     const character = new Character({
       weapon,
       isPlayerSide: true,
-      health: simpleMock<HealthComponent>(),
+      health: createHealthComponentMock(),
       collisions: createCollisionsMock()
     });
 
@@ -64,7 +68,7 @@ describe("Character", (): void => {
       const character = new Character({
         isPlayerSide,
         collisions,
-        health: simpleMock<HealthComponent>()
+        health: createHealthComponentMock()
       });
 
       // Then character was set collision
@@ -73,4 +77,24 @@ describe("Character", (): void => {
       expect(character.body.collider.group).toBe(expectedCollision);
     }
   );
+
+  it("killed when health was died", (): void => {
+    // Given healthComponent
+    const health = new HealthComponent(10, 10);
+
+    // And Character with scene
+    const character = new Character({
+      health,
+      isPlayerSide: true,
+      collisions: createCollisionsMock()
+    });
+    character.scene = createSceneMock();
+    character.kill = jest.fn();
+
+    // When health was died
+    character.health.die();
+
+    // Then character was killed
+    expect(character.kill).toBeCalled();
+  });
 });
