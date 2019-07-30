@@ -44,6 +44,7 @@ describe("Muzzle", (): void => {
 
     // And Muzzle in scene
     const muzzle = new Muzzle({
+      damage: 1,
       bulletsPool,
       coordinatesConverter,
       isPlayerSide: true
@@ -57,5 +58,34 @@ describe("Muzzle", (): void => {
 
     // Then bullet in pool was used
     expect(bullet.init).toBeCalled();
+  });
+
+  it("init bullets with damage", (): void => {
+    // Given BulletsPool
+    const bullet = simpleMock<Bullet>();
+    bullet.init = jest.fn();
+    const bulletsPool = simpleMock<BulletsPool>();
+    bulletsPool.pop = jest.fn().mockReturnValueOnce(bullet);
+
+    // And CoordinatesConverter
+    const coordinatesConverter = createCoordinatesConverterMock();
+
+    // And Muzzle in scene
+    const damage = 10;
+    const muzzle = new Muzzle({
+      damage,
+      bulletsPool,
+      coordinatesConverter,
+      isPlayerSide: true
+    });
+    const scene = createSceneMock();
+    scene.add(muzzle);
+
+    // When fire from muzzle
+    const data = createFireDataMock();
+    muzzle.fire(data, simpleMock());
+
+    // Then bullet with initialized with muzzle damage
+    expect((bullet.init as jest.Mock).mock.calls[0][0].damage).toBe(damage);
   });
 });

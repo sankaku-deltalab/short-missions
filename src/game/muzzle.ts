@@ -5,6 +5,7 @@ import { CoordinatesConverter } from "./coordinates-converter";
 import { BulletsPool } from "./bullets-pool";
 
 export interface MuzzleArgs extends ex.IActorArgs {
+  damage: number;
   coordinatesConverter: CoordinatesConverter;
   bulletsPool: BulletsPool;
   isPlayerSide: boolean;
@@ -26,6 +27,7 @@ export interface MuzzleArgs extends ex.IActorArgs {
  * > weapon.start();
  */
 export class Muzzle extends ex.Actor implements gt.Muzzle {
+  private readonly damage: number;
   private readonly coordinatesConverter: CoordinatesConverter;
   private readonly bulletsPool: BulletsPool;
   public isPlayerSide: boolean = true;
@@ -33,6 +35,7 @@ export class Muzzle extends ex.Actor implements gt.Muzzle {
   public constructor(args: MuzzleArgs) {
     super(args);
 
+    this.damage = args.damage;
     this.coordinatesConverter = args.coordinatesConverter;
     this.bulletsPool = args.bulletsPool;
     this.isPlayerSide = args.isPlayerSide;
@@ -62,7 +65,7 @@ export class Muzzle extends ex.Actor implements gt.Muzzle {
     bullet.init({
       pos,
       rotation,
-      damage: 0,
+      damage: this.damage,
       speed: speed * this.coordinatesConverter.areaSizeInCanvas,
       isPlayerSide: this.isPlayerSide
     });

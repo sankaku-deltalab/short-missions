@@ -12,6 +12,7 @@ import { BulletsPool } from "./bullets-pool";
 import { Weapon } from "./weapon";
 import { Bullet } from "./bullet";
 import { Collisions } from "./collision-groups";
+import { HealthComponent } from "./health-component";
 
 export class STGGameManager {
   public readonly engine: ex.Engine;
@@ -74,7 +75,7 @@ export class STGGameManager {
     const pause = promisify((milliSec: number, f: Function): void => {
       setTimeout(f, milliSec);
     });
-    await pause(5000);
+    await pause(10000);
 
     // TODO: Show result
     // Clear all
@@ -111,6 +112,7 @@ export class STGGameManager {
     const muzzle = new Muzzle({
       bulletsPool,
       coordinatesConverter,
+      damage: 10,
       pos: new ex.Vector(0, -50),
       isPlayerSide: true
     });
@@ -135,6 +137,7 @@ export class STGGameManager {
       width: 50,
       height: 50,
       color: ex.Color.Azure,
+      health: new HealthComponent(3, 7),
       isPlayerSide: true,
       collisions: this.collisions
     });
@@ -225,6 +228,7 @@ export class STGGameManager {
       width: 100,
       height: 100,
       color: ex.Color.Rose,
+      health: new HealthComponent(1000, 1000),
       isPlayerSide: false,
       collisions: this.collisions
     });
