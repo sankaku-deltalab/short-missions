@@ -23,13 +23,7 @@ export class STGGameManager {
   public constructor(engine: ex.Engine) {
     this.engine = engine;
 
-    const height = this.engine.drawHeight;
-    const width = this.engine.drawWidth;
-    this.coordinatesConverter = new CoordinatesConverter({
-      areaSizeInCanvas: height,
-      visualAreaSizeInCanvas: { x: width, y: height },
-      centerInCanvas: { x: width / 2, y: height / 2 }
-    });
+    this.coordinatesConverter = this.createCoordinatesConverter(engine);
     this.collisions = new Collisions();
   }
 
@@ -38,6 +32,17 @@ export class STGGameManager {
     const scene = new ex.Scene(this.engine);
 
     // TODO: Setup enemy setting
+
+    // TODO: Setup haikei
+    const posPoint = this.coordinatesConverter.centerInCanvas;
+    const haikei = new ex.Actor({
+      pos: new ex.Vector(posPoint.x, posPoint.y),
+      width: this.coordinatesConverter.visualAreaSizeInCanvas.x,
+      height: this.coordinatesConverter.visualAreaSizeInCanvas.y,
+      color: ex.Color.LightGray
+    });
+    scene.add(haikei);
+
     // Setup player character
     const pcPos = new ex.Vector(
       this.engine.halfDrawWidth,
@@ -55,7 +60,6 @@ export class STGGameManager {
       pc
     );
 
-    // TODO: Setup haikei
     // TODO: Start game
     const enemyPos = new ex.Vector(
       this.engine.halfDrawWidth * (1 / 4),
@@ -82,6 +86,21 @@ export class STGGameManager {
     inputReceiver.disableInput(this.engine.input);
     this.engine.removeScene(scene);
     this.engine.goToScene("root");
+  }
+
+  private createCoordinatesConverter(engine: ex.Engine): CoordinatesConverter {
+    const aspectRatio = 4 / 3;
+    const rawWidth = engine.drawWidth;
+    const rawHeight = engine.drawHeight;
+    const size = {
+      width: Math.min(rawWidth, rawHeight / aspectRatio),
+      height: Math.min(rawHeight, rawWidth * aspectRatio)
+    };
+    return new CoordinatesConverter({
+      areaSizeInCanvas: size.height,
+      visualAreaSizeInCanvas: { x: size.width, y: size.height },
+      centerInCanvas: { x: size.width / 2, y: size.height / 2 }
+    });
   }
 
   private setupPlayerCharacter(

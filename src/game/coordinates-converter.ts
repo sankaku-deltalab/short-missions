@@ -21,11 +21,18 @@ export interface CoordinatesConverterArgs {
  */
 export class CoordinatesConverter {
   public readonly areaSizeInCanvas: number;
+  public readonly visualAreaSizeInCanvas: mat.Point;
   private readonly areaToCanvasTrans: mat.Matrix;
   private readonly visualAreaToCanvasTrans: mat.Matrix;
+  public readonly centerInCanvas: mat.Point;
+  public readonly visualNWInCanvas: mat.Point;
+  public readonly visualSEInCanvas: mat.Point;
 
   public constructor(args: CoordinatesConverterArgs) {
     this.areaSizeInCanvas = args.areaSizeInCanvas;
+    this.visualAreaSizeInCanvas = args.visualAreaSizeInCanvas;
+    this.centerInCanvas = args.centerInCanvas;
+
     this.areaToCanvasTrans = mat.transform(
       mat.translate(...pointToArray(args.centerInCanvas)),
       mat.scale(args.areaSizeInCanvas),
@@ -36,6 +43,15 @@ export class CoordinatesConverter {
       mat.scale(...pointToArray(args.visualAreaSizeInCanvas)),
       mat.rotateDEG(-90)
     );
+
+    this.visualNWInCanvas = this.toCanvasPointFromVisualArea({
+      x: 0.5,
+      y: -0.5
+    });
+    this.visualSEInCanvas = this.toCanvasPointFromVisualArea({
+      x: -0.5,
+      y: 0.5
+    });
   }
 
   /**

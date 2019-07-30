@@ -27,6 +27,24 @@ describe("CoordinatesConverter", (): void => {
       expect(canvasPoint.y).toBeCloseTo(canvasY);
     }
   );
+  it("has arguments", (): void => {
+    // Given CoordinatesConverter arguments
+    const areaSizeInCanvas = 1;
+    const visualAreaSizeInCanvas = { x: 1, y: 1 };
+    const centerInCanvas = { x: 0.5, y: 0.5 };
+
+    // When create CoordinatesConverter
+    const cc = new CoordinatesConverter({
+      areaSizeInCanvas,
+      visualAreaSizeInCanvas,
+      centerInCanvas
+    });
+
+    // Then CoordinatesConverter has arguments
+    expect(cc.areaSizeInCanvas).toBe(areaSizeInCanvas);
+    expect(cc.visualAreaSizeInCanvas).toEqual(visualAreaSizeInCanvas);
+    expect(cc.centerInCanvas).toEqual(centerInCanvas);
+  });
 
   it.each`
     offsetX | offsetY
