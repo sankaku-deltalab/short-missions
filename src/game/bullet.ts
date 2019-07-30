@@ -2,6 +2,7 @@ import * as ex from "excalibur";
 import { ExtendedActorArgs } from "./util";
 import { Collisions } from "./collision-groups";
 import { Character } from "./character";
+import { ZIndex } from "./z-index";
 
 export interface BulletInitializeArgs {
   damage: number;
@@ -39,6 +40,9 @@ export class Bullet extends ex.Actor {
       ? this.collisions.playerBullet
       : this.collisions.enemyBullet;
     this.body.collider.group = collision;
+
+    const zIndex = args.isPlayerSide ? ZIndex.playerBullet : ZIndex.enemyBullet;
+    this.setZIndex(zIndex);
 
     if (this.isKilled()) {
       this.unkill();
