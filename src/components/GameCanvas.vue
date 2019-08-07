@@ -10,11 +10,15 @@ export default class Canvas extends Vue {
   private canvas!: HTMLCanvasElement;
 
   public mounted(): void {
-    const h = window.innerHeight;
-    const w = window.innerWidth;
-    this.canvas = this.$refs["game-canvas"] as HTMLCanvasElement;
-    this.canvas.width = w;
-    this.canvas.height = h;
+    // Setup canvas
+    const canvas = this.$refs["game-canvas"] as HTMLCanvasElement;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    this.canvas = canvas;
+  }
+
+  public getCanvas(): HTMLCanvasElement {
+    return this.canvas;
   }
 }
 </script>
