@@ -149,6 +149,17 @@ export class STGGameManager {
       isPlayerSide: true
     });
 
+    // Create player character
+    const pc = new Character({
+      pos,
+      width: 50,
+      height: 50,
+      color: ex.Color.Azure,
+      health: new HealthComponent(3, 7),
+      isPlayerSide: true,
+      collisions: this.collisions
+    });
+
     // Create weapon
     const player = gt.createDefaultPlayer({
       centerMuzzle: muzzle
@@ -161,18 +172,7 @@ export class STGGameManager {
       )
     );
     const weapon = new Weapon(player);
-
-    // Create player character
-    const pc = new Character({
-      pos,
-      weapon,
-      width: 50,
-      height: 50,
-      color: ex.Color.Azure,
-      health: new HealthComponent(3, 7),
-      isPlayerSide: true,
-      collisions: this.collisions
-    });
+    pc.setWeapon(weapon);
 
     scene.add(pc);
     scene.add(muzzle);

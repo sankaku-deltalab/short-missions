@@ -9,6 +9,48 @@ function createHealthComponentMock(): HealthComponent {
 }
 
 describe("Character", (): void => {
+  it("can set weapon", (): void => {
+    // Given Weapon
+    const weapon = simpleMock<Weapon>();
+
+    // And Character
+    const character = new Character({
+      isPlayerSide: true,
+      health: createHealthComponentMock(),
+      collisions: createCollisionsMock()
+    });
+
+    // When set weapon
+    character.setWeapon(weapon);
+
+    // Then weapon was set
+    expect(character.weapon).toBe(weapon);
+  });
+
+  it("throw error if set weapon twice", (): void => {
+    // Given Weapon
+    const weapon = simpleMock<Weapon>();
+
+    // And Character
+    const character = new Character({
+      isPlayerSide: true,
+      health: createHealthComponentMock(),
+      collisions: createCollisionsMock()
+    });
+
+    // When set weapon
+    character.setWeapon(weapon);
+
+    // And set weapon again
+    const nextWeapon = simpleMock<Weapon>();
+    const func = (): void => {
+      character.setWeapon(nextWeapon);
+    };
+
+    // Then throw error
+    expect(func).toThrowError();
+  });
+
   it("tick weapon when updated", (): void => {
     // Given Weapon
     const weapon = simpleMock<Weapon>();
@@ -16,13 +58,15 @@ describe("Character", (): void => {
 
     // And Character
     const character = new Character({
-      weapon,
       isPlayerSide: true,
       health: createHealthComponentMock(),
       collisions: createCollisionsMock()
     });
 
-    // When update Character
+    // When set weapon
+    character.setWeapon(weapon);
+
+    // And update Character
     const engine = simpleMock<ex.Engine>();
     const deltaTime = 3;
     character.update(engine, deltaTime);
@@ -38,13 +82,15 @@ describe("Character", (): void => {
 
     // And Character
     const character = new Character({
-      weapon,
       isPlayerSide: true,
       health: createHealthComponentMock(),
       collisions: createCollisionsMock()
     });
 
-    // When Character was killed
+    // When set weapon
+    character.setWeapon(weapon);
+
+    // And Character was killed
     const scene = simpleMock<ex.Scene>();
     scene.remove = jest.fn();
     character.scene = scene;
@@ -72,8 +118,8 @@ describe("Character", (): void => {
       });
 
       // Then character was set collision
-      const expectedCollision =
-        collisionName === "player" ? collisions.player : collisions.enemy;
+      const collisionNameTyped = collisionName as "player" | "enemy";
+      const expectedCollision = collisions[collisionNameTyped];
       expect(character.body.collider.group).toBe(expectedCollision);
     }
   );

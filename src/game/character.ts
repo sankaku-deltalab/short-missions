@@ -6,7 +6,6 @@ import { HealthComponent } from "./health-component";
 export interface CharacterArgs extends ExtendedActorArgs {
   isPlayerSide: boolean;
   health: HealthComponent;
-  weapon?: Weapon;
 }
 
 /**
@@ -16,13 +15,13 @@ export interface CharacterArgs extends ExtendedActorArgs {
  */
 export class Character extends ex.Actor {
   public readonly isPlayerSide: boolean;
-  public readonly weapon: Weapon | undefined;
+  private weaponInner?: Weapon;
   public readonly health: HealthComponent;
 
   public constructor(args: CharacterArgs) {
     super(args);
     this.isPlayerSide = args.isPlayerSide;
-    this.weapon = args.weapon;
+    this.weaponInner = undefined;
     this.health = args.health;
 
     this.on("postupdate", (event: ex.PostUpdateEvent): void => {
@@ -44,5 +43,14 @@ export class Character extends ex.Actor {
       ? args.collisions.player
       : args.collisions.enemy;
     this.body.collider.group = collision;
+  }
+
+  public get weapon(): Weapon | undefined {
+    return this.weaponInner;
+  }
+
+  public setWeapon(weapon: Weapon): void {
+    if (this.weapon !== undefined) throw new Error("weapon was already set");
+    this.weaponInner = weapon;
   }
 }
