@@ -1,11 +1,22 @@
 import { simpleMock } from "../../test-util";
 import { Weapon } from "@/game/weapon";
 import { Character } from "@/game/character";
-import { createCollisionsMock, createSceneMock } from "./test-game-util";
+import { createCollisionsMock } from "./test-game-util";
 import { HealthComponent } from "@/game/health-component";
+import { ExtendedActor } from "@/game/extended-actor";
 
 function createHealthComponentMock(): HealthComponent {
   return new HealthComponent(10, 10);
+}
+
+function createActorMock(): ExtendedActor {
+  return simpleMock<ExtendedActor>({
+    on: jest.fn(),
+    collisions: createCollisionsMock(),
+    setCollision: jest.fn(),
+    kill: jest.fn(),
+    update: jest.fn()
+  });
 }
 
 describe("Character", (): void => {
@@ -17,7 +28,7 @@ describe("Character", (): void => {
     const character = new Character({
       isPlayerSide: true,
       health: createHealthComponentMock(),
-      collisions: createCollisionsMock()
+      actor: createActorMock()
     });
 
     // When set weapon
@@ -35,7 +46,7 @@ describe("Character", (): void => {
     const character = new Character({
       isPlayerSide: true,
       health: createHealthComponentMock(),
-      collisions: createCollisionsMock()
+      actor: createActorMock()
     });
 
     // When set weapon
@@ -60,7 +71,7 @@ describe("Character", (): void => {
     const character = new Character({
       isPlayerSide: true,
       health: createHealthComponentMock(),
-      collisions: createCollisionsMock()
+      actor: createActorMock()
     });
 
     // When set weapon
@@ -84,16 +95,13 @@ describe("Character", (): void => {
     const character = new Character({
       isPlayerSide: true,
       health: createHealthComponentMock(),
-      collisions: createCollisionsMock()
+      actor: createActorMock()
     });
 
     // When set weapon
     character.setWeapon(weapon);
 
     // And Character was killed
-    const scene = simpleMock<ex.Scene>();
-    scene.remove = jest.fn();
-    character.scene = scene;
     character.kill();
 
     // Then weapon was ticked
@@ -108,19 +116,20 @@ describe("Character", (): void => {
     "set collision as player if isPlayerSide",
     ({ isPlayerSide, collisionName }): void => {
       // Given collisions
-      const collisions = createCollisionsMock();
+      const actor = createActorMock();
+      const collisions = actor.collisions;
 
-      // And Character
-      const character = new Character({
+      // When create Character
+      const _character = new Character({
         isPlayerSide,
-        collisions,
+        actor,
         health: createHealthComponentMock()
       });
 
       // Then character was set collision
       const collisionNameTyped = collisionName as "player" | "enemy";
       const expectedCollision = collisions[collisionNameTyped];
-      expect(character.body.collider.group).toBe(expectedCollision);
+      expect(actor.setCollision).toBeCalledWith(expectedCollision);
     }
   );
 
@@ -128,13 +137,12 @@ describe("Character", (): void => {
     // Given healthComponent
     const health = new HealthComponent(10, 10);
 
-    // And Character with scene
+    // And Character
     const character = new Character({
       health,
       isPlayerSide: true,
-      collisions: createCollisionsMock()
+      actor: createActorMock()
     });
-    character.scene = createSceneMock();
     character.kill = jest.fn();
 
     // When health was died
@@ -142,5 +150,35 @@ describe("Character", (): void => {
 
     // Then character was killed
     expect(character.kill).toBeCalled();
+  });
+
+  it("kill actor when killed", (): void => {
+    // Given Character
+    const character = new Character({
+      isPlayerSide: true,
+      actor: createActorMock(),
+      health: createHealthComponentMock()
+    });
+
+    // When kill Character
+    character.kill();
+
+    // Then actor was killed
+    expect(character.actor.kill).toBeCalled();
+  });
+
+  it("don't update actor when updated", (): void => {
+    // Given Character
+    const character = new Character({
+      isPlayerSide: true,
+      actor: createActorMock(),
+      health: createHealthComponentMock()
+    });
+
+    // When update Character directory
+    character.update(simpleMock(), 10);
+
+    // Then actor was not updated
+    expect(character.actor.update).not.toBeCalled();
   });
 });
