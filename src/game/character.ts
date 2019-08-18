@@ -1,11 +1,13 @@
 import * as ex from "excalibur";
 import { Weapon } from "./weapon";
-import { ExtendedActorArgs } from "./util";
+import { ExtendedActor } from "./extended-actor";
 import { HealthComponent } from "./health-component";
+import { ActorWrapper } from "./actor-wrapper";
 
-export interface CharacterArgs extends ExtendedActorArgs {
+export interface CharacterArgs {
   isPlayerSide: boolean;
   health: HealthComponent;
+  actor: ExtendedActor;
 }
 
 /**
@@ -13,26 +15,17 @@ export interface CharacterArgs extends ExtendedActorArgs {
  *
  * e.g. player character or one of enemies.
  */
-export class Character extends ex.Actor {
+export class Character implements ActorWrapper {
+  public readonly actor: ExtendedActor;
   public readonly isPlayerSide: boolean;
-  private weaponInner?: Weapon;
   public readonly health: HealthComponent;
+  private weaponInner?: Weapon;
 
   public constructor(args: CharacterArgs) {
-    super(args);
+    this.actor = args.actor;
+    this.actor.owner = this;
     this.isPlayerSide = args.isPlayerSide;
-    this.weaponInner = undefined;
     this.health = args.health;
-
-    this.on("postupdate", (event: ex.PostUpdateEvent): void => {
-      if (this.weapon === undefined) return;
-      this.weapon.tick(event.delta);
-    });
-
-    this.on("postkill", (_event: ex.PostKillEvent): void => {
-      if (this.weapon === undefined) return;
-      this.weapon.stopFiring(true);
-    });
 
     this.health.onDied.add((): void => {
       this.kill();
@@ -40,9 +33,9 @@ export class Character extends ex.Actor {
 
     // Setup collision
     const collision = this.isPlayerSide
-      ? args.collisions.player
-      : args.collisions.enemy;
-    this.body.collider.group = collision;
+      ? args.actor.collisions.player
+      : args.actor.collisions.enemy;
+    this.actor.setCollision(collision);
   }
 
   public get weapon(): Weapon | undefined {
@@ -52,5 +45,25 @@ export class Character extends ex.Actor {
   public setWeapon(weapon: Weapon): void {
     if (this.weapon !== undefined) throw new Error("weapon was already set");
     this.weaponInner = weapon;
+  }
+
+  /**
+   * Update status.
+   * Called by actor.
+   *
+   * @param engine
+   * @param deltaTimeMS
+   */
+  public update(_engine: ex.Engine, deltaTimeMS: number): void {
+    if (this.weapon !== undefined) {
+      this.weapon.tick(deltaTimeMS);
+    }
+  }
+
+  public kill(): void {
+    this.actor.kill();
+    if (this.weapon !== undefined) {
+      this.weapon.stopFiring(true);
+    }
   }
 }
