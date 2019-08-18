@@ -80,4 +80,42 @@ describe("ExtendedActor", (): void => {
       expect(actualPos.y).toBe(expectedPos.y);
     }
   );
+
+  it("can set collision", (): void => {
+    // Given ExtendedActor
+    const actor = new ExtendedActor({
+      coordinatesConverter: simpleMock<CoordinatesConverter>(),
+      collisions: simpleMock<Collisions>()
+    });
+
+    // When set collision
+    const collision = simpleMock<ex.CollisionGroup>();
+    actor.setCollision(collision);
+
+    // Then body was set collision
+    expect(actor.body.collider.group).toBe(collision);
+  });
+
+  it("update owner when updated", (): void => {
+    // Given ExtendedActor
+    const actor = new ExtendedActor({
+      coordinatesConverter: simpleMock<CoordinatesConverter>(),
+      collisions: simpleMock<Collisions>()
+    });
+
+    // And ActorWrapper
+    const wrapper = simpleMock<ActorWrapper>({
+      update: jest.fn()
+    });
+
+    // When set wrapper to actor
+    actor.owner = wrapper;
+
+    // And update actor
+    const collision = simpleMock<ex.CollisionGroup>();
+    actor.setCollision(collision);
+
+    // Then body was set collision
+    expect(actor.body.collider.group).toBe(collision);
+  });
 });

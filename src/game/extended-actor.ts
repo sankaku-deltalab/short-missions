@@ -17,6 +17,11 @@ export class ExtendedActor extends ex.Actor {
     super(args);
     this.collisions = args.collisions;
     this.coordinatesConverter = args.coordinatesConverter;
+
+    this.on("postupdate", (event: ex.PostUpdateEvent): void => {
+      if (this.ownerInner === undefined) return;
+      this.ownerInner.update(event.engine, event.delta);
+    });
   }
 
   public get owner(): ActorWrapper {
@@ -39,5 +44,9 @@ export class ExtendedActor extends ex.Actor {
       this.pos
     );
     return new ex.Vector(posInVisualArea.x, posInVisualArea.y);
+  }
+
+  public setCollision(collision: ex.CollisionGroup): void {
+    this.body.collider.group = collision;
   }
 }
