@@ -6,6 +6,7 @@ import { Muzzle } from "@/game/muzzle";
 import { BulletsPool } from "@/game/bullets-pool";
 import { Bullet } from "@/game/bullet";
 import { CoordinatesConverter } from "@/game/coordinates-converter";
+import { ExtendedActor } from "@/game/extended-actor";
 
 function createFireDataMock(): gt.FireData {
   const data = simpleMock<gt.FireData>();
@@ -31,6 +32,14 @@ function createSceneMock(): ex.Scene {
   return scene;
 }
 
+function createActorMock(): ExtendedActor {
+  return simpleMock<ExtendedActor>({
+    coordinatesConverter: createCoordinatesConverterMock(),
+    kill: jest.fn(),
+    update: jest.fn()
+  });
+}
+
 describe("Muzzle", (): void => {
   it("use bullet poped from pool", (): void => {
     // Given BulletsPool
@@ -39,18 +48,15 @@ describe("Muzzle", (): void => {
     const bulletsPool = simpleMock<BulletsPool>();
     bulletsPool.pop = jest.fn().mockReturnValueOnce(bullet);
 
-    // And CoordinatesConverter
-    const coordinatesConverter = createCoordinatesConverterMock();
-
     // And Muzzle in scene
     const muzzle = new Muzzle({
       damage: 1,
       bulletsPool,
-      coordinatesConverter,
-      isPlayerSide: true
+      isPlayerSide: true,
+      actor: createActorMock()
     });
     const scene = createSceneMock();
-    scene.add(muzzle);
+    scene.add(muzzle.actor);
 
     // When fire from muzzle
     const data = createFireDataMock();
@@ -67,19 +73,16 @@ describe("Muzzle", (): void => {
     const bulletsPool = simpleMock<BulletsPool>();
     bulletsPool.pop = jest.fn().mockReturnValueOnce(bullet);
 
-    // And CoordinatesConverter
-    const coordinatesConverter = createCoordinatesConverterMock();
-
     // And Muzzle in scene
     const damage = 10;
     const muzzle = new Muzzle({
       damage,
       bulletsPool,
-      coordinatesConverter,
-      isPlayerSide: true
+      isPlayerSide: true,
+      actor: createActorMock()
     });
     const scene = createSceneMock();
-    scene.add(muzzle);
+    scene.add(muzzle.actor);
 
     // When fire from muzzle
     const data = createFireDataMock();
@@ -87,5 +90,37 @@ describe("Muzzle", (): void => {
 
     // Then bullet with initialized with muzzle damage
     expect((bullet.init as jest.Mock).mock.calls[0][0].damage).toBe(damage);
+  });
+
+  it("kill actor when killed", (): void => {
+    // Given Muzzle
+    const muzzle = new Muzzle({
+      damage: 10,
+      bulletsPool: simpleMock<BulletsPool>(),
+      isPlayerSide: true,
+      actor: createActorMock()
+    });
+
+    // When kill muzzle
+    muzzle.kill();
+
+    // Then actor was killed
+    expect(muzzle.actor.kill).toBeCalled();
+  });
+
+  it("don't update actor when updated", (): void => {
+    // Given Muzzle
+    const muzzle = new Muzzle({
+      damage: 10,
+      bulletsPool: simpleMock<BulletsPool>(),
+      isPlayerSide: true,
+      actor: createActorMock()
+    });
+
+    // When update Character directory
+    muzzle.update(simpleMock(), 10);
+
+    // Then actor was not updated
+    expect(muzzle.actor.update).not.toBeCalled();
   });
 });
