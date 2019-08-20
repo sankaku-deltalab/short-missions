@@ -56,19 +56,18 @@ export class Muzzle implements gt.Muzzle, ActorWrapper {
     const bullet = this.bulletsPool.pop();
     if (bullet === undefined) return;
 
-    const [posInArea, rotationDeg, _scale] = gt.decomposeTransform(
+    const [posInAreaPoint, rotationDeg, _scale] = gt.decomposeTransform(
       data.transform
     );
+    const posInArea = new ex.Vector(posInAreaPoint.x, posInAreaPoint.y);
     const rotation = rotationDeg * (Math.PI / 180);
     const speed = data.parameters.get("speed");
     if (speed === undefined)
       throw new Error("GunTree parameter must have 'speed'");
-    const posAsPoint = this.actor.coordinatesConverter.toCanvasPoint(posInArea);
-    const pos = new ex.Vector(posAsPoint.x, posAsPoint.y);
 
-    this.actor.scene.add(bullet);
+    this.actor.scene.add(bullet.actor);
     bullet.init({
-      pos,
+      posInArea,
       rotation,
       damage: this.damage,
       speed: speed * this.actor.coordinatesConverter.areaSizeInCanvas,

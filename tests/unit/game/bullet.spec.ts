@@ -1,24 +1,45 @@
 import * as ex from "excalibur";
 import { Bullet } from "@/game/bullet";
 import { simpleMock } from "../../test-util";
-import { createCollisionsMock, createSceneMock } from "./test-game-util";
+import { createCollisionsMock } from "./test-game-util";
 import { Character } from "@/game/character";
 import { HealthComponent } from "@/game/health-component";
 import { ZIndex } from "@/game/z-index";
+import { ExtendedActor } from "@/game/extended-actor";
+import { CoordinatesConverter } from "@/game/coordinates-converter";
+
+function createCoordinatesConverterMock(): CoordinatesConverter {
+  const cc = new CoordinatesConverter({
+    areaSizeInCanvas: 1,
+    visualAreaSizeInCanvas: { x: 2, y: 2 },
+    centerInCanvas: { x: 1, y: 1 }
+  });
+  return cc;
+}
+
+function createActorMock(): ExtendedActor {
+  return simpleMock<ExtendedActor>({
+    coordinatesConverter: createCoordinatesConverterMock(),
+    kill: jest.fn(),
+    isKilled: jest.fn().mockReturnValue(false),
+    unkill: jest.fn(),
+    update: jest.fn(),
+    setCollision: jest.fn(),
+    collisions: createCollisionsMock(),
+    setZIndex: jest.fn(),
+    on: jest.fn()
+  });
+}
 
 describe("Bullet", (): void => {
   it("must be initialized with pos, rotation, speed and isPlayerSide", (): void => {
     // Given Bullet
-    const bullet = new Bullet({
-      collisions: simpleMock()
-    });
-    bullet.scene = createSceneMock();
+    const bullet = new Bullet(createActorMock());
 
-    // When initialize bullet
-    // Then error was not thrown
+    // Then can initialize bullet
     const initArgs = {
       damage: 1,
-      pos: new ex.Vector(3, 5),
+      posInArea: new ex.Vector(3, 5),
       rotation: 0,
       speed: 1,
       isPlayerSide: true
@@ -27,26 +48,25 @@ describe("Bullet", (): void => {
   });
 
   it("unkilled if killed when initialized", (): void => {
-    // Given killed Bullet
-    const bullet = new Bullet({
-      collisions: simpleMock()
-    });
-    bullet.scene = createSceneMock();
-    bullet.unkill = jest.fn();
-    bullet.kill();
+    // Given killed Actor
+    const actor = createActorMock();
+    actor.isKilled = jest.fn().mockReturnValueOnce(true);
+
+    // And Bullet
+    const bullet = new Bullet(actor);
 
     // When initialize bullet
     const initArgs = {
       damage: 1,
-      pos: new ex.Vector(3, 5),
+      posInArea: new ex.Vector(3, 5),
       rotation: 0,
       speed: 1,
       isPlayerSide: true
     };
     bullet.init(initArgs);
 
-    // Then bullet was unkilled
-    expect(bullet.unkill).toBeCalled();
+    // Then actor was unkilled
+    expect(bullet.actor.unkill).toBeCalled();
   });
 
   it.each`
@@ -56,19 +76,13 @@ describe("Bullet", (): void => {
   `(
     "set collision as playerBullet if isPlayerSide",
     ({ isPlayerSide, collisionName }): void => {
-      // Given collisions
-      const collisions = createCollisionsMock();
-
-      // And Bullet
-      const bullet = new Bullet({
-        collisions
-      });
-      bullet.scene = createSceneMock();
+      // Given Bullet
+      const bullet = new Bullet(createActorMock());
 
       // And initialize bullet
       const initArgs = {
         damage: 1,
-        pos: new ex.Vector(3, 5),
+        posInArea: new ex.Vector(3, 5),
         isPlayerSide,
         rotation: 0,
         speed: 1
@@ -76,21 +90,19 @@ describe("Bullet", (): void => {
       bullet.init(initArgs);
 
       // Then bullet was set collision
-      const expectedCollision =
-        collisionName === "playerBullet"
-          ? collisions.playerBullet
-          : collisions.enemyBullet;
-      expect(bullet.body.collider.group).toBe(expectedCollision);
+      const cols = bullet.actor.collisions;
+      const collisionNameTyped = collisionName as
+        | "playerBullet"
+        | "enemyBullet";
+      const expectedCollision = cols[collisionNameTyped];
+      expect(bullet.actor.setCollision).toBeCalledWith(expectedCollision);
     }
   );
 
   it("take damage when hit to character", (): void => {
     // Given Bullet
     const bulletIsPlayerSide = true;
-    const bullet = new Bullet({
-      collisions: simpleMock()
-    });
-    bullet.scene = createSceneMock();
+    const bullet = new Bullet(createActorMock());
 
     // And Character
     const healthComponent = simpleMock<HealthComponent>();
@@ -104,7 +116,7 @@ describe("Bullet", (): void => {
     const damage = 10;
     const initArgs = {
       damage,
-      pos: new ex.Vector(3, 5),
+      posInArea: new ex.Vector(3, 5),
       rotation: 0,
       speed: 1,
       isPlayerSide: bulletIsPlayerSide
@@ -124,23 +136,19 @@ describe("Bullet", (): void => {
     ${false}     | ${ZIndex.enemyBullet}
   `("set Z-Index when initialized", ({ isPlayerSide, zIndex }): void => {
     // Given Bullet
-    const bullet = new Bullet({
-      collisions: createCollisionsMock()
-    });
-    bullet.scene = createSceneMock();
-    bullet.setZIndex = jest.fn();
+    const bullet = new Bullet(createActorMock());
 
     // And initialize bullet
     const initArgs = {
       isPlayerSide,
       damage: 1,
-      pos: new ex.Vector(3, 5),
+      posInArea: new ex.Vector(3, 5),
       rotation: 0,
       speed: 1
     };
     bullet.init(initArgs);
 
     // Then bullet z was set
-    expect(bullet.setZIndex).toBeCalledWith(zIndex);
+    expect(bullet.actor.setZIndex).toBeCalledWith(zIndex);
   });
 });
