@@ -39,6 +39,11 @@ export class ExtendedActor extends ex.Actor {
     return new ex.Vector(posInArea.x, posInArea.y);
   }
 
+  public set posInArea(posInArea: ex.Vector) {
+    const posInCanvas = this.coordinatesConverter.toCanvasPoint(posInArea);
+    this.pos = new ex.Vector(posInCanvas.x, posInCanvas.y);
+  }
+
   public get posInVisualArea(): ex.Vector {
     const posInVisualArea = this.coordinatesConverter.toVisualAreaPoint(
       this.pos

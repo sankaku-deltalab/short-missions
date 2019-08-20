@@ -1,3 +1,4 @@
+import * as ex from "excalibur";
 import { simpleMock } from "../../test-util";
 import { ExtendedActor } from "@/game/extended-actor";
 import { CoordinatesConverter } from "@/game/coordinates-converter";
@@ -80,6 +81,27 @@ describe("ExtendedActor", (): void => {
       expect(actualPos.y).toBe(expectedPos.y);
     }
   );
+
+  it("can set pos as posInArea with CoordinatesConverter", (): void => {
+    // Given CoordinatesConverter
+    const posInCanvas = { x: 1, y: 2 };
+    const coordinatesConverter = simpleMock<CoordinatesConverter>({
+      toCanvasPoint: jest.fn().mockReturnValueOnce(posInCanvas)
+    });
+
+    // And ExtendedActor
+    const actor = new ExtendedActor({
+      coordinatesConverter,
+      collisions: simpleMock<Collisions>()
+    });
+
+    // When get position in area or visual area
+    actor.posInArea = new ex.Vector(3, 4);
+
+    // Then position was get from CoordinatesConverter
+    expect(actor.pos.x).toBe(posInCanvas.x);
+    expect(actor.pos.y).toBe(posInCanvas.y);
+  });
 
   it("can set collision", (): void => {
     // Given ExtendedActor
