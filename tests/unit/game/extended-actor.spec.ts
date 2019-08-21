@@ -103,6 +103,28 @@ describe("ExtendedActor", (): void => {
     expect(actor.pos.y).toBe(posInCanvas.y);
   });
 
+  it("can set pos as posInArea with CoordinatesConverter when be constructed", (): void => {
+    // Given CoordinatesConverter
+    const posInCanvas = { x: 1, y: 2 };
+    const coordinatesConverter = simpleMock<CoordinatesConverter>({
+      toCanvasPoint: jest.fn().mockReturnValue(posInCanvas)
+    });
+
+    // And ex.Vector as posInArea
+    const posInArea = new ex.Vector(3, 4);
+
+    // When construct ExtendedActor
+    const actor = new ExtendedActor({
+      posInArea,
+      coordinatesConverter,
+      collisions: simpleMock<Collisions>()
+    });
+
+    // Then position was get from CoordinatesConverter
+    expect(actor.pos.x).toBe(posInCanvas.x);
+    expect(actor.pos.y).toBe(posInCanvas.y);
+  });
+
   it("can set collision", (): void => {
     // Given ExtendedActor
     const actor = new ExtendedActor({
