@@ -44,27 +44,19 @@ export class ExtendedActor extends ex.Actor {
   }
 
   public get posInArea(): ex.Vector {
-    const posInArea = this.coordinatesConverter.toAreaPoint(this.pos);
-    return new ex.Vector(posInArea.x, posInArea.y);
+    return this.coordinatesConverter.toAreaPoint(this.pos);
   }
 
   public set posInArea(posInArea: ex.Vector) {
-    const posInCanvas = this.coordinatesConverter.toCanvasPoint(posInArea);
-    this.pos = new ex.Vector(posInCanvas.x, posInCanvas.y);
+    this.pos = this.coordinatesConverter.toCanvasPoint(posInArea);
   }
 
   public get posInVisualArea(): ex.Vector {
-    const posInVisualArea = this.coordinatesConverter.toVisualAreaPoint(
-      this.pos
-    );
-    return new ex.Vector(posInVisualArea.x, posInVisualArea.y);
+    return this.coordinatesConverter.toVisualAreaPoint(this.pos);
   }
 
   public getWorldPosInArea(): ex.Vector {
-    const worldPosInArea = this.coordinatesConverter.toAreaPoint(
-      this.getWorldPos()
-    );
-    return new ex.Vector(worldPosInArea.x, worldPosInArea.y);
+    return this.coordinatesConverter.toAreaPoint(this.getWorldPos());
   }
 
   public setCollision(collision: ex.CollisionGroup): void {
