@@ -1,14 +1,15 @@
 import * as ex from "excalibur";
 import * as mat from "transformation-matrix";
 import * as gt from "guntree";
-import { CoordinatesConverter } from "./coordinates-converter";
 import { BulletsPool } from "./bullets-pool";
+import { ActorWrapper } from "./actor-wrapper";
+import { ExtendedActor } from "./extended-actor";
 
 export interface MuzzleArgs extends ex.IActorArgs {
   damage: number;
-  coordinatesConverter: CoordinatesConverter;
   bulletsPool: BulletsPool;
   isPlayerSide: boolean;
+  actor: ExtendedActor;
 }
 
 /**
@@ -26,19 +27,23 @@ export interface MuzzleArgs extends ex.IActorArgs {
  * > const weapon = new Weapon(player);
  * > weapon.start();
  */
-export class Muzzle extends ex.Actor implements gt.Muzzle {
+export class Muzzle implements gt.Muzzle, ActorWrapper {
   private readonly damage: number;
-  private readonly coordinatesConverter: CoordinatesConverter;
   private readonly bulletsPool: BulletsPool;
-  public isPlayerSide: boolean = true;
+  public readonly isPlayerSide: boolean = true;
+  public readonly actor: ExtendedActor;
 
   public constructor(args: MuzzleArgs) {
-    super(args);
-
     this.damage = args.damage;
-    this.coordinatesConverter = args.coordinatesConverter;
     this.bulletsPool = args.bulletsPool;
     this.isPlayerSide = args.isPlayerSide;
+    this.actor = args.actor;
+  }
+
+  public update(_engine: ex.Engine, _deltaTimeMS: number): void {}
+
+  public kill(): void {
+    this.actor.kill();
   }
 
   /**
@@ -51,22 +56,21 @@ export class Muzzle extends ex.Actor implements gt.Muzzle {
     const bullet = this.bulletsPool.pop();
     if (bullet === undefined) return;
 
-    const [posInArea, rotationDeg, _scale] = gt.decomposeTransform(
+    const [posInAreaPoint, rotationDeg, _scale] = gt.decomposeTransform(
       data.transform
     );
+    const posInArea = new ex.Vector(posInAreaPoint.x, posInAreaPoint.y);
     const rotation = rotationDeg * (Math.PI / 180);
     const speed = data.parameters.get("speed");
     if (speed === undefined)
       throw new Error("GunTree parameter must have 'speed'");
-    const posAsPoint = this.coordinatesConverter.toCanvasPoint(posInArea);
-    const pos = new ex.Vector(posAsPoint.x, posAsPoint.y);
 
-    this.scene.add(bullet);
+    this.actor.scene.add(bullet.actor);
     bullet.init({
-      pos,
+      posInArea,
       rotation,
       damage: this.damage,
-      speed: speed * this.coordinatesConverter.areaSizeInCanvas,
+      speed: speed * this.actor.coordinatesConverter.areaSizeInCanvas,
       isPlayerSide: this.isPlayerSide
     });
   }
@@ -75,10 +79,14 @@ export class Muzzle extends ex.Actor implements gt.Muzzle {
    * Get muzzle transform.
    */
   public getMuzzleTransform(): mat.Matrix {
-    const areaPos = this.coordinatesConverter.toAreaPoint(this.getWorldPos());
+    // const areaPos = this.actor.posInArea;
+    const areaPos = this.actor.coordinatesConverter.toAreaPoint(
+      this.actor.getWorldPos()
+    );
+
     return mat.transform(
       mat.translate(areaPos.x, areaPos.y),
-      mat.rotate(this.getWorldRotation())
+      mat.rotate(this.actor.getWorldRotation())
     );
   }
 

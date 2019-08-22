@@ -1,3 +1,4 @@
+import * as ex from "excalibur";
 import { simpleMock } from "../../test-util";
 import { ExtendedActor } from "@/game/extended-actor";
 import { CoordinatesConverter } from "@/game/coordinates-converter";
@@ -80,6 +81,73 @@ describe("ExtendedActor", (): void => {
       expect(actualPos.y).toBe(expectedPos.y);
     }
   );
+
+  it("can set pos as posInArea with CoordinatesConverter", (): void => {
+    // Given CoordinatesConverter
+    const posInCanvas = { x: 1, y: 2 };
+    const coordinatesConverter = simpleMock<CoordinatesConverter>({
+      toCanvasPoint: jest.fn().mockReturnValueOnce(posInCanvas)
+    });
+
+    // And ExtendedActor
+    const actor = new ExtendedActor({
+      coordinatesConverter,
+      collisions: simpleMock<Collisions>()
+    });
+
+    // When get position in area or visual area
+    actor.posInArea = new ex.Vector(3, 4);
+
+    // Then position was get from CoordinatesConverter
+    expect(actor.pos.x).toBe(posInCanvas.x);
+    expect(actor.pos.y).toBe(posInCanvas.y);
+  });
+
+  it("can set pos as posInArea with CoordinatesConverter when be constructed", (): void => {
+    // Given CoordinatesConverter
+    const posInCanvas = { x: 1, y: 2 };
+    const coordinatesConverter = simpleMock<CoordinatesConverter>({
+      toCanvasPoint: jest.fn().mockReturnValue(posInCanvas)
+    });
+
+    // And ex.Vector as posInArea
+    const posInArea = new ex.Vector(3, 4);
+
+    // When construct ExtendedActor
+    const actor = new ExtendedActor({
+      posInArea,
+      coordinatesConverter,
+      collisions: simpleMock<Collisions>()
+    });
+
+    // Then position was get from CoordinatesConverter
+    expect(actor.pos.x).toBe(posInCanvas.x);
+    expect(actor.pos.y).toBe(posInCanvas.y);
+  });
+
+  it("can get worldPos in area with CoordinatesConverter", (): void => {
+    // Given CoordinatesConverter
+    const expectedPosInArea = { x: 1, y: 2 };
+    const coordinatesConverter = simpleMock<CoordinatesConverter>({
+      toAreaPoint: jest.fn().mockReturnValue(expectedPosInArea)
+    });
+
+    // And construct ExtendedActor
+    const pos = new ex.Vector(5, 6);
+    const actor = new ExtendedActor({
+      coordinatesConverter,
+      collisions: simpleMock<Collisions>()
+    });
+    actor.getWorldPos = jest.fn().mockReturnValueOnce(pos);
+
+    // When get worldPosInArea
+    const worldPosInArea = actor.getWorldPosInArea();
+
+    // Then position was get from CoordinatesConverter
+    expect(coordinatesConverter.toAreaPoint).toBeCalledWith(pos);
+    expect(worldPosInArea.x).toBe(expectedPosInArea.x);
+    expect(worldPosInArea.y).toBe(expectedPosInArea.y);
+  });
 
   it("can set collision", (): void => {
     // Given ExtendedActor

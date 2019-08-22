@@ -1,51 +1,66 @@
 import * as ex from "excalibur";
-import { ExtendedActorArgs } from "./util";
-import { Collisions } from "./collision-groups";
 import { Character } from "./character";
 import { ZIndex } from "./z-index";
+import { ActorWrapper } from "./actor-wrapper";
+import { ExtendedActor } from "./extended-actor";
 
 export interface BulletInitializeArgs {
   damage: number;
-  pos: ex.Vector;
+  posInArea: ex.Vector;
   rotation: number;
   speed: number;
   isPlayerSide: boolean;
 }
 
-export class Bullet extends ex.Actor {
-  public isPlayerSide: boolean = true;
-  private readonly collisions: Collisions;
+export class Bullet implements ActorWrapper {
+  public isPlayerSideInner: boolean = true;
+  public readonly actor: ExtendedActor;
   private damage: number = 0;
 
-  public constructor(args: ExtendedActorArgs) {
-    super(args);
-    this.collisions = args.collisions;
+  public constructor(actor: ExtendedActor) {
+    this.actor = actor;
 
-    this.on("precollision", (event: ex.PreCollisionEvent<ex.Actor>): void => {
+    actor.on("precollision", (event: ex.PreCollisionEvent<ex.Actor>): void => {
       if (!(event.other instanceof Character)) return;
       this.hitTo(event.other);
     });
   }
 
+  public get isPlayerSide(): boolean {
+    return this.isPlayerSideInner;
+  }
+
+  /**
+   * Update status.
+   * Called by actor.
+   *
+   * @param engine
+   * @param deltaTimeMS
+   */
+  public update(_engine: ex.Engine, _deltaTimeMS: number): void {}
+
+  public kill(): void {
+    this.actor.kill();
+  }
+
   public init(args: BulletInitializeArgs): void {
     this.damage = args.damage;
-    this.pos = args.pos.clone();
-    this.rotation = args.rotation;
-    this.vel = ex.Vector.fromAngle(this.rotation - Math.PI / 2).scale(
-      args.speed
-    );
-    this.isPlayerSide = args.isPlayerSide;
+    this.actor.posInArea = args.posInArea;
+    this.actor.rotation = args.rotation;
+    this.actor.vel = ex.Vector.fromAngle(
+      this.actor.rotation - Math.PI / 2
+    ).scale(args.speed);
+    this.isPlayerSideInner = args.isPlayerSide;
 
-    const collision = this.isPlayerSide
-      ? this.collisions.playerBullet
-      : this.collisions.enemyBullet;
-    this.body.collider.group = collision;
+    const cols = this.actor.collisions;
+    const collision = this.isPlayerSide ? cols.playerBullet : cols.enemyBullet;
+    this.actor.setCollision(collision);
 
     const zIndex = args.isPlayerSide ? ZIndex.playerBullet : ZIndex.enemyBullet;
-    this.setZIndex(zIndex);
+    this.actor.setZIndex(zIndex);
 
-    if (this.isKilled()) {
-      this.unkill();
+    if (this.actor.isKilled()) {
+      this.actor.unkill();
     }
   }
 
