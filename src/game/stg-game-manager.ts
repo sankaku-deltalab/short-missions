@@ -14,6 +14,7 @@ import { Bullet } from "./bullet";
 import { Collisions } from "./collision-groups";
 import { HealthComponent } from "./health-component";
 import { ZIndex } from "./z-index";
+import { ExtendedActor } from "./extended-actor";
 
 export class STGGameManager {
   public readonly engine: ex.Engine;
@@ -46,13 +47,10 @@ export class STGGameManager {
     background.setZIndex(ZIndex.background1);
 
     // Setup player character
-    const pcPos = new ex.Vector(
-      this.engine.halfDrawWidth,
-      this.engine.drawHeight * (3 / 4)
-    );
+    const pcPosInArea = new ex.Vector(-0.25, 0);
     const pc = this.setupPlayerCharacter(
       scene,
-      pcPos,
+      pcPosInArea,
       this.coordinatesConverter
     );
 
@@ -63,13 +61,10 @@ export class STGGameManager {
     );
 
     // TODO: Start game
-    const enemyPos = new ex.Vector(
-      this.engine.halfDrawWidth * (1 / 4),
-      this.engine.drawHeight * (1 / 4)
-    );
+    const enemyPosInArea = new ex.Vector(0.25, -0.25);
     const enemy = this.setupTestEnemy(
       scene,
-      enemyPos,
+      enemyPosInArea,
       this.coordinatesConverter
     );
 
@@ -118,22 +113,24 @@ export class STGGameManager {
 
   private setupPlayerCharacter(
     scene: ex.Scene,
-    pos: ex.Vector,
+    posInArea: ex.Vector,
     coordinatesConverter: CoordinatesConverter
   ): Character {
     // Create Bullets
     const bulletsPool = new BulletsPool();
     for (const _ of Array(100)) {
-      const bullet = new Bullet({
+      const bulletActor = new ExtendedActor({
+        coordinatesConverter,
         width: 30,
         height: 40,
         color: ex.Color.Black,
         collisions: this.collisions
       });
-      bullet.on("exitviewport", (): void => {
+      const bullet = new Bullet(bulletActor);
+      bulletActor.on("exitviewport", (): void => {
         bullet.kill();
       });
-      bullet.on("postkill", (): void => {
+      bulletActor.on("postkill", (): void => {
         bulletsPool.push(bullet);
       });
       bulletsPool.push(bullet);
@@ -141,24 +138,37 @@ export class STGGameManager {
     this.bulletsPools.set("player", bulletsPool);
 
     // Create Muzzle
+    const muzzleActor = new ExtendedActor({
+      coordinatesConverter,
+      posInArea: posInArea.add(new ex.Vector(0.125 / 4, 0)),
+      collisions: this.collisions
+    });
     const muzzle = new Muzzle({
       bulletsPool,
-      coordinatesConverter,
       damage: 10,
-      pos: new ex.Vector(0, -50),
-      isPlayerSide: true
+      isPlayerSide: true,
+      actor: muzzleActor
     });
 
     // Create player character
-    const pc = new Character({
-      pos,
+    const pcActor = new ExtendedActor({
+      posInArea,
+      coordinatesConverter,
       width: 50,
       height: 50,
       color: ex.Color.Azure,
-      health: new HealthComponent(3, 7),
-      isPlayerSide: true,
       collisions: this.collisions
     });
+    const pc = new Character({
+      health: new HealthComponent(3, 7),
+      isPlayerSide: true,
+      actor: pcActor
+    });
+
+    pc.actor.add(muzzle.actor);
+    muzzle.actor.pos = muzzle.actor.pos.sub(pc.actor.pos);
+    scene.add(pc.actor);
+    scene.add(muzzle.actor);
 
     // Create weapon
     const player = gt.createDefaultPlayer({
@@ -173,11 +183,7 @@ export class STGGameManager {
     );
     const weapon = new Weapon(player);
     pc.setWeapon(weapon);
-
-    scene.add(pc);
-    scene.add(muzzle);
-    pc.add(muzzle);
-    pc.setZIndex(ZIndex.player);
+    pc.actor.setZIndex(ZIndex.player);
     return pc;
   }
 
@@ -199,7 +205,7 @@ export class STGGameManager {
       delta: ex.Vector,
       _receiver: MovementInputReceiver
     ): void => {
-      pc.pos = pc.pos.add(delta);
+      pc.actor.pos = pc.actor.pos.add(delta);
     };
 
     const handlers = {
@@ -214,63 +220,27 @@ export class STGGameManager {
 
   private setupTestEnemy(
     scene: ex.Scene,
-    pos: ex.Vector,
-    _coordinatesConverter: CoordinatesConverter
+    posInArea: ex.Vector,
+    coordinatesConverter: CoordinatesConverter
   ): Character {
-    // // Create Bullets
-    // const bulletsPool = new BulletsPool();
-    // for (const _ of Array(100)) {
-    //   const bullet = new Bullet({
-    //     width: 30,
-    //     height: 40,
-    //     color: ex.Color.Black,
-    //     collisions: this.collisions
-    //   });
-    //   bullet.on("exitviewport", (): void => {
-    //     bullet.kill();
-    //     bulletsPool.push(bullet);
-    //   });
-    //   bulletsPool.push(bullet);
-    // }
-    // this.bulletsPools.set("player", bulletsPool);
-
-    // // Create Muzzle
-    // const muzzle = new Muzzle({
-    //   bulletsPool,
-    //   coordinatesConverter,
-    //   isPlayerSide: true
-    // });
-
-    // // Create weapon
-    // const player = gt.createDefaultPlayer({
-    //   centerMuzzle: muzzle
-    // });
-    // player.setGunTree(
-    //   gt.concat(
-    //     gt.useMuzzle("centerMuzzle"),
-    //     gt.mltSpeed(2),
-    //     gt.repeat({ times: 1, interval: 4 }, gt.fire(gt.bullet()))
-    //   )
-    // );
-    // const weapon = new Weapon(player);
-
-    // Create player character
-    const enemy = new Character({
-      pos,
-      // weapon,
+    // Create enemy
+    const enemyActor = new ExtendedActor({
+      posInArea,
+      coordinatesConverter,
       width: 100,
       height: 100,
       color: ex.Color.Rose,
-      health: new HealthComponent(1000, 1000),
-      isPlayerSide: false,
       collisions: this.collisions
     });
+    const enemy = new Character({
+      health: new HealthComponent(1000, 1000),
+      isPlayerSide: false,
+      actor: enemyActor
+    });
 
-    scene.add(enemy);
-    // scene.add(muzzle);
-    // enemy.add(muzzle);
+    scene.add(enemy.actor);
 
-    enemy.setZIndex(ZIndex.enemy);
+    enemy.actor.setZIndex(ZIndex.enemy);
     return enemy;
   }
 }
