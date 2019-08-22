@@ -79,7 +79,11 @@ export class Muzzle implements gt.Muzzle, ActorWrapper {
    * Get muzzle transform.
    */
   public getMuzzleTransform(): mat.Matrix {
-    const areaPos = this.actor.posInArea;
+    // const areaPos = this.actor.posInArea;
+    const areaPos = this.actor.coordinatesConverter.toAreaPoint(
+      this.actor.getWorldPos()
+    );
+
     return mat.transform(
       mat.translate(areaPos.x, areaPos.y),
       mat.rotate(this.actor.getWorldRotation())
