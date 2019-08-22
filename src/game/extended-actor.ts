@@ -60,6 +60,13 @@ export class ExtendedActor extends ex.Actor {
     return new ex.Vector(posInVisualArea.x, posInVisualArea.y);
   }
 
+  public getWorldPosInArea(): ex.Vector {
+    const worldPosInArea = this.coordinatesConverter.toAreaPoint(
+      this.getWorldPos()
+    );
+    return new ex.Vector(worldPosInArea.x, worldPosInArea.y);
+  }
+
   public setCollision(collision: ex.CollisionGroup): void {
     this.body.collider.group = collision;
   }
