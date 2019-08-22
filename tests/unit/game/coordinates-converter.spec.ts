@@ -1,147 +1,172 @@
+import * as ex from "excalibur";
 import { CoordinatesConverter } from "@/game/coordinates-converter";
 
 describe("CoordinatesConverter", (): void => {
-  it.each`
-    areaX   | areaY   | canvasX | canvasY
-    ${0}    | ${0}    | ${0.5}  | ${0.5}
-    ${0.5}  | ${0}    | ${0.5}  | ${0}
-    ${0}    | ${0.5}  | ${1}    | ${0.5}
-    ${-0.5} | ${0}    | ${0.5}  | ${1}
-    ${0}    | ${-0.5} | ${0}    | ${0.5}
-  `(
-    "use x for top, and y for right",
-    ({ areaX, areaY, canvasX, canvasY }): void => {
-      // Given CoordinatesConverter
-      const cc = new CoordinatesConverter({
-        areaSizeInCanvas: 1,
-        visualAreaSizeInCanvas: { x: 1, y: 1 },
-        centerInCanvas: { x: 0.5, y: 0.5 }
-      });
-
-      // When convert point
-      const areaPoint = { x: areaX, y: areaY };
-      const canvasPoint = cc.toCanvasPointFromVisualArea(areaPoint);
-
-      // Then get point in canvas
-      expect(canvasPoint.x).toBeCloseTo(canvasX);
-      expect(canvasPoint.y).toBeCloseTo(canvasY);
-    }
-  );
-  it("has arguments", (): void => {
+  it("still has arguments as ex.Vector", (): void => {
     // Given CoordinatesConverter arguments
-    const areaSizeInCanvas = 1;
-    const visualAreaSizeInCanvas = { x: 1, y: 1 };
-    const centerInCanvas = { x: 0.5, y: 0.5 };
+    const args = {
+      areaSizeInCanvas: 1,
+      visualAreaSizeInCanvas: { x: 1, y: 1 },
+      centerInCanvas: { x: 0.5, y: 0.5 }
+    };
 
     // When create CoordinatesConverter
-    const cc = new CoordinatesConverter({
-      areaSizeInCanvas,
-      visualAreaSizeInCanvas,
-      centerInCanvas
-    });
+    const cc = new CoordinatesConverter(args);
 
     // Then CoordinatesConverter has arguments
-    expect(cc.areaSizeInCanvas).toBe(areaSizeInCanvas);
-    expect(cc.visualAreaSizeInCanvas).toEqual(visualAreaSizeInCanvas);
-    expect(cc.centerInCanvas).toEqual(centerInCanvas);
+    expect(cc.areaSizeInCanvas).toBe(args.areaSizeInCanvas);
+    const argumentNames: ("visualAreaSizeInCanvas" | "centerInCanvas")[] = [
+      "visualAreaSizeInCanvas",
+      "centerInCanvas"
+    ];
+    for (const arg of argumentNames) {
+      expect(cc[arg]).toBeInstanceOf(ex.Vector);
+      expect(cc[arg].x).toBe(args[arg].x);
+      expect(cc[arg].y).toBe(args[arg].y);
+    }
   });
 
   it.each`
-    offsetX | offsetY
-    ${0}    | ${0}
-    ${5}    | ${0}
-    ${0}    | ${6}
-    ${7}    | ${8}
-    ${-9}   | ${-10}
-    ${1.25} | ${1.5}
-  `("use translation with centerInCanvas", ({ offsetX, offsetY }): void => {
-    // Given CoordinatesConverter
-    const cc = new CoordinatesConverter({
-      areaSizeInCanvas: 1,
-      visualAreaSizeInCanvas: { x: 2, y: 3 },
-      centerInCanvas: { x: 150 + offsetX, y: 200 + offsetY }
-    });
-
-    // When convert center point
-    const centerInField = { x: 0, y: 0 };
-    const convertedCenter = cc.toCanvasPointFromVisualArea(centerInField);
-
-    // Then get center of canvas
-    expect(convertedCenter.x).toBeCloseTo(150 + offsetX);
-    expect(convertedCenter.y).toBeCloseTo(200 + offsetY);
-  });
-
-  it.each`
-    areaSizeInCanvas
-    ${100}
-    ${200}
-    ${500}
-  `("use scaling with areaSizeInCanvas area", ({ areaSizeInCanvas }): void => {
-    // Given CoordinatesConverter
-    const cc = new CoordinatesConverter({
-      areaSizeInCanvas,
-      visualAreaSizeInCanvas: { x: 1, y: 1 },
-      centerInCanvas: { x: 0, y: 0 }
-    });
-
-    // When convert south east point
-    const seInArea = { x: -0.5, y: 0.5 };
-    const convertedSE = cc.toCanvasPoint(seInArea);
-
-    // Then get center of canvas
-    expect(convertedSE.x).toBeCloseTo(areaSizeInCanvas / 2);
-    expect(convertedSE.y).toBeCloseTo(areaSizeInCanvas / 2);
-  });
-
-  it.each`
-    areaSizeInCanvasX | areaSizeInCanvasY
-    ${100}            | ${100}
-    ${100}            | ${200}
-    ${300}            | ${100}
+    areaSizeInCanvas | centerInCanvas        | canvasPoint           | expectedAreaPoint
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 200, y: 200 }} | ${{ x: 0, y: 0 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 200, y: 0 }}   | ${{ x: 0.5, y: 0 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 200, y: 400 }} | ${{ x: -0.5, y: 0 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 400, y: 200 }} | ${{ x: 0, y: 0.5 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 0, y: 200 }}   | ${{ x: 0, y: -0.5 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 400, y: 0 }}   | ${{ x: 0.5, y: 0.5 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 0, y: 0 }}     | ${{ x: 0.5, y: -0.5 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 400, y: 400 }} | ${{ x: -0.5, y: 0.5 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 0, y: 400 }}   | ${{ x: -0.5, y: -0.5 }}
   `(
-    "use scaling with areaSizeInCanvas in visible area",
-    ({ areaSizeInCanvasX, areaSizeInCanvasY }): void => {
+    "can convert canvas point $canvasPoint to area Point as ex.Vector",
+    ({
+      areaSizeInCanvas,
+      centerInCanvas,
+      canvasPoint,
+      expectedAreaPoint
+    }): void => {
       // Given CoordinatesConverter
       const cc = new CoordinatesConverter({
-        areaSizeInCanvas: 1,
-        visualAreaSizeInCanvas: { x: areaSizeInCanvasX, y: areaSizeInCanvasY },
-        centerInCanvas: { x: 0, y: 0 }
+        areaSizeInCanvas,
+        centerInCanvas,
+        visualAreaSizeInCanvas: { x: 2, y: 2 }
       });
 
-      // When convert south east point
-      const seInArea = { x: -0.5, y: 0.5 };
-      const convertedSE = cc.toCanvasPointFromVisualArea(seInArea);
+      // When convert canvas point to area point
+      const actualAreaPoint = cc.toAreaPoint(canvasPoint);
 
-      // Then get center of canvas
-      expect(convertedSE.x).toBeCloseTo(areaSizeInCanvasX / 2);
-      expect(convertedSE.y).toBeCloseTo(areaSizeInCanvasY / 2);
+      // Then get area point as ex.Vector
+      expect(actualAreaPoint).toBeInstanceOf(ex.Vector);
+      expect(actualAreaPoint.x).toBeCloseTo(expectedAreaPoint.x);
+      expect(actualAreaPoint.y).toBeCloseTo(expectedAreaPoint.y);
     }
   );
 
   it.each`
-    areaX   | areaY   | canvasX | canvasY
-    ${0}    | ${0}    | ${0.5}  | ${0.5}
-    ${0.5}  | ${0}    | ${0.5}  | ${0}
-    ${0}    | ${0.5}  | ${1}    | ${0.5}
-    ${-0.5} | ${0}    | ${0.5}  | ${1}
-    ${0}    | ${-0.5} | ${0}    | ${0.5}
+    visualAreaSizeInCanvas | centerInCanvas        | canvasPoint           | expectedVisualAreaPoint
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: 150, y: 200 }} | ${{ x: 0, y: 0 }}
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: 150, y: 0 }}   | ${{ x: 0.5, y: 0 }}
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: 150, y: 400 }} | ${{ x: -0.5, y: 0 }}
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: 300, y: 200 }} | ${{ x: 0, y: 0.5 }}
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: 0, y: 200 }}   | ${{ x: 0, y: -0.5 }}
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: 300, y: 0 }}   | ${{ x: 0.5, y: 0.5 }}
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: 0, y: 0 }}     | ${{ x: 0.5, y: -0.5 }}
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: 300, y: 400 }} | ${{ x: -0.5, y: 0.5 }}
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: 0, y: 400 }}   | ${{ x: -0.5, y: -0.5 }}
   `(
-    "can convert canvas point to area point",
-    ({ areaX, areaY, canvasX, canvasY }): void => {
+    "can convert canvas point $canvasPoint to visual area Point as ex.Vector",
+    ({
+      visualAreaSizeInCanvas,
+      centerInCanvas,
+      canvasPoint,
+      expectedVisualAreaPoint
+    }): void => {
       // Given CoordinatesConverter
       const cc = new CoordinatesConverter({
-        areaSizeInCanvas: 1,
-        visualAreaSizeInCanvas: { x: 1, y: 1 },
-        centerInCanvas: { x: 0.5, y: 0.5 }
+        centerInCanvas,
+        visualAreaSizeInCanvas,
+        areaSizeInCanvas: 2
       });
 
       // When convert canvas point to visual area point
-      const canvasPoint = { x: canvasX, y: canvasY };
-      const areaPoint = cc.toAreaPoint(canvasPoint);
+      const actualVisualAreaPoint = cc.toVisualAreaPoint(canvasPoint);
 
-      // Then get point in canvas
-      expect(areaPoint.x).toBeCloseTo(areaX);
-      expect(areaPoint.y).toBeCloseTo(areaY);
+      // Then get area point as ex.Vector
+      expect(actualVisualAreaPoint).toBeInstanceOf(ex.Vector);
+      expect(actualVisualAreaPoint.x).toBeCloseTo(expectedVisualAreaPoint.x);
+      expect(actualVisualAreaPoint.y).toBeCloseTo(expectedVisualAreaPoint.y);
+    }
+  );
+
+  it.each`
+    areaSizeInCanvas | centerInCanvas        | areaPoint               | expectedCanvasPoint
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 0, y: 0 }}       | ${{ x: 200, y: 200 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 0.5, y: 0 }}     | ${{ x: 200, y: 0 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: -0.5, y: 0 }}    | ${{ x: 200, y: 400 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 0, y: 0.5 }}     | ${{ x: 400, y: 200 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 0, y: -0.5 }}    | ${{ x: 0, y: 200 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 0.5, y: 0.5 }}   | ${{ x: 400, y: 0 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 0.5, y: -0.5 }}  | ${{ x: 0, y: 0 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: -0.5, y: 0.5 }}  | ${{ x: 400, y: 400 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: -0.5, y: -0.5 }} | ${{ x: 0, y: 400 }}
+  `(
+    "can convert area point $areaPoint to canvas Point as ex.Vector",
+    ({
+      areaSizeInCanvas,
+      centerInCanvas,
+      areaPoint,
+      expectedCanvasPoint
+    }): void => {
+      // Given CoordinatesConverter
+      const cc = new CoordinatesConverter({
+        areaSizeInCanvas,
+        centerInCanvas,
+        visualAreaSizeInCanvas: { x: 2, y: 2 }
+      });
+
+      // When convert area point to canvas point
+      const actualCanvasPoint = cc.toCanvasPoint(areaPoint);
+
+      // Then get area point as ex.Vector
+      expect(actualCanvasPoint).toBeInstanceOf(ex.Vector);
+      expect(actualCanvasPoint.x).toBeCloseTo(expectedCanvasPoint.x);
+      expect(actualCanvasPoint.y).toBeCloseTo(expectedCanvasPoint.y);
+    }
+  );
+
+  it.each`
+    visualAreaSizeInCanvas | centerInCanvas        | visualAreaPoint         | expectedCanvasPoint
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: 0, y: 0 }}       | ${{ x: 150, y: 200 }}
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: 0.5, y: 0 }}     | ${{ x: 150, y: 0 }}
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: -0.5, y: 0 }}    | ${{ x: 150, y: 400 }}
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: 0, y: 0.5 }}     | ${{ x: 300, y: 200 }}
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: 0, y: -0.5 }}    | ${{ x: 0, y: 200 }}
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: 0.5, y: 0.5 }}   | ${{ x: 300, y: 0 }}
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: 0.5, y: -0.5 }}  | ${{ x: 0, y: 0 }}
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: -0.5, y: 0.5 }}  | ${{ x: 300, y: 400 }}
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }} | ${{ x: -0.5, y: -0.5 }} | ${{ x: 0, y: 400 }}
+  `(
+    "can convert visual area point $visualAreaPoint to canvas Point as ex.Vector",
+    ({
+      visualAreaSizeInCanvas,
+      centerInCanvas,
+      visualAreaPoint,
+      expectedCanvasPoint
+    }): void => {
+      // Given CoordinatesConverter
+      const cc = new CoordinatesConverter({
+        centerInCanvas,
+        visualAreaSizeInCanvas,
+        areaSizeInCanvas: 2
+      });
+
+      // When convert visual area point to canvas point
+      const actualCanvasPoint = cc.toCanvasPointFromVisualArea(visualAreaPoint);
+
+      // Then get area point as ex.Vector
+      expect(actualCanvasPoint).toBeInstanceOf(ex.Vector);
+      expect(actualCanvasPoint.x).toBeCloseTo(expectedCanvasPoint.x);
+      expect(actualCanvasPoint.y).toBeCloseTo(expectedCanvasPoint.y);
     }
   );
 

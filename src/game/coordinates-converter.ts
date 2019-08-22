@@ -1,5 +1,6 @@
 import * as mat from "transformation-matrix";
 import * as ex from "excalibur";
+import { pointToVector } from "./util";
 
 const pointToArray = (p: mat.Point): [number, number] => [p.x, p.y];
 
@@ -21,17 +22,17 @@ export interface CoordinatesConverterArgs {
  */
 export class CoordinatesConverter {
   public readonly areaSizeInCanvas: number;
-  public readonly visualAreaSizeInCanvas: mat.Point;
+  public readonly visualAreaSizeInCanvas: ex.Vector;
   private readonly areaToCanvasTrans: mat.Matrix;
   private readonly visualAreaToCanvasTrans: mat.Matrix;
-  public readonly centerInCanvas: mat.Point;
-  public readonly visualNWInCanvas: mat.Point;
-  public readonly visualSEInCanvas: mat.Point;
+  public readonly centerInCanvas: ex.Vector;
+  public readonly visualNWInCanvas: ex.Vector;
+  public readonly visualSEInCanvas: ex.Vector;
 
   public constructor(args: CoordinatesConverterArgs) {
     this.areaSizeInCanvas = args.areaSizeInCanvas;
-    this.visualAreaSizeInCanvas = args.visualAreaSizeInCanvas;
-    this.centerInCanvas = args.centerInCanvas;
+    this.visualAreaSizeInCanvas = pointToVector(args.visualAreaSizeInCanvas);
+    this.centerInCanvas = pointToVector(args.centerInCanvas);
 
     this.areaToCanvasTrans = mat.transform(
       mat.translate(...pointToArray(args.centerInCanvas)),
@@ -59,8 +60,9 @@ export class CoordinatesConverter {
    *
    * @param pointInArea Point in square area
    */
-  public toCanvasPoint(pointInArea: mat.Point): mat.Point {
-    return mat.applyToPoint(this.areaToCanvasTrans, pointInArea);
+  public toCanvasPoint(pointInArea: mat.Point): ex.Vector {
+    const point = mat.applyToPoint(this.areaToCanvasTrans, pointInArea);
+    return pointToVector(point);
   }
 
   /**
@@ -68,8 +70,12 @@ export class CoordinatesConverter {
    *
    * @param pointInVisualArea Point in square field
    */
-  public toCanvasPointFromVisualArea(pointInVisualArea: mat.Point): mat.Point {
-    return mat.applyToPoint(this.visualAreaToCanvasTrans, pointInVisualArea);
+  public toCanvasPointFromVisualArea(pointInVisualArea: mat.Point): ex.Vector {
+    const point = mat.applyToPoint(
+      this.visualAreaToCanvasTrans,
+      pointInVisualArea
+    );
+    return pointToVector(point);
   }
 
   /**
@@ -77,8 +83,12 @@ export class CoordinatesConverter {
    *
    * @param pointInCanvas Point in canvas
    */
-  public toAreaPoint(pointInCanvas: mat.Point): mat.Point {
-    return mat.applyToPoint(mat.inverse(this.areaToCanvasTrans), pointInCanvas);
+  public toAreaPoint(pointInCanvas: mat.Point): ex.Vector {
+    const point = mat.applyToPoint(
+      mat.inverse(this.areaToCanvasTrans),
+      pointInCanvas
+    );
+    return pointToVector(point);
   }
 
   /**
@@ -86,11 +96,12 @@ export class CoordinatesConverter {
    *
    * @param pointInCanvas Point in canvas
    */
-  public toVisualAreaPoint(pointInCanvas: mat.Point): mat.Point {
-    return mat.applyToPoint(
+  public toVisualAreaPoint(pointInCanvas: mat.Point): ex.Vector {
+    const point = mat.applyToPoint(
       mat.inverse(this.visualAreaToCanvasTrans),
       pointInCanvas
     );
+    return pointToVector(point);
   }
 
   /**
@@ -98,7 +109,7 @@ export class CoordinatesConverter {
    *
    * @param pointInCanvas Point in canvas
    */
-  public clampCanvasPointInVisualArea(pointInCanvas: mat.Point): mat.Point {
+  public clampCanvasPointInVisualArea(pointInCanvas: mat.Point): ex.Vector {
     const pointInVisualArea = this.toVisualAreaPoint(pointInCanvas);
     const pointInVisualAreaClamped = {
       x: ex.Util.clamp(pointInVisualArea.x, -0.5, 0.5),
