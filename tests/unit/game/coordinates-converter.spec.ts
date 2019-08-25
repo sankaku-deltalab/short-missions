@@ -1,6 +1,8 @@
 import * as ex from "excalibur";
 import { CoordinatesConverter } from "@/game/coordinates-converter";
 
+const delta = Math.pow(10, -10);
+
 describe("CoordinatesConverter", (): void => {
   it("still has arguments as ex.Vector", (): void => {
     // Given CoordinatesConverter arguments
@@ -202,6 +204,36 @@ describe("CoordinatesConverter", (): void => {
       // Then get clamped point
       expect(clampedPoint.x).toBeCloseTo(clampedPosX);
       expect(clampedPoint.y).toBeCloseTo(clampedPosY);
+    }
+  );
+
+  it.each`
+    visualAreaSizeInCanvas | point                             | expectedIsInArea
+    ${{ x: 300, y: 400 }}  | ${{ x: 150, y: 200 }}             | ${true}
+    ${{ x: 300, y: 400 }}  | ${{ x: 0 + delta, y: 0 + delta }} | ${true}
+    ${{ x: 300, y: 400 }}  | ${{ x: 300, y: 400 }}             | ${true}
+    ${{ x: 300, y: 400 }}  | ${{ x: 301, y: 400 }}             | ${false}
+    ${{ x: 300, y: 400 }}  | ${{ x: 300, y: 401 }}             | ${false}
+    ${{ x: 300, y: 400 }}  | ${{ x: -1, y: 0 }}                | ${false}
+    ${{ x: 300, y: 400 }}  | ${{ x: 0, y: -1 }}                | ${false}
+  `(
+    "can check point $point is in visual area",
+    ({ visualAreaSizeInCanvas, point, expectedIsInArea }): void => {
+      // Given CoordinatesConverter
+      const cc = new CoordinatesConverter({
+        visualAreaSizeInCanvas,
+        areaSizeInCanvas: 1,
+        centerInCanvas: {
+          x: visualAreaSizeInCanvas.x / 2,
+          y: visualAreaSizeInCanvas.y / 2
+        }
+      });
+
+      // When check is in visual area
+      const isInArea = cc.canvasPointIsInVisualArea(point);
+
+      // Then get point in canvas
+      expect(isInArea).toBe(expectedIsInArea);
     }
   );
 });
