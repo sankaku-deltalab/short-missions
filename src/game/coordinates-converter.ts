@@ -117,4 +117,15 @@ export class CoordinatesConverter {
     };
     return this.toCanvasPointFromVisualArea(pointInVisualAreaClamped);
   }
+
+  /**
+   * Check point in canvas is in visual area.
+   *
+   * @param pointInCanvas Point in canvas
+   */
+  public canvasPointIsInVisualArea(pointInCanvas: mat.Point): boolean {
+    const pointInVisualArea = this.toVisualAreaPoint(pointInCanvas);
+    const coords = [pointInVisualArea.x, pointInVisualArea.y];
+    return coords.every((v: number): boolean => -0.5 <= v && v <= 0.5);
+  }
 }
