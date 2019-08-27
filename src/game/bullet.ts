@@ -21,8 +21,11 @@ export class Bullet implements ActorWrapper {
     this.actor = actor;
 
     actor.on("precollision", (event: ex.PreCollisionEvent<ex.Actor>): void => {
-      if (!(event.other instanceof Character)) return;
-      this.hitTo(event.other);
+      const other = event.other;
+      if (!(other instanceof ExtendedActor)) return;
+      const character = other.owner;
+      if (!(character instanceof Character)) return;
+      this.hitTo(character);
     });
   }
 
