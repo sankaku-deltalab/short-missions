@@ -15,6 +15,9 @@ import { HealthComponent } from "./health-component";
 import { ZIndex } from "./z-index";
 import { ExtendedActor } from "./extended-actor";
 import { STGGameManager } from "./stg-game-manager";
+import { StraightMoveRoute } from "./contents/enemy-move-route/straight-move-route";
+import { StaticEnemyMover } from "./static-enemy-mover";
+import { EventDispatcher } from "./event-dispatcher";
 
 export class MissionFlow {
   private readonly stgGameManager: STGGameManager;
@@ -76,11 +79,13 @@ export class MissionFlow {
       };
       enemy.health.onDied.add(f2);
     };
-    await promisify(waitEnemyDied)();
 
     const pause = promisify((milliSec: number, f: Function): void => {
       setTimeout(f, milliSec);
     });
+
+    await Promise.race([promisify(waitEnemyDied)(), pause(2 * 1000)]);
+
     await pause(2 * 1000);
 
     // TODO: Show result
@@ -203,19 +208,34 @@ export class MissionFlow {
     coordinatesConverter: CoordinatesConverter
   ): Character {
     // Create enemy
-    const enemyActor = new ExtendedActor({
-      posInArea,
-      coordinatesConverter,
-      width: 100,
-      height: 100,
-      color: ex.Color.Rose,
-      collisions: this.stgGameManager.collisions
-    });
     const enemy = new Character({
-      health: new HealthComponent(1000, 1000),
+      health: new HealthComponent(100, 100),
       isPlayerSide: false,
-      actor: enemyActor
+      actor: new ExtendedActor({
+        posInArea,
+        coordinatesConverter,
+        width: 100,
+        height: 100,
+        color: ex.Color.Rose,
+        collisions: this.stgGameManager.collisions
+      })
     });
+
+    const mover = new StaticEnemyMover({
+      onEnteredToArea: new EventDispatcher(),
+      onExitingFromArea: new EventDispatcher(),
+      route: new StraightMoveRoute({
+        activePosInArea: new ex.Vector(0.25, -0.25),
+        activateTime: 1,
+        moveSpeedInArea: 0.5,
+        moveAngleDegInArea: -100
+      })
+    });
+    enemy.actor.on("preupdate", (event): void => {
+      mover.update(event.delta);
+    });
+    mover.owner = enemy;
+    mover.start();
 
     scene.add(enemy.actor);
 
