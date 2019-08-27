@@ -17,6 +17,7 @@ import StageSelector from "./components/StageSelector.vue";
 import GameCanvas from "./components/GameCanvas.vue";
 import { createEngine } from "@/game/engine-creator";
 import { STGGameManager } from "@/game/stg-game-manager";
+import { MissionFlow } from "./game/mission-flow";
 
 @Component({
   components: {
@@ -39,7 +40,8 @@ export default class App extends Vue {
 
   private async playMission(selectedMissionId: number): Promise<void> {
     this.stgMode = true;
-    await this.stgGameManager.playMission(selectedMissionId);
+    const flow = new MissionFlow(this.stgGameManager);
+    await flow.playMission(selectedMissionId);
     this.stgMode = false;
   }
 }
