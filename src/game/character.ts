@@ -3,6 +3,7 @@ import { Weapon } from "./weapon";
 import { ExtendedActor } from "./extended-actor";
 import { HealthComponent } from "./health-component";
 import { ActorWrapper } from "./actor-wrapper";
+import { Mover } from "./mover";
 
 export interface CharacterArgs {
   isPlayerSide: boolean;
@@ -20,6 +21,7 @@ export class Character implements ActorWrapper {
   public readonly isPlayerSide: boolean;
   public readonly health: HealthComponent;
   private weaponInner?: Weapon;
+  private moverInner?: Mover;
 
   public constructor(args: CharacterArgs) {
     this.actor = args.actor;
@@ -47,6 +49,15 @@ export class Character implements ActorWrapper {
     this.weaponInner = weapon;
   }
 
+  public get mover(): Mover | undefined {
+    return this.moverInner;
+  }
+
+  public useMover(mover: Mover): void {
+    this.moverInner = mover;
+    mover.start(this);
+  }
+
   /**
    * Update status.
    * Called by actor.
@@ -57,6 +68,9 @@ export class Character implements ActorWrapper {
   public update(_engine: ex.Engine, deltaTimeMS: number): void {
     if (this.weapon !== undefined) {
       this.weapon.tick(deltaTimeMS);
+    }
+    if (this.mover !== undefined) {
+      this.mover.update(deltaTimeMS);
     }
   }
 

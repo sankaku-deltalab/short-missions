@@ -1,6 +1,7 @@
 import { EventDispatcher } from "./event-dispatcher";
-import { Character } from "./character";
 import { EnemyMoveRoute } from "./enemy-move-route";
+import { Mover } from "./mover";
+import { ActorWrapper } from "./actor-wrapper";
 
 export interface StaticEnemyMoverArgs {
   route: EnemyMoveRoute;
@@ -8,15 +9,15 @@ export interface StaticEnemyMoverArgs {
   onExitingFromArea: EventDispatcher<void>;
 }
 
-export class StaticEnemyMover {
+export class StaticEnemyMover implements Mover {
   public readonly onEnteredToArea: EventDispatcher<void>;
   public readonly onExitingFromArea: EventDispatcher<void>;
   private playedTimeMS: number = 0;
-  private ownerInner?: Character;
+  private owner?: ActorWrapper;
   private route: EnemyMoveRoute;
   private alreadyEnteredToArea: boolean = false;
   private alreadyExitingFromArea: boolean = false;
-  private ownerInVisualArea: boolean = false;
+  private ownerIsInVisualArea: boolean = false;
 
   public constructor(args: StaticEnemyMoverArgs) {
     this.route = args.route;
@@ -24,30 +25,25 @@ export class StaticEnemyMover {
     this.onExitingFromArea = args.onExitingFromArea;
   }
 
-  public set owner(character: Character) {
-    if (this.ownerInner !== undefined) throw new Error("Already set owner");
-    this.ownerInner = character;
-  }
-
-  public start(): void {
-    if (this.ownerInner === undefined) throw new Error("Owner is not set");
+  public start(owner: ActorWrapper): void {
+    this.owner = owner;
     this.playedTimeMS = 0;
-    this.ownerInner.actor.posInArea = this.route.getInitialPosition();
-    this.updateOwnerInVisualArea();
+    this.owner.actor.posInArea = this.route.getInitialPosition();
+    this.updateOwnerIsInVisualArea();
   }
 
   public update(deltaTimeMS: number): void {
-    if (this.ownerInner === undefined) throw new Error("Owner is not set");
+    if (this.owner === undefined) throw new Error("This is not started yet");
 
-    const ownerIsInVisualAreaBeforeMove = this.ownerInVisualArea;
+    const ownerIsInVisualAreaBeforeMove = this.ownerIsInVisualArea;
 
     this.playedTimeMS += deltaTimeMS;
-    this.ownerInner.actor.posInArea = this.route.calcPositionInArea(
+    this.owner.actor.posInArea = this.route.calcPositionInArea(
       this.playedTimeMS
     );
 
-    this.updateOwnerInVisualArea();
-    const ownerIsInVisualAreaAfterMove = this.ownerInVisualArea;
+    this.updateOwnerIsInVisualArea();
+    const ownerIsInVisualAreaAfterMove = this.ownerIsInVisualArea;
 
     if (!ownerIsInVisualAreaBeforeMove && ownerIsInVisualAreaAfterMove) {
       this.enter();
@@ -66,11 +62,11 @@ export class StaticEnemyMover {
     this.onExitingFromArea.dispatch();
   }
 
-  private updateOwnerInVisualArea(): void {
-    if (this.ownerInner === undefined) throw new Error("Owner is not set");
-    const cc = this.ownerInner.actor.coordinatesConverter;
-    this.ownerInVisualArea = cc.canvasPointIsInVisualArea(
-      this.ownerInner.actor.pos
+  private updateOwnerIsInVisualArea(): void {
+    if (this.owner === undefined) throw new Error("Owner is not set");
+    const cc = this.owner.actor.coordinatesConverter;
+    this.ownerIsInVisualArea = cc.canvasPointIsInVisualArea(
+      this.owner.actor.pos
     );
   }
 }

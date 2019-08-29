@@ -221,6 +221,10 @@ export class MissionFlow {
       })
     });
 
+    scene.add(enemy.actor);
+    enemy.actor.setZIndex(ZIndex.enemy);
+
+    // Use mover
     const mover = new StaticEnemyMover({
       onEnteredToArea: new EventDispatcher(),
       onExitingFromArea: new EventDispatcher(),
@@ -231,15 +235,8 @@ export class MissionFlow {
         moveAngleDegInArea: -100
       })
     });
-    enemy.actor.on("preupdate", (event): void => {
-      mover.update(event.delta);
-    });
-    mover.owner = enemy;
-    mover.start();
+    enemy.useMover(mover);
 
-    scene.add(enemy.actor);
-
-    enemy.actor.setZIndex(ZIndex.enemy);
     return enemy;
   }
 }

@@ -4,6 +4,7 @@ import { Character } from "@/game/character";
 import { createCollisionsMock } from "./test-game-util";
 import { HealthComponent } from "@/game/health-component";
 import { ExtendedActor } from "@/game/extended-actor";
+import { Mover } from "@/game/mover";
 
 function createHealthComponentMock(): HealthComponent {
   return new HealthComponent(10, 10);
@@ -150,6 +151,47 @@ describe("Character", (): void => {
 
     // Then character was killed
     expect(character.kill).toBeCalled();
+  });
+
+  it("start mover when use it", (): void => {
+    // Given Character
+    const character = new Character({
+      isPlayerSide: true,
+      actor: createActorMock(),
+      health: createHealthComponentMock()
+    });
+
+    // When Character use mover
+    const mover = simpleMock<Mover>({
+      start: jest.fn()
+    });
+    character.useMover(mover);
+
+    // Then mover was started
+    expect(mover.start).toBeCalledWith(character);
+  });
+
+  it("update mover if using it", (): void => {
+    // Given Character
+    const character = new Character({
+      isPlayerSide: true,
+      actor: createActorMock(),
+      health: createHealthComponentMock()
+    });
+
+    // When Character use mover
+    const mover = simpleMock<Mover>({
+      start: jest.fn(),
+      update: jest.fn()
+    });
+    character.useMover(mover);
+
+    // And update Character
+    const deltaTime = 10;
+    character.update(simpleMock<ex.Engine>(), deltaTime);
+
+    // Then mover was updated
+    expect(mover.update).toBeCalledWith(deltaTime);
   });
 
   it("kill actor when killed", (): void => {
