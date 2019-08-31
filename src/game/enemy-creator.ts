@@ -6,6 +6,7 @@ import { Character } from "./character";
 import { HealthComponent } from "./health-component";
 import { ExtendedActor } from "./extended-actor";
 import { MuzzleCreator } from "./muzzle-creator";
+import { StaticEnemyMoverCreator } from "./static-enemy-mover-creator";
 
 export interface EnemyCreatorArgs {
   // TODO: Add visual thing
@@ -14,6 +15,7 @@ export interface EnemyCreatorArgs {
   health: number;
   muzzleCreator: MuzzleCreator;
   weaponCreator: WeaponCreator;
+  staticEnemyMoverCreator: StaticEnemyMoverCreator;
   sizeInArea: ex.Vector;
 }
 
@@ -23,12 +25,13 @@ export interface MuzzleInfo {
 }
 
 export class EnemyCreator {
-  private collisions: Collisions;
-  private coordinatedConverter: CoordinatesConverter;
-  private health: number;
-  private muzzleCreator: MuzzleCreator;
-  private weaponCreator: WeaponCreator;
-  private sizeInArea: ex.Vector;
+  private readonly collisions: Collisions;
+  private readonly coordinatedConverter: CoordinatesConverter;
+  private readonly health: number;
+  private readonly muzzleCreator: MuzzleCreator;
+  private readonly weaponCreator: WeaponCreator;
+  private readonly staticEnemyMoverCreator: StaticEnemyMoverCreator;
+  private readonly sizeInArea: ex.Vector;
 
   public constructor(args: EnemyCreatorArgs) {
     this.collisions = args.collisions;
@@ -36,16 +39,21 @@ export class EnemyCreator {
     this.health = args.health;
     this.muzzleCreator = args.muzzleCreator;
     this.weaponCreator = args.weaponCreator;
+    this.staticEnemyMoverCreator = args.staticEnemyMoverCreator;
     this.sizeInArea = args.sizeInArea;
   }
 
-  public create(): Character {
+  public create(activatePosInArea: ex.Vector): Character {
+    // Create mover
+    const mover = this.staticEnemyMoverCreator.create(activatePosInArea);
+
     // Create character
     const sizeInCanvasScale = this.sizeInArea.scale(
       this.coordinatedConverter.areaSizeInCanvas
     );
     const color = ex.Color.Rose;
     const enemy = new Character({
+      mover,
       health: new HealthComponent(100, 100),
       isPlayerSide: false,
       actor: new ExtendedActor({
