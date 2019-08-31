@@ -60,8 +60,8 @@ export class EnemyCreator {
         // TODO: Add visual thing
         color, // TODO: Remove color when visual was set
         coordinatesConverter: this.coordinatedConverter,
-        width: sizeInCanvasScale.y,
-        height: sizeInCanvasScale.x,
+        width: sizeInCanvasScale.x,
+        height: sizeInCanvasScale.y,
         collisions: this.collisions
       })
     });

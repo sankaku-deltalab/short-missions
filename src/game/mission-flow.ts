@@ -238,7 +238,7 @@ export class MissionFlow {
       muzzleCreator,
       weaponCreator,
       staticEnemyMoverCreator: moverCreator,
-      sizeInArea: new ex.Vector(0.125, 0.125)
+      sizeInArea: new ex.Vector(0.125, 0.125 / 2)
     });
 
     const enemy = enemyCreator.create(posInArea);
