@@ -9,7 +9,6 @@ import {
 import { Muzzle } from "./muzzle";
 import { CoordinatesConverter } from "./coordinates-converter";
 import { BulletsPool } from "./bullets-pool";
-import { Weapon } from "./weapon";
 import { Bullet } from "./bullet";
 import { HealthComponent } from "./health-component";
 import { ZIndex } from "./z-index";
@@ -18,6 +17,7 @@ import { STGGameManager } from "./stg-game-manager";
 import { StraightMoveRoute } from "./contents/enemy-move-route/straight-move-route";
 import { StaticEnemyMover } from "./static-enemy-mover";
 import { EventDispatcher } from "./event-dispatcher";
+import { WeaponCreator } from "./weapon-creator";
 
 export class MissionFlow {
   private readonly stgGameManager: STGGameManager;
@@ -155,18 +155,18 @@ export class MissionFlow {
     scene.add(muzzle.actor);
 
     // Create weapon
-    const player = gt.createDefaultPlayer({
-      centerMuzzle: muzzle
-    });
-    player.setGunTree(
+    const wc = new WeaponCreator(
       gt.concat(
         gt.useMuzzle("centerMuzzle"),
         gt.mltSpeed(2),
         gt.repeat({ times: 1, interval: 4 }, gt.fire(gt.bullet()))
       )
     );
-    const weapon = new Weapon(player);
-    pc.setWeapon(weapon);
+    pc.setWeapon(
+      wc.create({
+        centerMuzzle: muzzle
+      })
+    );
     pc.actor.setZIndex(ZIndex.player);
     return pc;
   }
