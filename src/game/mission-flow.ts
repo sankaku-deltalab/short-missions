@@ -14,11 +14,15 @@ import { HealthComponent } from "./health-component";
 import { ZIndex } from "./z-index";
 import { ExtendedActor } from "./extended-actor";
 import { STGGameManager } from "./stg-game-manager";
-import { StraightMoveRoute } from "./contents/enemy-move-route/straight-move-route";
-import { StaticEnemyMover } from "./static-enemy-mover";
 import { EventDispatcher } from "./event-dispatcher";
 import { WeaponCreator } from "./weapon-creator";
 import { NullMover } from "./null-mover";
+import {
+  StaticEnemyMoverCreator,
+  EnemyMoveRouteType
+} from "./static-enemy-mover-creator";
+import { MuzzleCreator } from "./muzzle-creator";
+import { EnemyCreator } from "./enemy-creator";
 
 export class MissionFlow {
   private readonly stgGameManager: STGGameManager;
@@ -212,35 +216,68 @@ export class MissionFlow {
     posInArea: ex.Vector,
     coordinatesConverter: CoordinatesConverter
   ): Character {
-    // Create mover
-    const mover = new StaticEnemyMover({
-      onEnteringToArea: new EventDispatcher(),
-      onExitingFromArea: new EventDispatcher(),
-      route: new StraightMoveRoute({
-        activePosInArea: new ex.Vector(0.25, -0.25),
-        activateTime: 1,
-        moveSpeedInArea: 0.5,
-        moveAngleDegInArea: -100
-      })
-    });
-
-    // Create enemy
-    const enemy = new Character({
-      mover,
-      health: new HealthComponent(100, 100),
+    const collisions = this.stgGameManager.collisions;
+    const muzzleCreator = new MuzzleCreator({
+      collisions,
+      coordinatesConverter,
       isPlayerSide: false,
-      actor: new ExtendedActor({
-        posInArea,
-        coordinatesConverter,
-        width: 100,
-        height: 100,
-        color: ex.Color.Rose,
-        collisions: this.stgGameManager.collisions
-      })
+      muzzleInfoList: []
+    });
+    const weaponCreator = new WeaponCreator(gt.nop());
+    const moverCreator = new StaticEnemyMoverCreator({
+      routeType: EnemyMoveRouteType.sideMove,
+      activateTime: 1,
+      moveSpeedInArea: 0.5,
+      isLeftSide: true
     });
 
+    const enemyCreator = new EnemyCreator({
+      collisions,
+      coordinatesConverter,
+      health: 100,
+      muzzleCreator,
+      weaponCreator,
+      staticEnemyMoverCreator: moverCreator,
+      sizeInArea: new ex.Vector(0.125, 0.125)
+    });
+
+    const enemy = enemyCreator.create(posInArea);
     scene.add(enemy.actor);
+    for (const child of enemy.actor.children) {
+      scene.add(child);
+    }
     enemy.actor.setZIndex(ZIndex.enemy);
+    enemy.startMover();
+
+    // // Create mover
+    // const mover = new StaticEnemyMover({
+    //   onEnteringToArea: new EventDispatcher(),
+    //   onExitingFromArea: new EventDispatcher(),
+    //   route: new StraightMoveRoute({
+    //     activePosInArea: new ex.Vector(0.25, -0.25),
+    //     activateTime: 1,
+    //     moveSpeedInArea: 0.5,
+    //     moveAngleDegInArea: -100
+    //   })
+    // });
+
+    // // Create enemy
+    // const enemy = new Character({
+    //   mover,
+    //   health: new HealthComponent(100, 100),
+    //   isPlayerSide: false,
+    //   actor: new ExtendedActor({
+    //     posInArea,
+    //     coordinatesConverter,
+    //     width: 100,
+    //     height: 100,
+    //     color: ex.Color.Rose,
+    //     collisions: this.stgGameManager.collisions
+    //   })
+    // });
+
+    // scene.add(enemy.actor);
+    // enemy.actor.setZIndex(ZIndex.enemy);
 
     return enemy;
   }
