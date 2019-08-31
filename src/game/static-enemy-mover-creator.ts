@@ -57,7 +57,7 @@ export class StaticEnemyMoverCreator {
   }
 
   private createSideMoveRoute(activePosInArea: ex.Vector): EnemyMoveRoute {
-    const moveAngleDegInArea = this.isLeftSide ? -10 : -170;
+    const moveAngleDegInArea = this.isLeftSide ? 100 : -100;
     return new StraightMoveRoute({
       activePosInArea,
       moveAngleDegInArea,
