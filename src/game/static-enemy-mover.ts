@@ -5,12 +5,12 @@ import { ActorWrapper } from "./actor-wrapper";
 
 export interface StaticEnemyMoverArgs {
   route: EnemyMoveRoute;
-  onEnteredToArea: EventDispatcher<void>;
+  onEnteringToArea: EventDispatcher<void>;
   onExitingFromArea: EventDispatcher<void>;
 }
 
 export class StaticEnemyMover implements Mover {
-  public readonly onEnteredToArea: EventDispatcher<void>;
+  public readonly onEnteringToArea: EventDispatcher<void>;
   public readonly onExitingFromArea: EventDispatcher<void>;
   private playedTimeMS: number = 0;
   private owner?: ActorWrapper;
@@ -21,7 +21,7 @@ export class StaticEnemyMover implements Mover {
 
   public constructor(args: StaticEnemyMoverArgs) {
     this.route = args.route;
-    this.onEnteredToArea = args.onEnteredToArea;
+    this.onEnteringToArea = args.onEnteringToArea;
     this.onExitingFromArea = args.onExitingFromArea;
   }
 
@@ -54,7 +54,7 @@ export class StaticEnemyMover implements Mover {
 
   private enter(): void {
     if (this.alreadyEnteredToArea) return;
-    this.onEnteredToArea.dispatch();
+    this.onEnteringToArea.dispatch();
   }
 
   private exit(): void {

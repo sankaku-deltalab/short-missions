@@ -226,7 +226,7 @@ export class MissionFlow {
 
     // Use mover
     const mover = new StaticEnemyMover({
-      onEnteredToArea: new EventDispatcher(),
+      onEnteringToArea: new EventDispatcher(),
       onExitingFromArea: new EventDispatcher(),
       route: new StraightMoveRoute({
         activePosInArea: new ex.Vector(0.25, -0.25),
