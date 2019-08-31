@@ -18,6 +18,7 @@ import { StraightMoveRoute } from "./contents/enemy-move-route/straight-move-rou
 import { StaticEnemyMover } from "./static-enemy-mover";
 import { EventDispatcher } from "./event-dispatcher";
 import { WeaponCreator } from "./weapon-creator";
+import { NullMover } from "./null-mover";
 
 export class MissionFlow {
   private readonly stgGameManager: STGGameManager;
@@ -146,7 +147,11 @@ export class MissionFlow {
     const pc = new Character({
       health: new HealthComponent(3, 7),
       isPlayerSide: true,
-      actor: pcActor
+      actor: pcActor,
+      mover: new NullMover({
+        onEnteringToArea: new EventDispatcher<void>(),
+        onExitingFromArea: new EventDispatcher<void>()
+      })
     });
 
     pc.actor.add(muzzle.actor);
@@ -207,8 +212,21 @@ export class MissionFlow {
     posInArea: ex.Vector,
     coordinatesConverter: CoordinatesConverter
   ): Character {
+    // Create mover
+    const mover = new StaticEnemyMover({
+      onEnteringToArea: new EventDispatcher(),
+      onExitingFromArea: new EventDispatcher(),
+      route: new StraightMoveRoute({
+        activePosInArea: new ex.Vector(0.25, -0.25),
+        activateTime: 1,
+        moveSpeedInArea: 0.5,
+        moveAngleDegInArea: -100
+      })
+    });
+
     // Create enemy
     const enemy = new Character({
+      mover,
       health: new HealthComponent(100, 100),
       isPlayerSide: false,
       actor: new ExtendedActor({
@@ -223,19 +241,6 @@ export class MissionFlow {
 
     scene.add(enemy.actor);
     enemy.actor.setZIndex(ZIndex.enemy);
-
-    // Use mover
-    const mover = new StaticEnemyMover({
-      onEnteringToArea: new EventDispatcher(),
-      onExitingFromArea: new EventDispatcher(),
-      route: new StraightMoveRoute({
-        activePosInArea: new ex.Vector(0.25, -0.25),
-        activateTime: 1,
-        moveSpeedInArea: 0.5,
-        moveAngleDegInArea: -100
-      })
-    });
-    enemy.useMover(mover);
 
     return enemy;
   }

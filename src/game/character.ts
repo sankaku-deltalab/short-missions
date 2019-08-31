@@ -9,6 +9,7 @@ export interface CharacterArgs {
   isPlayerSide: boolean;
   health: HealthComponent;
   actor: ExtendedActor;
+  mover: Mover;
 }
 
 /**
@@ -20,14 +21,15 @@ export class Character implements ActorWrapper {
   public readonly actor: ExtendedActor;
   public readonly isPlayerSide: boolean;
   public readonly health: HealthComponent;
+  public readonly mover: Mover;
   private weaponInner?: Weapon;
-  private moverInner?: Mover;
 
   public constructor(args: CharacterArgs) {
     this.actor = args.actor;
     this.actor.owner = this;
     this.isPlayerSide = args.isPlayerSide;
     this.health = args.health;
+    this.mover = args.mover;
 
     this.health.onDied.add((): void => {
       this.kill();
@@ -49,13 +51,11 @@ export class Character implements ActorWrapper {
     this.weaponInner = weapon;
   }
 
-  public get mover(): Mover | undefined {
-    return this.moverInner;
-  }
-
-  public useMover(mover: Mover): void {
-    this.moverInner = mover;
-    mover.start(this);
+  /**
+   * Start owning mover.
+   */
+  public startMover(): void {
+    this.mover.start(this);
   }
 
   /**
