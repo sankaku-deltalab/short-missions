@@ -9,9 +9,16 @@ export interface StaticEnemyMoverArgs {
   onExitingFromArea: EventDispatcher<void>;
 }
 
+/**
+ * Move enemy with static route.
+ */
 export class StaticEnemyMover implements Mover {
+  /** Dispatch when owner entered to area. */
   public readonly onEnteringToArea: EventDispatcher<void>;
+
+  /** Dispatch when owner exiting from area. */
   public readonly onExitingFromArea: EventDispatcher<void>;
+
   private playedTimeMS: number = 0;
   private owner?: ActorWrapper;
   private route: EnemyMoveRoute;
@@ -25,6 +32,11 @@ export class StaticEnemyMover implements Mover {
     this.onExitingFromArea = args.onExitingFromArea;
   }
 
+  /**
+   * Set moved owner and start moving.
+   *
+   * @param owner Moved by this.
+   */
   public start(owner: ActorWrapper): void {
     this.owner = owner;
     this.playedTimeMS = 0;
@@ -32,6 +44,11 @@ export class StaticEnemyMover implements Mover {
     this.updateOwnerIsInVisualArea();
   }
 
+  /**
+   * Set moved owner and start moving.
+   *
+   * @param owner Moved by this.
+   */
   public update(deltaTimeMS: number): void {
     if (this.owner === undefined) throw new Error("This is not started yet");
 
