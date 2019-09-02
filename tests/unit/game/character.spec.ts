@@ -5,6 +5,7 @@ import { createCollisionsMock } from "./test-game-util";
 import { HealthComponent } from "@/game/health-component";
 import { ExtendedActor } from "@/game/extended-actor";
 import { Mover } from "@/game/mover";
+import { EventDispatcher } from "@/game/event-dispatcher";
 
 function createHealthComponentMock(): HealthComponent {
   return new HealthComponent(10, 10);
@@ -13,7 +14,9 @@ function createHealthComponentMock(): HealthComponent {
 function createMoverMock(): Mover {
   return simpleMock<Mover>({
     start: jest.fn(),
-    update: jest.fn()
+    update: jest.fn(),
+    onEnteringToArea: new EventDispatcher<void>(),
+    onExitingFromArea: new EventDispatcher<void>()
   });
 }
 
@@ -180,6 +183,57 @@ describe("Character", (): void => {
 
     // Then mover was updated
     expect(args.mover.update).toBeCalledWith(deltaTime);
+  });
+
+  it("do not take damage before entering to area", (): void => {
+    // Given Character
+    const args = createCharacterArgs();
+    const character = new Character(args);
+
+    // When take damage
+    const initialHealth = character.health.health;
+    const originalDamage = 1;
+    character.health.takeDamage(originalDamage);
+
+    // Then health was not damaged
+    expect(character.health.health).toBe(initialHealth);
+  });
+
+  it("can take damage after entering to area", (): void => {
+    // Given Character
+    const args = createCharacterArgs();
+    const character = new Character(args);
+
+    // When entering to area
+    character.mover.onEnteringToArea.dispatch();
+
+    // And take damage
+    const initialHealth = character.health.health;
+    const originalDamage = 1;
+    character.health.takeDamage(originalDamage);
+
+    // Then health was damaged
+    expect(character.health.health).toBe(initialHealth - originalDamage);
+  });
+
+  it("do not take damage after exiting to area", (): void => {
+    // Given Character
+    const args = createCharacterArgs();
+    const character = new Character(args);
+
+    // When entering to area
+    character.mover.onEnteringToArea.dispatch();
+
+    // And exiting to area
+    character.mover.onExitingFromArea.dispatch();
+
+    // And take damage
+    const initialHealth = character.health.health;
+    const originalDamage = 1;
+    character.health.takeDamage(originalDamage);
+
+    // Then health was not damaged
+    expect(character.health.health).toBe(initialHealth);
   });
 
   it("kill actor when killed", (): void => {

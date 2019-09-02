@@ -7,6 +7,15 @@ import { WeaponCreator } from "@/game/weapon-creator";
 import { EnemyCreator, EnemyCreatorArgs } from "@/game/enemy-creator";
 import { MuzzleCreator } from "@/game/muzzle-creator";
 import { StaticEnemyMoverCreator } from "@/game/static-enemy-mover-creator";
+import { Mover } from "@/game/mover";
+import { EventDispatcher } from "@/game/event-dispatcher";
+
+function createMoverMock(): Mover {
+  return simpleMock<Mover>({
+    onEnteringToArea: new EventDispatcher<void>(),
+    onExitingFromArea: new EventDispatcher<void>()
+  });
+}
 
 function createEnemyCreatorArgs(): EnemyCreatorArgs {
   return {
@@ -20,7 +29,7 @@ function createEnemyCreatorArgs(): EnemyCreatorArgs {
       create: jest.fn()
     }),
     staticEnemyMoverCreator: simpleMock<StaticEnemyMoverCreator>({
-      create: jest.fn()
+      create: jest.fn().mockImplementation(createMoverMock)
     }),
     sizeInArea: new ex.Vector(0.25, 0.25)
   };

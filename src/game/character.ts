@@ -23,6 +23,7 @@ export class Character implements ActorWrapper {
   public readonly health: HealthComponent;
   public readonly mover: Mover;
   private weaponInner?: Weapon;
+  private isInArea: boolean;
 
   public constructor(args: CharacterArgs) {
     this.actor = args.actor;
@@ -30,9 +31,22 @@ export class Character implements ActorWrapper {
     this.isPlayerSide = args.isPlayerSide;
     this.health = args.health;
     this.mover = args.mover;
+    this.isInArea = false;
 
     this.health.onDied.add((): void => {
       this.kill();
+    });
+
+    this.health.damageAbsorber = (damage: number): number => {
+      return this.isInArea ? damage : 0;
+    };
+
+    this.mover.onEnteringToArea.add((): void => {
+      this.isInArea = true;
+    });
+
+    this.mover.onExitingFromArea.add((): void => {
+      this.isInArea = false;
     });
 
     // Setup collision
