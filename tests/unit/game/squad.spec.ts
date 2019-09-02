@@ -145,4 +145,24 @@ describe("Squad", (): void => {
     // Then squad NOT notify all member died
     expect(onFinished.dispatch).not.toBeCalled();
   });
+
+  it("throw error if member was finished twice", (): void => {
+    // Given Squad
+    const squad = new Squad(createOnFinishedMock());
+
+    // And enemy character
+    const enemy = createEnemyMock();
+
+    // When add enemy as member
+    squad.add(enemy);
+
+    // And enemy was escaped and died
+    const finishTwice = (): void => {
+      enemy.mover.onExitingFromArea.dispatch();
+      enemy.health.onDied.dispatch();
+    };
+
+    // Then throw error
+    expect(finishTwice).toThrowError();
+  });
 });

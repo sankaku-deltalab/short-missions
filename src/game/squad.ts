@@ -75,6 +75,8 @@ export class Squad {
     member: Character,
     status: SquadMemberStatus
   ): void {
+    if (this.membersStatus.get(member) !== SquadMemberStatus.living)
+      throw new Error("Member was already finished");
     this.membersStatus.set(member, status);
     if (this.canFinishSquad()) {
       this.allMembersWasFinished();
