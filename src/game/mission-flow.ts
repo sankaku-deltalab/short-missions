@@ -23,6 +23,8 @@ import {
 } from "./static-enemy-mover-creator";
 import { MuzzleCreator } from "./muzzle-creator";
 import { EnemyCreator } from "./enemy-creator";
+import { SquadBuilder } from "./squad-builder";
+import { Squad } from "./squad";
 
 export class MissionFlow {
   private readonly stgGameManager: STGGameManager;
@@ -39,6 +41,18 @@ export class MissionFlow {
     const scene = new ex.Scene(engine);
 
     // TODO: Setup enemy setting
+    const squad = new Squad(new EventDispatcher());
+    const squadBuilder = this.setupSquadBuilder(
+      scene,
+      squad,
+      coordinatesConverter
+    );
+    this.stgGameManager.engine.on(
+      "preupdate",
+      (event: ex.PreUpdateEvent): void => {
+        squadBuilder.update(event.delta);
+      }
+    );
 
     // TODO: Setup background
     const posPoint = coordinatesConverter.centerInCanvas;
@@ -63,12 +77,7 @@ export class MissionFlow {
     const inputReceiver = this.setupMovementInputReceiver(engine.input, pc);
 
     // TODO: Start game
-    const enemyPosInArea = new ex.Vector(0.25, -0.25);
-    const enemy = this.setupTestEnemy(
-      scene,
-      enemyPosInArea,
-      coordinatesConverter
-    );
+    squadBuilder.start();
 
     engine.addScene("mission", scene);
     engine.goToScene("mission");
@@ -77,19 +86,19 @@ export class MissionFlow {
     // TODO: Wait end game
 
     // wait enemy died
-    const waitEnemyDied = (nodeCallback: (err: Error | null) => void): void => {
-      const f2 = (): void => {
+    const waitEnemiesFinished = (
+      nodeCallback: (err: Error | null) => void
+    ): void => {
+      squad.onAllMemberFinished.add((): void => {
         nodeCallback(null);
-        enemy.health.onDied.remove(f2);
-      };
-      enemy.health.onDied.add(f2);
+      });
     };
 
     const pause = promisify((milliSec: number, f: Function): void => {
       setTimeout(f, milliSec);
     });
 
-    await Promise.race([promisify(waitEnemyDied)(), pause(2 * 1000)]);
+    await Promise.race([promisify(waitEnemiesFinished)(), pause(2 * 1000)]);
 
     await pause(2 * 1000);
 
@@ -209,6 +218,49 @@ export class MissionFlow {
     receiver.enableInput(engineInput, convertInputHandlers(handlers, receiver));
 
     return receiver;
+  }
+
+  private setupSquadBuilder(
+    scene: ex.Scene,
+    squad: Squad,
+    coordinatesConverter: CoordinatesConverter
+  ): SquadBuilder {
+    const collisions = this.stgGameManager.collisions;
+    const muzzleCreator = new MuzzleCreator({
+      collisions,
+      coordinatesConverter,
+      isPlayerSide: false,
+      muzzleInfoList: []
+    });
+    const weaponCreator = new WeaponCreator(gt.nop());
+    const moverCreator = new StaticEnemyMoverCreator({
+      routeType: EnemyMoveRouteType.sideMove,
+      activateTime: 1,
+      moveSpeedInArea: 0.5,
+      isLeftSide: true
+    });
+
+    const enemyCreator = new EnemyCreator({
+      collisions,
+      coordinatesConverter,
+      health: 20,
+      muzzleCreator,
+      weaponCreator,
+      staticEnemyMoverCreator: moverCreator,
+      sizeInArea: new ex.Vector(0.125, 0.125 / 2)
+    });
+
+    const posInArea = new ex.Vector(0.25, -0.25);
+    return new SquadBuilder({
+      squad,
+      scene,
+      onFinished: new EventDispatcher(),
+      enemyCreator,
+      activatePositions: Array(8)
+        .fill(0)
+        .map((): ex.Vector => posInArea),
+      spawnDurationMS: 200
+    });
   }
 
   private setupTestEnemy(
