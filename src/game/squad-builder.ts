@@ -34,14 +34,22 @@ export class SquadBuilder {
     this.activatePositions = args.activatePositions;
   }
 
+  /**
+   * Start squad building.
+   */
   public start(): void {
     this.timeSinceStartMS = 0;
     this.update(0);
   }
 
-  public update(deltaMilliSeconds: number): void {
+  /**
+   * Update squad building.
+   *
+   * @param deltaTimeMS Delta time in milliseconds
+   */
+  public update(deltaTimeMS: number): void {
     if (this.squad === undefined) return;
-    this.timeSinceStartMS += deltaMilliSeconds;
+    this.timeSinceStartMS += deltaTimeMS;
 
     while (this.timeSinceStartMS >= this.spawnDurationMS * this.spawnedCount) {
       if (this.spawnedCount >= this.activatePositions.length) break;
