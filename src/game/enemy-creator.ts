@@ -54,7 +54,7 @@ export class EnemyCreator {
     const color = ex.Color.Rose;
     const enemy = new Character({
       mover,
-      health: new HealthComponent(100, 100),
+      health: new HealthComponent(this.health, this.health),
       isPlayerSide: false,
       actor: new ExtendedActor({
         // TODO: Add visual thing
