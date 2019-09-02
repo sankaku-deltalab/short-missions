@@ -31,6 +31,21 @@ function createNullMoverArgsMock(): NullMoverArgs {
 }
 
 describe("NullMover", (): void => {
+  it("dispatch entering event", (): void => {
+    // Given StaticEnemyMover
+    const args = createNullMoverArgsMock();
+    const mover = new NullMover(args);
+
+    // And ActorWrapper
+    const wrapper = createActorWrapperMock();
+
+    // When start mover
+    mover.start(wrapper);
+
+    // Then entering event was dispatched
+    expect(mover.onEnteringToArea.dispatch).toBeCalled();
+  });
+
   it("did not move owner when started", (): void => {
     // Given StaticEnemyMover
     const args = createNullMoverArgsMock();

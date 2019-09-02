@@ -28,7 +28,9 @@ export class NullMover implements Mover {
    *
    * @param owner Moved by this.
    */
-  public start(_owner: ActorWrapper): void {}
+  public start(_owner: ActorWrapper): void {
+    this.onEnteringToArea.dispatch();
+  }
 
   /**
    * Set moved owner and start moving.
