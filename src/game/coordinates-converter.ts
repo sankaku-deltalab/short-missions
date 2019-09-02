@@ -105,6 +105,17 @@ export class CoordinatesConverter {
   }
 
   /**
+   * Convert area vector to canvas vector as `ex.Vector`.
+   * NOTE: In this sentence, `vector` means mathematical vector not `ex.Vector`.
+   *
+   * @param pointInArea Point in square area
+   */
+  public toCanvasVector(vectorInArea: mat.Point): ex.Vector {
+    const point = mat.applyToPoint(this.areaToCanvasTrans, vectorInArea);
+    return pointToVector(point).sub(this.centerInCanvas);
+  }
+
+  /**
    * Clamp canvas point in visual area.
    *
    * @param pointInCanvas Point in canvas

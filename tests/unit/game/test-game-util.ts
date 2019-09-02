@@ -16,6 +16,7 @@ export function createCollisionsMock(): Collisions {
 
 export function createSceneMock(): ex.Scene {
   return simpleMock<ex.Scene>({
+    add: jest.fn(),
     remove: jest.fn(),
     cleanupDrawTree: jest.fn(),
     updateDrawTree: jest.fn()

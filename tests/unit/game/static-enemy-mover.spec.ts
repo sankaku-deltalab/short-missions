@@ -40,7 +40,7 @@ function createRouteMock(): EnemyMoveRoute {
 function createStaticEnemyMoverArgsMock(): StaticEnemyMoverArgs {
   return {
     route: createRouteMock(),
-    onEnteredToArea: createEventDispatcherMock(),
+    onEnteringToArea: createEventDispatcherMock(),
     onExitingFromArea: createEventDispatcherMock()
   };
 }
@@ -114,7 +114,7 @@ describe("StaticEnemyMover", (): void => {
 
   it.each`
     event                  | ownerInVisualAreaAtFirst | ownerInVisualAreaAtSecond
-    ${"onEnteredToArea"}   | ${false}                 | ${true}
+    ${"onEnteringToArea"}  | ${false}                 | ${true}
     ${"onExitingFromArea"} | ${true}                  | ${false}
   `(
     "dispatch $event when character into or out visual area",
@@ -143,7 +143,7 @@ describe("StaticEnemyMover", (): void => {
       mover.update(deltaTimeMS);
 
       // Then event was dispatched
-      const eventName = event as "onEnteredToArea" | "onExitingFromArea";
+      const eventName = event as "onEnteringToArea" | "onExitingFromArea";
       expect(mover[eventName].dispatch).toBeCalled();
     }
   );

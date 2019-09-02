@@ -236,4 +236,40 @@ describe("CoordinatesConverter", (): void => {
       expect(isInArea).toBe(expectedIsInArea);
     }
   );
+
+  it.each`
+    areaSizeInCanvas | centerInCanvas        | areaVector              | expectedCanvasVector
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 0, y: 0 }}       | ${{ x: 0, y: 0 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 0.5, y: 0 }}     | ${{ x: 0, y: -200 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: -0.5, y: 0 }}    | ${{ x: 0, y: 200 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 0, y: 0.5 }}     | ${{ x: 200, y: 0 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 0, y: -0.5 }}    | ${{ x: -200, y: 0 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 0.5, y: 0.5 }}   | ${{ x: 200, y: -200 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 0.5, y: -0.5 }}  | ${{ x: -200, y: -200 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: -0.5, y: 0.5 }}  | ${{ x: 200, y: 200 }}
+    ${400}           | ${{ x: 200, y: 200 }} | ${{ x: -0.5, y: -0.5 }} | ${{ x: -200, y: 200 }}
+  `(
+    "can convert area vector $areaPoint to canvas vector as ex.Vector",
+    ({
+      areaSizeInCanvas,
+      centerInCanvas,
+      areaVector,
+      expectedCanvasVector
+    }): void => {
+      // Given CoordinatesConverter
+      const cc = new CoordinatesConverter({
+        areaSizeInCanvas,
+        centerInCanvas,
+        visualAreaSizeInCanvas: { x: 2, y: 2 }
+      });
+
+      // When convert area vector to canvas vector
+      const actualCanvasVector = cc.toCanvasVector(areaVector);
+
+      // Then get canvas vector as ex.Vector
+      expect(actualCanvasVector).toBeInstanceOf(ex.Vector);
+      expect(actualCanvasVector.x).toBeCloseTo(expectedCanvasVector.x);
+      expect(actualCanvasVector.y).toBeCloseTo(expectedCanvasVector.y);
+    }
+  );
 });

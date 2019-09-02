@@ -52,7 +52,7 @@ export class StraightMoveRoute implements EnemyMoveRoute {
   }
 
   private calcVelocityInArea(): ex.Vector {
-    const angleRad = -this.moveAngleDegInArea * (Math.PI / 180);
+    const angleRad = this.moveAngleDegInArea * (Math.PI / 180);
     const moveDir = ex.Vector.fromAngle(angleRad);
     return moveDir.scale(this.moveSpeedInArea);
   }

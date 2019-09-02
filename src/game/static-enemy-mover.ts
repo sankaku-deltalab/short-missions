@@ -5,13 +5,20 @@ import { ActorWrapper } from "./actor-wrapper";
 
 export interface StaticEnemyMoverArgs {
   route: EnemyMoveRoute;
-  onEnteredToArea: EventDispatcher<void>;
+  onEnteringToArea: EventDispatcher<void>;
   onExitingFromArea: EventDispatcher<void>;
 }
 
+/**
+ * Move enemy with static route.
+ */
 export class StaticEnemyMover implements Mover {
-  public readonly onEnteredToArea: EventDispatcher<void>;
+  /** Dispatch when owner entered to area. */
+  public readonly onEnteringToArea: EventDispatcher<void>;
+
+  /** Dispatch when owner exiting from area. */
   public readonly onExitingFromArea: EventDispatcher<void>;
+
   private playedTimeMS: number = 0;
   private owner?: ActorWrapper;
   private route: EnemyMoveRoute;
@@ -21,10 +28,15 @@ export class StaticEnemyMover implements Mover {
 
   public constructor(args: StaticEnemyMoverArgs) {
     this.route = args.route;
-    this.onEnteredToArea = args.onEnteredToArea;
+    this.onEnteringToArea = args.onEnteringToArea;
     this.onExitingFromArea = args.onExitingFromArea;
   }
 
+  /**
+   * Set moved owner and start moving.
+   *
+   * @param owner Moved by this.
+   */
   public start(owner: ActorWrapper): void {
     this.owner = owner;
     this.playedTimeMS = 0;
@@ -32,6 +44,11 @@ export class StaticEnemyMover implements Mover {
     this.updateOwnerIsInVisualArea();
   }
 
+  /**
+   * Set moved owner and start moving.
+   *
+   * @param owner Moved by this.
+   */
   public update(deltaTimeMS: number): void {
     if (this.owner === undefined) throw new Error("This is not started yet");
 
@@ -54,7 +71,7 @@ export class StaticEnemyMover implements Mover {
 
   private enter(): void {
     if (this.alreadyEnteredToArea) return;
-    this.onEnteredToArea.dispatch();
+    this.onEnteringToArea.dispatch();
   }
 
   private exit(): void {

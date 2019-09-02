@@ -9,15 +9,22 @@ import {
 import { Muzzle } from "./muzzle";
 import { CoordinatesConverter } from "./coordinates-converter";
 import { BulletsPool } from "./bullets-pool";
-import { Weapon } from "./weapon";
 import { Bullet } from "./bullet";
 import { HealthComponent } from "./health-component";
 import { ZIndex } from "./z-index";
 import { ExtendedActor } from "./extended-actor";
 import { STGGameManager } from "./stg-game-manager";
-import { StraightMoveRoute } from "./contents/enemy-move-route/straight-move-route";
-import { StaticEnemyMover } from "./static-enemy-mover";
 import { EventDispatcher } from "./event-dispatcher";
+import { WeaponCreator } from "./weapon-creator";
+import { NullMover } from "./null-mover";
+import {
+  StaticEnemyMoverCreator,
+  EnemyMoveRouteType
+} from "./static-enemy-mover-creator";
+import { MuzzleCreator } from "./muzzle-creator";
+import { EnemyCreator } from "./enemy-creator";
+import { SquadBuilder } from "./squad-builder";
+import { Squad } from "./squad";
 
 export class MissionFlow {
   private readonly stgGameManager: STGGameManager;
@@ -34,6 +41,18 @@ export class MissionFlow {
     const scene = new ex.Scene(engine);
 
     // TODO: Setup enemy setting
+    const squad = new Squad(new EventDispatcher());
+    const squadBuilder = this.setupSquadBuilder(
+      scene,
+      squad,
+      coordinatesConverter
+    );
+    this.stgGameManager.engine.on(
+      "preupdate",
+      (event: ex.PreUpdateEvent): void => {
+        squadBuilder.update(event.delta);
+      }
+    );
 
     // TODO: Setup background
     const posPoint = coordinatesConverter.centerInCanvas;
@@ -58,12 +77,7 @@ export class MissionFlow {
     const inputReceiver = this.setupMovementInputReceiver(engine.input, pc);
 
     // TODO: Start game
-    const enemyPosInArea = new ex.Vector(0.25, -0.25);
-    const enemy = this.setupTestEnemy(
-      scene,
-      enemyPosInArea,
-      coordinatesConverter
-    );
+    squadBuilder.start();
 
     engine.addScene("mission", scene);
     engine.goToScene("mission");
@@ -72,19 +86,19 @@ export class MissionFlow {
     // TODO: Wait end game
 
     // wait enemy died
-    const waitEnemyDied = (nodeCallback: (err: Error | null) => void): void => {
-      const f2 = (): void => {
+    const waitEnemiesFinished = (
+      nodeCallback: (err: Error | null) => void
+    ): void => {
+      squad.onAllMemberFinished.add((): void => {
         nodeCallback(null);
-        enemy.health.onDied.remove(f2);
-      };
-      enemy.health.onDied.add(f2);
+      });
     };
 
     const pause = promisify((milliSec: number, f: Function): void => {
       setTimeout(f, milliSec);
     });
 
-    await Promise.race([promisify(waitEnemyDied)(), pause(2 * 1000)]);
+    await Promise.race([promisify(waitEnemiesFinished)(), pause(2 * 1000)]);
 
     await pause(2 * 1000);
 
@@ -146,7 +160,11 @@ export class MissionFlow {
     const pc = new Character({
       health: new HealthComponent(3, 7),
       isPlayerSide: true,
-      actor: pcActor
+      actor: pcActor,
+      mover: new NullMover({
+        onEnteringToArea: new EventDispatcher<void>(),
+        onExitingFromArea: new EventDispatcher<void>()
+      })
     });
 
     pc.actor.add(muzzle.actor);
@@ -155,18 +173,18 @@ export class MissionFlow {
     scene.add(muzzle.actor);
 
     // Create weapon
-    const player = gt.createDefaultPlayer({
-      centerMuzzle: muzzle
-    });
-    player.setGunTree(
+    const wc = new WeaponCreator(
       gt.concat(
         gt.useMuzzle("centerMuzzle"),
         gt.mltSpeed(2),
         gt.repeat({ times: 1, interval: 4 }, gt.fire(gt.bullet()))
       )
     );
-    const weapon = new Weapon(player);
-    pc.setWeapon(weapon);
+    pc.setWeapon(
+      wc.create({
+        centerMuzzle: muzzle
+      })
+    );
     pc.actor.setZIndex(ZIndex.player);
     return pc;
   }
@@ -202,40 +220,116 @@ export class MissionFlow {
     return receiver;
   }
 
+  private setupSquadBuilder(
+    scene: ex.Scene,
+    squad: Squad,
+    coordinatesConverter: CoordinatesConverter
+  ): SquadBuilder {
+    const collisions = this.stgGameManager.collisions;
+    const muzzleCreator = new MuzzleCreator({
+      collisions,
+      coordinatesConverter,
+      isPlayerSide: false,
+      muzzleInfoList: []
+    });
+    const weaponCreator = new WeaponCreator(gt.nop());
+    const moverCreator = new StaticEnemyMoverCreator({
+      routeType: EnemyMoveRouteType.sideMove,
+      activateTime: 1,
+      moveSpeedInArea: 0.5,
+      isLeftSide: true
+    });
+
+    const enemyCreator = new EnemyCreator({
+      collisions,
+      coordinatesConverter,
+      health: 20,
+      muzzleCreator,
+      weaponCreator,
+      staticEnemyMoverCreator: moverCreator,
+      sizeInArea: new ex.Vector(0.125, 0.125 / 2)
+    });
+
+    const posInArea = new ex.Vector(0.25, -0.25);
+    return new SquadBuilder({
+      squad,
+      scene,
+      onFinished: new EventDispatcher(),
+      enemyCreator,
+      activatePositions: Array(8)
+        .fill(0)
+        .map((): ex.Vector => posInArea),
+      spawnDurationMS: 200
+    });
+  }
+
   private setupTestEnemy(
     scene: ex.Scene,
     posInArea: ex.Vector,
     coordinatesConverter: CoordinatesConverter
   ): Character {
-    // Create enemy
-    const enemy = new Character({
-      health: new HealthComponent(100, 100),
+    const collisions = this.stgGameManager.collisions;
+    const muzzleCreator = new MuzzleCreator({
+      collisions,
+      coordinatesConverter,
       isPlayerSide: false,
-      actor: new ExtendedActor({
-        posInArea,
-        coordinatesConverter,
-        width: 100,
-        height: 100,
-        color: ex.Color.Rose,
-        collisions: this.stgGameManager.collisions
-      })
+      muzzleInfoList: []
+    });
+    const weaponCreator = new WeaponCreator(gt.nop());
+    const moverCreator = new StaticEnemyMoverCreator({
+      routeType: EnemyMoveRouteType.sideMove,
+      activateTime: 1,
+      moveSpeedInArea: 0.5,
+      isLeftSide: true
     });
 
+    const enemyCreator = new EnemyCreator({
+      collisions,
+      coordinatesConverter,
+      health: 100,
+      muzzleCreator,
+      weaponCreator,
+      staticEnemyMoverCreator: moverCreator,
+      sizeInArea: new ex.Vector(0.125, 0.125 / 2)
+    });
+
+    const enemy = enemyCreator.create(posInArea);
     scene.add(enemy.actor);
+    for (const child of enemy.actor.children) {
+      scene.add(child);
+    }
     enemy.actor.setZIndex(ZIndex.enemy);
+    enemy.startMover();
 
-    // Use mover
-    const mover = new StaticEnemyMover({
-      onEnteredToArea: new EventDispatcher(),
-      onExitingFromArea: new EventDispatcher(),
-      route: new StraightMoveRoute({
-        activePosInArea: new ex.Vector(0.25, -0.25),
-        activateTime: 1,
-        moveSpeedInArea: 0.5,
-        moveAngleDegInArea: -100
-      })
-    });
-    enemy.useMover(mover);
+    // // Create mover
+    // const mover = new StaticEnemyMover({
+    //   onEnteringToArea: new EventDispatcher(),
+    //   onExitingFromArea: new EventDispatcher(),
+    //   route: new StraightMoveRoute({
+    //     activePosInArea: new ex.Vector(0.25, -0.25),
+    //     activateTime: 1,
+    //     moveSpeedInArea: 0.5,
+    //     moveAngleDegInArea: -100
+    //   })
+    // });
+
+    // // Create enemy
+    // const enemy = new Character({
+    //   mover,
+    //   health: new HealthComponent(100, 100),
+    //   isPlayerSide: false,
+    //   actor: new ExtendedActor({
+    //     posInArea,
+    //     coordinatesConverter,
+    //     width: 100,
+    //     height: 100,
+    //     color: ex.Color.Rose,
+    //     collisions: this.stgGameManager.collisions
+    //   })
+    // });
+
+    // scene.add(enemy.actor);
+    // enemy.actor.setZIndex(ZIndex.enemy);
 
     return enemy;
   }
