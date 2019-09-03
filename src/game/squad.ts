@@ -19,7 +19,7 @@ enum SquadMemberStatus {
 export class Squad {
   public readonly onAllMemberFinished: EventDispatcher<SquadFinishedReason>;
   public readonly members: Set<Character>;
-  private isSquadBuilding: boolean = true;
+  private isSquadBuilding = true;
   private membersStatus: Map<Character, SquadMemberStatus>;
 
   public constructor(

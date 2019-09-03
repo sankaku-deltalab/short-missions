@@ -22,8 +22,8 @@ export class SquadBuilder {
   private readonly enemyCreator: EnemyCreator;
   private readonly spawnDurationMS: number;
   private readonly activatePositions: ex.Vector[];
-  private spawnedCount: number = 0;
-  private timeSinceStartMS: number = 0;
+  private spawnedCount = 0;
+  private timeSinceStartMS = 0;
 
   public constructor(args: SquadBuilderArgs) {
     this.scene = args.scene;

@@ -1,13 +1,16 @@
 import Vue from "vue";
-import { CreateElement, VNode } from "vue";
-import vuetify from "./plugins/vuetify";
 import App from "./App.vue";
+import router from "./router";
+import "./registerServiceWorker";
+import vuetify from "./plugins/vuetify";
 import "roboto-fontface/css/roboto/roboto-fontface.css";
-import "material-design-icons-iconfont/dist/material-design-icons.css";
+import "@mdi/font/css/materialdesignicons.css";
+import { CreateElement, VNode } from "vue";
 
 Vue.config.productionTip = false;
 
 new Vue({
+  router,
   vuetify,
   render: (h: CreateElement): VNode => h(App)
 }).$mount("#app");

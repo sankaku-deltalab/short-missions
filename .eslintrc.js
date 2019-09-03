@@ -20,7 +20,14 @@ module.exports = {
   plugins: ["@typescript-eslint", "prettier"],
   parserOptions: {
     parser: "@typescript-eslint/parser",
-    // project: "./tsconfig.json",
     tsconfigRootDir: "."
-  }
+  },
+  // overrides: [
+  //   {
+  //     files: ["**/__tests__/*.{j,t}s?(x)"],
+  //     env: {
+  //       jest: true
+  //     }
+  //   }
+  // ]
 };

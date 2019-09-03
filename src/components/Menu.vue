@@ -37,11 +37,11 @@ interface MenuItemData {
   }
 })
 export default class Menu extends Vue {
-  private showMenu: boolean = false;
+  private showMenu = false;
   private menuItems: MenuItemData[] = [
-    { id: "selectMission", icon: "view_list", text: "Select Mission" }
+    { id: "selectMission", icon: "mdi-view-list", text: "Select Mission" }
   ];
-  private selecting: string = "selectMission";
+  private selecting = "selectMission";
 
   @Emit()
   private menuSelected(_selectedMenuId: string): void {}

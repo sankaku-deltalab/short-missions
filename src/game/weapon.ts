@@ -7,9 +7,9 @@ const frameMilliSec = Math.ceil((1 / 60) * 1000);
  */
 export class Weapon {
   private player: gt.Player;
-  private pooledMilliSeconds: number = 0;
-  private isFiringInternal: boolean = false;
-  private isRequestedFiring: boolean = false;
+  private pooledMilliSeconds = 0;
+  private isFiringInternal = false;
+  private isRequestedFiring = false;
 
   /**
    *
@@ -41,7 +41,7 @@ export class Weapon {
   /**
    * Stop firing.
    */
-  public stopFiring(immediately: boolean = false): void {
+  public stopFiring(immediately = false): void {
     this.isRequestedFiring = false;
 
     if (immediately) {

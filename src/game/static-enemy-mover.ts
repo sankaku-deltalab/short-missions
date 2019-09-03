@@ -19,12 +19,12 @@ export class StaticEnemyMover implements Mover {
   /** Dispatch when owner exiting from area. */
   public readonly onExitingFromArea: EventDispatcher<void>;
 
-  private playedTimeMS: number = 0;
+  private playedTimeMS = 0;
   private owner?: ActorWrapper;
   private route: EnemyMoveRoute;
-  private alreadyEnteredToArea: boolean = false;
-  private alreadyExitingFromArea: boolean = false;
-  private ownerIsInVisualArea: boolean = false;
+  private alreadyEnteredToArea = false;
+  private alreadyExitingFromArea = false;
+  private ownerIsInVisualArea = false;
 
   public constructor(args: StaticEnemyMoverArgs) {
     this.route = args.route;

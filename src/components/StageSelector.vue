@@ -38,13 +38,13 @@ interface MissionData {
   }
 })
 export default class StageSelector extends Vue {
-  private show: boolean = true;
-  private showMenu: boolean = false;
+  private show = true;
+  private showMenu = false;
   private missions: MissionData[] = [
     { id: 0, title: "First mission", hiScore: -1 },
     { id: 1, title: "Second mission", hiScore: 10 }
   ];
-  private selecting: string = "selectMission";
+  private selecting = "selectMission";
 
   @Emit()
   private missionSelected(_selectedMissionId: number): void {}
