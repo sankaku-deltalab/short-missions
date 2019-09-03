@@ -5,7 +5,7 @@ import * as ex from "excalibur";
  * In this package, do NOT use `ex.CollisionGroupManager` directory.
  */
 export class Collisions {
-  private static collisionGroupsWasSetup: boolean = false;
+  private static collisionGroupsWasSetup = false;
 
   private static player: ex.CollisionGroup;
   private static playerBullet: ex.CollisionGroup;

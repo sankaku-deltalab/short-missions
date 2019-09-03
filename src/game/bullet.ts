@@ -13,9 +13,9 @@ export interface BulletInitializeArgs {
 }
 
 export class Bullet implements ActorWrapper {
-  public isPlayerSideInner: boolean = true;
+  public isPlayerSideInner = true;
   public readonly actor: ExtendedActor;
-  private damage: number = 0;
+  private damage = 0;
 
   public constructor(actor: ExtendedActor) {
     this.actor = actor;

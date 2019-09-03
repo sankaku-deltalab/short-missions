@@ -27,7 +27,7 @@ import { MissionFlow } from "./game/mission-flow";
   }
 })
 export default class App extends Vue {
-  private stgMode: boolean = false;
+  private stgMode = false;
   private stgGameManager!: STGGameManager;
 
   public mounted(): void {
