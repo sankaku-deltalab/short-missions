@@ -1,5 +1,9 @@
 <template>
   <v-layout>
+    <v-app-bar app>
+      <v-app-bar-nav-icon @click="showMenu = !showMenu"></v-app-bar-nav-icon>
+      <v-toolbar-title>Short Missions</v-toolbar-title>
+    </v-app-bar>
     <v-navigation-drawer app v-model="showMenu">
       <v-list>
         <template v-for="(item, i) in menuItems">
@@ -14,10 +18,6 @@
         </template>
       </v-list>
     </v-navigation-drawer>
-    <v-toolbar absolute app>
-      <v-toolbar-side-icon @click="showMenu = !showMenu" />
-      <v-toolbar-title>Short Missions</v-toolbar-title>
-    </v-toolbar>
   </v-layout>
 </template>
 

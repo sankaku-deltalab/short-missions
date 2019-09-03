@@ -1,9 +1,10 @@
 import Vue from "vue";
 import Vuetify from "vuetify/lib";
-import "vuetify/src/stylus/app.styl";
 import ja from "vuetify/src/locale/ja";
 
-Vue.use(Vuetify, {
+Vue.use(Vuetify);
+
+export default new Vuetify({
   options: {
     customProperties: true
   },

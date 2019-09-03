@@ -1,18 +1,18 @@
 <template>
-  <v-list-tile :key="id" @click="selected()">
-    <v-list-tile-action>
+  <v-list-item :key="id" @click="selected()">
+    <v-list-item-action>
       <v-icon v-if="hiScore >= 0">done</v-icon>
-    </v-list-tile-action>
-    <v-list-tile-content>
-      <v-list-tile-title>
+    </v-list-item-action>
+    <v-list-item-content>
+      <v-list-item-title>
         {{ title }}
-      </v-list-tile-title>
-      <v-list-tile-sub-title>
+      </v-list-item-title>
+      <v-list-item-sub-title>
         <span v-if="hiScore >= 0">Hi Score: {{ hiScore }}</span>
         <span v-else>Not cleared</span>
-      </v-list-tile-sub-title>
-    </v-list-tile-content>
-  </v-list-tile>
+      </v-list-item-sub-title>
+    </v-list-item-content>
+  </v-list-item>
 </template>
 
 <script lang="ts">
