@@ -226,16 +226,56 @@ export class MissionFlow {
     coordinatesConverter: CoordinatesConverter
   ): SquadBuilder {
     const collisions = this.stgGameManager.collisions;
+
+    // Create Bullets
+    const bulletsPool = new BulletsPool();
+    for (const _ of Array(100)) {
+      const bulletActor = new ExtendedActor({
+        coordinatesConverter,
+        width: 10,
+        height: 10,
+        color: ex.Color.Black,
+        collisions: this.stgGameManager.collisions
+      });
+      const bullet = new Bullet(bulletActor);
+      bulletActor.on("exitviewport", (): void => {
+        bullet.kill();
+      });
+      bulletActor.on("postkill", (): void => {
+        bulletsPool.push(bullet);
+      });
+      bulletsPool.push(bullet);
+    }
+    this.stgGameManager.bulletsPools.set("enemy", bulletsPool);
+
     const muzzleCreator = new MuzzleCreator({
       collisions,
       coordinatesConverter,
       isPlayerSide: false,
-      muzzleInfoList: []
+      muzzleInfoList: [
+        {
+          bulletsPool,
+          name: "centerMuzzle",
+          offsetInArea: ex.Vector.Zero,
+          damage: 1
+        }
+      ]
     });
-    const weaponCreator = new WeaponCreator(gt.nop());
+    const weaponCreator = new WeaponCreator(
+      gt.concat(
+        gt.useMuzzle("centerMuzzle"),
+        gt.mltSpeed(0.5),
+        gt.addAngle(180),
+        gt.repeat(
+          { times: 1, interval: 13 },
+          gt.nWay({ ways: 3, totalAngle: 90 }, gt.fire(gt.bullet()))
+        )
+      )
+    );
+    const activateTime = 1;
     const moverCreator = new StaticEnemyMoverCreator({
+      activateTime,
       routeType: EnemyMoveRouteType.sideMove,
-      activateTime: 1,
       moveSpeedInArea: 0.5,
       isLeftSide: true
     });
@@ -254,83 +294,13 @@ export class MissionFlow {
     return new SquadBuilder({
       squad,
       scene,
-      onFinished: new EventDispatcher(),
+      activateTime,
       enemyCreator,
+      onFinished: new EventDispatcher(),
       activatePositions: Array(8)
         .fill(0)
         .map((): ex.Vector => posInArea),
       spawnDurationMS: 200
     });
-  }
-
-  private setupTestEnemy(
-    scene: ex.Scene,
-    posInArea: ex.Vector,
-    coordinatesConverter: CoordinatesConverter
-  ): Character {
-    const collisions = this.stgGameManager.collisions;
-    const muzzleCreator = new MuzzleCreator({
-      collisions,
-      coordinatesConverter,
-      isPlayerSide: false,
-      muzzleInfoList: []
-    });
-    const weaponCreator = new WeaponCreator(gt.nop());
-    const moverCreator = new StaticEnemyMoverCreator({
-      routeType: EnemyMoveRouteType.sideMove,
-      activateTime: 1,
-      moveSpeedInArea: 0.5,
-      isLeftSide: true
-    });
-
-    const enemyCreator = new EnemyCreator({
-      collisions,
-      coordinatesConverter,
-      health: 100,
-      muzzleCreator,
-      weaponCreator,
-      staticEnemyMoverCreator: moverCreator,
-      sizeInArea: new ex.Vector(0.125, 0.125 / 2)
-    });
-
-    const enemy = enemyCreator.create(posInArea);
-    scene.add(enemy.actor);
-    for (const child of enemy.actor.children) {
-      scene.add(child);
-    }
-    enemy.actor.setZIndex(ZIndex.enemy);
-    enemy.startMover();
-
-    // // Create mover
-    // const mover = new StaticEnemyMover({
-    //   onEnteringToArea: new EventDispatcher(),
-    //   onExitingFromArea: new EventDispatcher(),
-    //   route: new StraightMoveRoute({
-    //     activePosInArea: new ex.Vector(0.25, -0.25),
-    //     activateTime: 1,
-    //     moveSpeedInArea: 0.5,
-    //     moveAngleDegInArea: -100
-    //   })
-    // });
-
-    // // Create enemy
-    // const enemy = new Character({
-    //   mover,
-    //   health: new HealthComponent(100, 100),
-    //   isPlayerSide: false,
-    //   actor: new ExtendedActor({
-    //     posInArea,
-    //     coordinatesConverter,
-    //     width: 100,
-    //     height: 100,
-    //     color: ex.Color.Rose,
-    //     collisions: this.stgGameManager.collisions
-    //   })
-    // });
-
-    // scene.add(enemy.actor);
-    // enemy.actor.setZIndex(ZIndex.enemy);
-
-    return enemy;
   }
 }
