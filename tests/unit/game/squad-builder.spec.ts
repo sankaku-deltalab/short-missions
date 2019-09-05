@@ -52,7 +52,8 @@ function createSquadBuilderArgsMock(): SquadBuilderArgs {
     onFinished: new EventDispatcher(),
     enemyCreator: createEnemyCreatorMock(),
     activatePositions: [new ex.Vector(1, 2)],
-    spawnDurationMS: 100
+    spawnDurationMS: 100,
+    activateTime: 1
   };
 }
 

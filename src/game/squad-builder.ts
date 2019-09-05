@@ -2,6 +2,7 @@ import * as ex from "excalibur";
 import { EventDispatcher } from "./event-dispatcher";
 import { Squad } from "./squad";
 import { EnemyCreator } from "./enemy-creator";
+import { ZIndex } from "./z-index";
 
 export interface SquadBuilderArgs {
   squad: Squad;
@@ -10,6 +11,7 @@ export interface SquadBuilderArgs {
   enemyCreator: EnemyCreator;
   activatePositions: ex.Vector[];
   spawnDurationMS: number;
+  activateTime: number;
 }
 
 /**
@@ -22,6 +24,7 @@ export class SquadBuilder {
   private readonly enemyCreator: EnemyCreator;
   private readonly spawnDurationMS: number;
   private readonly activatePositions: ex.Vector[];
+  private readonly activateTime: number;
   private spawnedCount = 0;
   private timeSinceStartMS = 0;
 
@@ -32,6 +35,7 @@ export class SquadBuilder {
     this.enemyCreator = args.enemyCreator;
     this.spawnDurationMS = args.spawnDurationMS;
     this.activatePositions = args.activatePositions;
+    this.activateTime = args.activateTime;
   }
 
   /**
@@ -67,13 +71,23 @@ export class SquadBuilder {
   }
 
   private spawnNextEnemy(): void {
+    // Create and setup enemy
     const activatePos = this.activatePositions[this.spawnedCount];
     const enemy = this.enemyCreator.create(activatePos);
     enemy.startMover();
+    const timer = new ex.Timer((): void => {
+      const w = enemy.weapon;
+      if (w !== undefined) w.startFiring();
+    }, this.activateTime * 1000);
+    this.scene.addTimer(timer);
+
+    // Add enemy to scene
     this.scene.add(enemy.actor);
     for (const child of enemy.actor.children) {
       this.scene.add(child);
     }
+    enemy.actor.setZIndex(ZIndex.enemy);
+
     this.squad.add(enemy);
 
     this.spawnedCount += 1;
