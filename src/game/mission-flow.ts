@@ -279,11 +279,12 @@ export class MissionFlow {
       )
     );
     const activateTime = 1;
+    const isLeftSide = true;
     const moverCreator = new StaticEnemyMoverCreator({
       activateTime,
       routeType: EnemyMoveRouteType.sideMove,
       moveSpeedInArea: 0.25,
-      isLeftSide: true
+      isLeftSide
     });
 
     const health = 50;
@@ -297,13 +298,17 @@ export class MissionFlow {
       sizeInArea: new ex.Vector(0.125, 0.125 / 2)
     });
 
+    const squadKillTime = 2;
     const playerDPS = 150;
+    const enemyKillTime = health / playerDPS;
+    const spawnNum = Math.floor(enemyKillTime / squadKillTime);
     const posGen = new SideEnter();
     const activateTimeAndPositions = posGen.generate(
-      health / playerDPS,
+      spawnNum,
+      enemyKillTime,
       new ex.Vector(0.1, 0.1),
-      2,
-      true
+      squadKillTime,
+      isLeftSide
     );
 
     return new SquadBuilder({

@@ -11,15 +11,14 @@ export interface ActivateTimeAndPosition {
  */
 export class SideEnter implements ActivatePositionGenerator {
   public generate(
+    spawnNum: number,
     enemyKillTimeSec: number,
     _enemySizeInArea: ex.Vector,
     squadKillTimeSec: number,
     isLeftSide: boolean
   ): ActivateTimeAndPosition[] {
-    const ek = Math.max(1 / 8, enemyKillTimeSec);
-    const spawnNum = Math.max(1, Math.floor(squadKillTimeSec / ek));
     const spawnDuration =
-      spawnNum > 1 ? (squadKillTimeSec - ek) / (spawnNum - 1) : 0;
+      spawnNum > 1 ? (squadKillTimeSec - enemyKillTimeSec) / (spawnNum - 1) : 0;
     const ySign = isLeftSide ? -1 : 1;
     const posXMin = 0.23;
     const posDiff = 0.04 / spawnNum;
