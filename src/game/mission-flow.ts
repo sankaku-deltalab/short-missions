@@ -25,6 +25,7 @@ import { MuzzleCreator } from "./enemies-builder/muzzle-creator";
 import { EnemyCreator } from "./enemies-builder/enemy-creator";
 import { SquadBuilder } from "./enemies-builder/squad-builder";
 import { Squad } from "./enemies-builder/squad";
+import { SideEnter } from "./contents/activate-position-generator/side-enter";
 
 export class MissionFlow {
   private readonly stgGameManager: STGGameManager;
@@ -98,7 +99,7 @@ export class MissionFlow {
       setTimeout(f, milliSec);
     });
 
-    await Promise.race([promisify(waitEnemiesFinished)(), pause(2 * 1000)]);
+    await Promise.race([promisify(waitEnemiesFinished)(), pause(10 * 1000)]);
 
     await pause(2 * 1000);
 
@@ -266,9 +267,14 @@ export class MissionFlow {
         gt.useMuzzle("centerMuzzle"),
         gt.mltSpeed(0.5),
         gt.addAngle(180),
-        gt.repeat(
-          { times: 1, interval: 13 },
-          gt.nWay({ ways: 3, totalAngle: 90 }, gt.fire(gt.bullet()))
+        gt.sequential(
+          gt.repeat({ times: 4, interval: 10 }, gt.fire(gt.bullet())),
+          gt.wait(15),
+          gt.repeat(
+            { times: 2, interval: 3 },
+            gt.nWay({ ways: 3, totalAngle: 90 }, gt.fire(gt.bullet()))
+          ),
+          gt.wait(30)
         )
       )
     );
@@ -276,31 +282,37 @@ export class MissionFlow {
     const moverCreator = new StaticEnemyMoverCreator({
       activateTime,
       routeType: EnemyMoveRouteType.sideMove,
-      moveSpeedInArea: 0.5,
+      moveSpeedInArea: 0.25,
       isLeftSide: true
     });
 
+    const health = 50;
     const enemyCreator = new EnemyCreator({
       collisions,
       coordinatesConverter,
-      health: 20,
+      health,
       muzzleCreator,
       weaponCreator,
       staticEnemyMoverCreator: moverCreator,
       sizeInArea: new ex.Vector(0.125, 0.125 / 2)
     });
 
-    const posInArea = new ex.Vector(0.25, -0.25);
+    const playerDPS = 150;
+    const posGen = new SideEnter();
+    const activateTimeAndPositions = posGen.generate(
+      health / playerDPS,
+      new ex.Vector(0.1, 0.1),
+      2,
+      true
+    );
+
     return new SquadBuilder({
       squad,
       scene,
       activateTime,
       enemyCreator,
       onFinished: new EventDispatcher(),
-      activatePositions: Array(8)
-        .fill(0)
-        .map((): ex.Vector => posInArea),
-      spawnDurationMS: 200
+      activateTimeAndPositions
     });
   }
 }
