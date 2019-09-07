@@ -12,6 +12,7 @@ import { Character } from "@/game/actor/character";
 import { ExtendedActor } from "@/game/actor/extended-actor";
 import { HealthComponent } from "@/game/health-component";
 import { Mover } from "@/game/mover/mover";
+import { ZIndex } from "@/game/common/z-index";
 
 function createSquadMock(): Squad {
   return simpleMock<Squad>({
@@ -22,6 +23,7 @@ function createSquadMock(): Squad {
 
 function createEnemyMock(): Character {
   const actor = simpleMock<ExtendedActor>({
+    setZIndex: jest.fn(),
     children: [
       simpleMock<ExtendedActor>(),
       simpleMock<ExtendedActor>(),
@@ -203,5 +205,25 @@ describe("SquadBuilder", (): void => {
 
     // Then notify finish spawning to squad
     expect(args.squad.notifyFinishSpawning).toBeCalled();
+  });
+
+  it("set Z-Index as enemy", (): void => {
+    // Given SquadBuilder
+    const args = createSquadBuilderArgsMock();
+    const enemy1 = createEnemyMock();
+    args.enemyCreator.create = jest.fn().mockReturnValueOnce(enemy1);
+    args.activatePositions = [new ex.Vector(1, 2)];
+    args.spawnDurationMS = 100;
+
+    const squadBuilder = new SquadBuilder(args);
+
+    // When start building
+    squadBuilder.start();
+
+    // And updated with enough time
+    squadBuilder.update(args.spawnDurationMS);
+
+    // Then spawned enemy was set Z-Index
+    expect(enemy1.actor.setZIndex).toBeCalledWith(ZIndex.enemy);
   });
 });
