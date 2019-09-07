@@ -1,30 +1,30 @@
 import { promisify } from "util";
 import * as ex from "excalibur";
 import * as gt from "guntree";
-import { Character } from "./character";
+import { Character } from "./actor/character";
 import {
   MovementInputReceiver,
   convertInputHandlers
-} from "./movement-input-receiver";
-import { Muzzle } from "./muzzle";
-import { CoordinatesConverter } from "./coordinates-converter";
-import { BulletsPool } from "./bullets-pool";
-import { Bullet } from "./bullet";
+} from "./mover/movement-input-receiver";
+import { Muzzle } from "./weapon/muzzle";
+import { CoordinatesConverter } from "./common/coordinates-converter";
+import { BulletsPool } from "./weapon/bullets-pool";
+import { Bullet } from "./weapon/bullet";
 import { HealthComponent } from "./health-component";
-import { ZIndex } from "./z-index";
-import { ExtendedActor } from "./extended-actor";
+import { ZIndex } from "./common/z-index";
+import { ExtendedActor } from "./actor/extended-actor";
 import { STGGameManager } from "./stg-game-manager";
-import { EventDispatcher } from "./event-dispatcher";
-import { WeaponCreator } from "./weapon-creator";
-import { NullMover } from "./null-mover";
+import { EventDispatcher } from "./common/event-dispatcher";
+import { WeaponCreator } from "./enemies-builder/weapon-creator";
+import { NullMover } from "./mover/null-mover";
 import {
   StaticEnemyMoverCreator,
   EnemyMoveRouteType
-} from "./static-enemy-mover-creator";
-import { MuzzleCreator } from "./muzzle-creator";
-import { EnemyCreator } from "./enemy-creator";
-import { SquadBuilder } from "./squad-builder";
-import { Squad } from "./squad";
+} from "./enemies-builder/static-enemy-mover-creator";
+import { MuzzleCreator } from "./enemies-builder/muzzle-creator";
+import { EnemyCreator } from "./enemies-builder/enemy-creator";
+import { SquadBuilder } from "./enemies-builder/squad-builder";
+import { Squad } from "./enemies-builder/squad";
 
 export class MissionFlow {
   private readonly stgGameManager: STGGameManager;

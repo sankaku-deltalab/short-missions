@@ -1,5 +1,5 @@
 import { simpleMock } from "../../test-util";
-import { Collisions } from "@/game/collision-groups";
+import { Collisions } from "@/game/common/collision-groups";
 
 export function createCollisionsMock(): Collisions {
   const collisionsClass = jest.fn<Collisions, []>(

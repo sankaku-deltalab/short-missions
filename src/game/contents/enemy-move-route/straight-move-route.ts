@@ -1,5 +1,5 @@
 import * as ex from "excalibur";
-import { EnemyMoveRoute } from "@/game/enemy-move-route";
+import { EnemyMoveRoute } from "@/game/mover/enemy-move-route";
 
 export interface StraightMoveRouteArgs {
   activePosInArea: ex.Vector;
