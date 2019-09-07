@@ -1,4 +1,4 @@
-import { EventDispatcher } from "./event-dispatcher";
+import { EventDispatcher } from "./common/event-dispatcher";
 
 /**
  * HealthComponent represent health for Character.

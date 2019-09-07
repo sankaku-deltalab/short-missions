@@ -1,7 +1,7 @@
 import * as ex from "excalibur";
-import { CoordinatesConverter } from "./coordinates-converter";
-import { BulletsPool } from "./bullets-pool";
-import { Collisions } from "./collision-groups";
+import { CoordinatesConverter } from "./common/coordinates-converter";
+import { BulletsPool } from "./weapon/bullets-pool";
+import { Collisions } from "./common/collision-groups";
 
 export class STGGameManager {
   public readonly engine: ex.Engine;

@@ -1,5 +1,5 @@
 import { simpleMock } from "../../test-util";
-import { Collisions } from "@/game/collision-groups";
+import { Collisions } from "@/game/common/collision-groups";
 
 export function createCollisionsMock(): Collisions {
   const collisionsClass = jest.fn<Collisions, []>(
@@ -19,6 +19,7 @@ export function createSceneMock(): ex.Scene {
     add: jest.fn(),
     remove: jest.fn(),
     cleanupDrawTree: jest.fn(),
-    updateDrawTree: jest.fn()
+    updateDrawTree: jest.fn(),
+    addTimer: jest.fn()
   });
 }
