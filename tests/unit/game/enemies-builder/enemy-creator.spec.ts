@@ -9,7 +9,6 @@ import {
   EnemyCreatorArgs
 } from "@/game/enemies-builder/enemy-creator";
 import { MuzzleCreator } from "@/game/enemies-builder/muzzle-creator";
-import { StaticEnemyMoverCreator } from "@/game/enemies-builder/static-enemy-mover-creator";
 import { Mover } from "@/game/mover/mover";
 import { EventDispatcher } from "@/game/common/event-dispatcher";
 
@@ -31,9 +30,6 @@ function createEnemyCreatorArgs(): EnemyCreatorArgs {
     weaponCreator: simpleMock<WeaponCreator>({
       create: jest.fn()
     }),
-    staticEnemyMoverCreator: simpleMock<StaticEnemyMoverCreator>({
-      create: jest.fn().mockImplementation(createMoverMock)
-    }),
     sizeInArea: new ex.Vector(0.25, 0.25)
   };
 }
@@ -45,8 +41,8 @@ describe("EnemyCreator", (): void => {
     const ec = new EnemyCreator(args);
 
     // When create enemy
-    const activatePosInArea = new ex.Vector(0.25, 0.25);
-    const createdEnemy = ec.create(activatePosInArea);
+    const mover = createMoverMock();
+    const createdEnemy = ec.create(mover);
 
     // Then created enemy was added to scene
     expect(createdEnemy).toBeInstanceOf(Character);
@@ -58,8 +54,8 @@ describe("EnemyCreator", (): void => {
     const ec = new EnemyCreator(args);
 
     // When create enemy
-    const activatePosInArea = new ex.Vector(0.25, 0.25);
-    const createdEnemy = ec.create(activatePosInArea);
+    const mover = createMoverMock();
+    const createdEnemy = ec.create(mover);
 
     // Then created enemy is not player side
     expect(createdEnemy.isPlayerSide).toBe(false);
@@ -71,8 +67,8 @@ describe("EnemyCreator", (): void => {
     const ec = new EnemyCreator(args);
 
     // When create enemy
-    const activatePosInArea = new ex.Vector(0.25, 0.25);
-    const createdEnemy = ec.create(activatePosInArea);
+    const mover = createMoverMock();
+    const createdEnemy = ec.create(mover);
 
     // Then created enemy with muzzle
     expect(args.muzzleCreator.create).toBeCalledWith(createdEnemy.actor);
@@ -84,23 +80,10 @@ describe("EnemyCreator", (): void => {
     const ec = new EnemyCreator(args);
 
     // When create enemy
-    const activatePosInArea = new ex.Vector(0.25, 0.25);
-    const _createdEnemy = ec.create(activatePosInArea);
+    const mover = createMoverMock();
+    const _createdEnemy = ec.create(mover);
 
     // Then created enemy with weapon
     expect(args.weaponCreator.create).toBeCalled();
-  });
-
-  it("create character with mover", (): void => {
-    // Give EnemyCreator
-    const args = createEnemyCreatorArgs();
-    const ec = new EnemyCreator(args);
-
-    // When create enemy
-    const activatePosInArea = new ex.Vector(0.25, 0.25);
-    const _createdEnemy = ec.create(activatePosInArea);
-
-    // Then created enemy with weapon
-    expect(args.staticEnemyMoverCreator.create).toBeCalled();
   });
 });

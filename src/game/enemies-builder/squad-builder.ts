@@ -4,12 +4,14 @@ import { Squad } from "./squad";
 import { EnemyCreator } from "./enemy-creator";
 import { ZIndex } from "../common/z-index";
 import { ActivateTimeAndPosition } from "../contents/activate-position-generator/side-enter";
+import { StaticEnemyMoverCreator } from "./static-enemy-mover-creator";
 
 export interface SquadBuilderArgs {
   squad: Squad;
   scene: ex.Scene;
   onFinished: EventDispatcher<void>;
   enemyCreator: EnemyCreator;
+  moverCreator: StaticEnemyMoverCreator;
   activateTimeAndPositions: ActivateTimeAndPosition[];
   activateTime: number;
 }
@@ -22,6 +24,7 @@ export class SquadBuilder {
   private readonly scene: ex.Scene;
   public readonly onFinished: EventDispatcher<void>;
   private readonly enemyCreator: EnemyCreator;
+  private readonly moverCreator: StaticEnemyMoverCreator;
   private readonly activateTimeAndPositions: ActivateTimeAndPosition[];
   private readonly activateTime: number;
   private spawnedCount = 0;
@@ -32,6 +35,7 @@ export class SquadBuilder {
     this.squad = args.squad;
     this.onFinished = args.onFinished;
     this.enemyCreator = args.enemyCreator;
+    this.moverCreator = args.moverCreator;
     this.activateTimeAndPositions = args.activateTimeAndPositions;
     this.activateTime = args.activateTime;
   }
@@ -75,7 +79,8 @@ export class SquadBuilder {
     // Create and setup enemy
     const activatePos = this.activateTimeAndPositions[this.spawnedCount]
       .position;
-    const enemy = this.enemyCreator.create(activatePos);
+    const mover = this.moverCreator.create(activatePos);
+    const enemy = this.enemyCreator.create(mover);
     enemy.startMover();
     const timer = new ex.Timer((): void => {
       const w = enemy.weapon;

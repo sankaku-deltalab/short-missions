@@ -8,6 +8,7 @@ import { Squad } from "@/game/enemies-builder/squad";
 import { createSceneMock } from "../test-game-util";
 import { EventDispatcher } from "@/game/common/event-dispatcher";
 import { EnemyCreator } from "@/game/enemies-builder/enemy-creator";
+import { StaticEnemyMoverCreator } from "@/game/enemies-builder/static-enemy-mover-creator";
 import { Character } from "@/game/actor/character";
 import { ExtendedActor } from "@/game/actor/extended-actor";
 import { HealthComponent } from "@/game/health-component";
@@ -50,12 +51,22 @@ function createEnemyCreatorMock(): EnemyCreator {
   });
 }
 
+function createMoverMock(): Mover {
+  return simpleMock<Mover>({
+    onEnteringToArea: new EventDispatcher<void>(),
+    onExitingFromArea: new EventDispatcher<void>()
+  });
+}
+
 function createSquadBuilderArgsMock(): SquadBuilderArgs {
   return {
     squad: createSquadMock(),
     scene: createSceneMock(),
     onFinished: new EventDispatcher(),
     enemyCreator: createEnemyCreatorMock(),
+    moverCreator: simpleMock<StaticEnemyMoverCreator>({
+      create: jest.fn().mockImplementation(createMoverMock)
+    }),
     activateTimeAndPositions: [{ timeSec: 0, position: new ex.Vector(1, 2) }],
     activateTime: 1
   };
@@ -67,6 +78,8 @@ describe("SquadBuilder", (): void => {
     const args = createSquadBuilderArgsMock();
     const enemy = createEnemyMock();
     args.enemyCreator.create = jest.fn().mockReturnValueOnce(enemy);
+    const mover = createMoverMock();
+    args.moverCreator.create = jest.fn().mockReturnValueOnce(mover);
     const activatePos = new ex.Vector(1, 2);
     args.activateTimeAndPositions = [{ timeSec: 0, position: activatePos }];
     const squadBuilder = new SquadBuilder(args);
@@ -74,8 +87,11 @@ describe("SquadBuilder", (): void => {
     // When start building
     squadBuilder.start();
 
-    // Then character was created from EnemyCreator
-    expect(args.enemyCreator.create).toBeCalledWith(activatePos);
+    // Then mover was created from moverCreator
+    expect(args.moverCreator.create).toBeCalledWith(activatePos);
+
+    // And mover was used for EnemyCreator
+    expect(args.enemyCreator.create).toBeCalledWith(mover);
 
     // And created enemy was added to scene
     expect(args.scene.add).toBeCalledWith(enemy.actor);
