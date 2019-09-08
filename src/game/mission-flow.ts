@@ -300,7 +300,7 @@ export class MissionFlow {
     const squadKillTime = 2;
     const playerDPS = 150;
     const enemyKillTime = health / playerDPS;
-    const spawnNum = Math.floor(enemyKillTime / squadKillTime);
+    const spawnNum = Math.floor(squadKillTime / enemyKillTime);
     const posGen = new SideEnter();
     const activateTimeAndPositions = posGen.generate(
       spawnNum,
