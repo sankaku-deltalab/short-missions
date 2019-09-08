@@ -294,7 +294,6 @@ export class MissionFlow {
       health,
       muzzleCreator,
       weaponCreator,
-      staticEnemyMoverCreator: moverCreator,
       sizeInArea: new ex.Vector(0.125, 0.125 / 2)
     });
 
@@ -316,6 +315,7 @@ export class MissionFlow {
       scene,
       activateTime,
       enemyCreator,
+      moverCreator,
       onFinished: new EventDispatcher(),
       activateTimeAndPositions
     });
