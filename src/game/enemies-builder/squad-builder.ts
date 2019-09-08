@@ -50,7 +50,6 @@ export class SquadBuilder {
    * @param deltaTimeMS Delta time in milliseconds
    */
   public update(deltaTimeMS: number): void {
-    if (this.squad === undefined) return;
     this.timeSinceStartMS += deltaTimeMS;
 
     const spawnNum = this.activateTimeAndPositions.length;
