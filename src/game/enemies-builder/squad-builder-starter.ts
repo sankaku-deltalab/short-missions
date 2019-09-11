@@ -1,5 +1,6 @@
 import { EventDispatcher } from "../common/event-dispatcher";
 import { SquadBuilder } from "./squad-builder";
+import { Squad } from "./squad";
 
 export interface SquadBuilderInfo {
   startTime: number;
@@ -8,11 +9,14 @@ export interface SquadBuilderInfo {
 
 export interface SquadBuilderStarterArgs {
   onFinished: EventDispatcher<void>;
+  squads: Squad[];
   builderInfo: SquadBuilderInfo[];
 }
 
+// TODO: Starter must handle squad.onAllMembersFinished
 export class SquadBuilderStarter {
   public readonly onFinished: EventDispatcher<void>;
+  private readonly squads: Squad[];
   private readonly builderInfo: SquadBuilderInfo[];
   private startedCount = 0;
   private timeSinceStartMS = 0;
@@ -20,7 +24,12 @@ export class SquadBuilderStarter {
 
   public constructor(args: SquadBuilderStarterArgs) {
     this.onFinished = args.onFinished;
+    this.squads = args.squads;
     this.builderInfo = args.builderInfo;
+  }
+
+  public takeStartingSquads(): Squad[] {
+    return this.squads.map(v => v);
   }
 
   /**

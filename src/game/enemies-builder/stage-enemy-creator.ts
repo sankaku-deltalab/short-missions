@@ -86,6 +86,7 @@ export class StageEnemyCreator {
   public create(startFromLeft: boolean): SquadBuilderStarter {
     let prevFinishTime = 0;
     const inLeftSide = startFromLeft;
+    const squads: Squad[] = [];
     const builderInfo = this.squadInfo.map(
       (sqInfo: SquadInfo, index: number): SquadBuilderInfo => {
         const moveTime = sqInfo.changeSide ? this.moveTime : 0;
@@ -112,8 +113,9 @@ export class StageEnemyCreator {
           sqInfo.killTime,
           inLeftSide
         );
+        const squad = new Squad(new EventDispatcher<SquadFinishedReason>());
         const squadBuilder = new SquadBuilder({
-          squad: new Squad(new EventDispatcher<SquadFinishedReason>()),
+          squad,
           scene: this.scene,
           onFinished: new EventDispatcher<void>(),
           enemyCreator: ec,
@@ -123,6 +125,7 @@ export class StageEnemyCreator {
         });
 
         prevFinishTime += moveTime + sqInfo.killTime;
+        squads.push(squad);
         return {
           startTime,
           squadBuilder
@@ -130,6 +133,7 @@ export class StageEnemyCreator {
       }
     );
     return new SquadBuilderStarter({
+      squads,
       builderInfo,
       onFinished: new EventDispatcher()
     });

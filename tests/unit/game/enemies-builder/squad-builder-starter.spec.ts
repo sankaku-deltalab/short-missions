@@ -5,6 +5,7 @@ import {
   SquadBuilderStarterArgs,
   SquadBuilderStarter
 } from "@/game/enemies-builder/squad-builder-starter";
+import { Squad } from "@/game/enemies-builder/squad";
 
 function createSquadBuilderMock(): SquadBuilder {
   return simpleMock<SquadBuilder>({
@@ -19,6 +20,7 @@ function createSquadBuilderStarterArgsMock(): SquadBuilderStarterArgs {
   onFinished.dispatch = jest.fn();
   return {
     onFinished,
+    squads: [simpleMock<Squad>(), simpleMock<Squad>()],
     builderInfo: [
       {
         startTime: 0,
@@ -98,5 +100,14 @@ describe("SquadBuilderStarter", (): void => {
 
     // When SquadBuilderStarter was finished
     expect(args.onFinished.dispatch).toBeCalled();
+  });
+
+  it("can take squads would be started", (): void => {
+    // Given SquadBuilderStarter
+    const args = createSquadBuilderStarterArgsMock();
+    const sbs = new SquadBuilderStarter(args);
+
+    // Then SquadBuilderStarter can take squads
+    expect(sbs.takeStartingSquads()).toEqual(args.squads);
   });
 });
