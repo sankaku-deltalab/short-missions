@@ -13,7 +13,6 @@ export interface SquadBuilderStarterArgs {
   builderInfo: SquadBuilderInfo[];
 }
 
-// TODO: Starter must handle squad.onAllMembersFinished
 export class SquadBuilderStarter {
   public readonly onFinished: EventDispatcher<void>;
   private readonly squads: Squad[];

@@ -17,15 +17,43 @@ import { STGGameManager } from "./stg-game-manager";
 import { EventDispatcher } from "./common/event-dispatcher";
 import { WeaponCreator } from "./enemies-builder/weapon-creator";
 import { NullMover } from "./mover/null-mover";
-import {
-  StaticEnemyMoverCreator,
-  EnemyMoveRouteType
-} from "./enemies-builder/static-enemy-mover-creator";
 import { MuzzleCreator } from "./enemies-builder/muzzle-creator";
-import { EnemyCreator } from "./enemies-builder/enemy-creator";
-import { SquadBuilder } from "./enemies-builder/squad-builder";
-import { Squad } from "./enemies-builder/squad";
-import { SideEnter } from "./contents/activate-position-generator/side-enter";
+import { Collisions } from "./common/collision-groups";
+import {
+  EnemyInfo,
+  EnemyMoveType,
+  SquadInfo,
+  StageEnemyCreator
+} from "./enemies-builder/stage-enemy-creator";
+import { SquadBuilderStarter } from "./enemies-builder/squad-builder-starter";
+
+function createBulletsBool(
+  bulletsNum: number,
+  coordinatesConverter: CoordinatesConverter,
+  collisions: Collisions,
+  sizeInArea: ex.Vector
+): BulletsPool {
+  const size = coordinatesConverter.toCanvasVector(sizeInArea);
+  const bulletsPool = new BulletsPool();
+  for (const _ of Array(bulletsNum)) {
+    const bulletActor = new ExtendedActor({
+      coordinatesConverter,
+      width: size.y,
+      height: size.x,
+      color: ex.Color.Black,
+      collisions
+    });
+    const bullet = new Bullet(bulletActor);
+    bulletActor.on("exitviewport", (): void => {
+      bullet.kill();
+    });
+    bulletActor.on("postkill", (): void => {
+      bulletsPool.push(bullet);
+    });
+    bulletsPool.push(bullet);
+  }
+  return bulletsPool;
+}
 
 export class MissionFlow {
   private readonly stgGameManager: STGGameManager;
@@ -42,16 +70,11 @@ export class MissionFlow {
     const scene = new ex.Scene(engine);
 
     // TODO: Setup enemy setting
-    const squad = new Squad(new EventDispatcher());
-    const squadBuilder = this.setupSquadBuilder(
-      scene,
-      squad,
-      coordinatesConverter
-    );
+    const starter = this.setupSquadBuilder(scene, coordinatesConverter);
     this.stgGameManager.engine.on(
       "preupdate",
       (event: ex.PreUpdateEvent): void => {
-        squadBuilder.update(event.delta);
+        starter.update(event.delta);
       }
     );
 
@@ -78,7 +101,7 @@ export class MissionFlow {
     const inputReceiver = this.setupMovementInputReceiver(engine.input, pc);
 
     // TODO: Start game
-    squadBuilder.start();
+    starter.start();
 
     engine.addScene("mission", scene);
     engine.goToScene("mission");
@@ -90,9 +113,16 @@ export class MissionFlow {
     const waitEnemiesFinished = (
       nodeCallback: (err: Error | null) => void
     ): void => {
-      squad.onAllMemberFinished.add((): void => {
-        nodeCallback(null);
-      });
+      const squads = starter.takeStartingSquads();
+      let finishedSquadCount = 0;
+      for (const sq of squads) {
+        sq.onAllMemberFinished.add((): void => {
+          finishedSquadCount += 1;
+          if (finishedSquadCount === squads.length) {
+            nodeCallback(null);
+          }
+        });
+      }
     };
 
     const pause = promisify((milliSec: number, f: Function): void => {
@@ -115,25 +145,14 @@ export class MissionFlow {
     posInArea: ex.Vector,
     coordinatesConverter: CoordinatesConverter
   ): Character {
+    const collisions = this.stgGameManager.collisions;
     // Create Bullets
-    const bulletsPool = new BulletsPool();
-    for (const _ of Array(100)) {
-      const bulletActor = new ExtendedActor({
-        coordinatesConverter,
-        width: 30,
-        height: 40,
-        color: ex.Color.Black,
-        collisions: this.stgGameManager.collisions
-      });
-      const bullet = new Bullet(bulletActor);
-      bulletActor.on("exitviewport", (): void => {
-        bullet.kill();
-      });
-      bulletActor.on("postkill", (): void => {
-        bulletsPool.push(bullet);
-      });
-      bulletsPool.push(bullet);
-    }
+    const bulletsPool = createBulletsBool(
+      100,
+      coordinatesConverter,
+      collisions,
+      new ex.Vector(1 / 2 ** 3, 1 / 2 ** 4)
+    );
     this.stgGameManager.bulletsPools.set("player", bulletsPool);
 
     // Create Muzzle
@@ -223,32 +242,20 @@ export class MissionFlow {
 
   private setupSquadBuilder(
     scene: ex.Scene,
-    squad: Squad,
     coordinatesConverter: CoordinatesConverter
-  ): SquadBuilder {
+  ): SquadBuilderStarter {
     const collisions = this.stgGameManager.collisions;
 
     // Create Bullets
-    const bulletsPool = new BulletsPool();
-    for (const _ of Array(100)) {
-      const bulletActor = new ExtendedActor({
-        coordinatesConverter,
-        width: 10,
-        height: 10,
-        color: ex.Color.Black,
-        collisions: this.stgGameManager.collisions
-      });
-      const bullet = new Bullet(bulletActor);
-      bulletActor.on("exitviewport", (): void => {
-        bullet.kill();
-      });
-      bulletActor.on("postkill", (): void => {
-        bulletsPool.push(bullet);
-      });
-      bulletsPool.push(bullet);
-    }
+    const bulletsPool = createBulletsBool(
+      100,
+      coordinatesConverter,
+      collisions,
+      new ex.Vector(1 / 2 ** 5, 1 / 2 ** 5)
+    );
     this.stgGameManager.bulletsPools.set("enemy", bulletsPool);
 
+    // Create enemy info
     const muzzleCreator = new MuzzleCreator({
       collisions,
       coordinatesConverter,
@@ -278,46 +285,48 @@ export class MissionFlow {
         )
       )
     );
-    const activateTime = 1;
-    const isLeftSide = true;
-    const moverCreator = new StaticEnemyMoverCreator({
-      activateTime,
-      routeType: EnemyMoveRouteType.sideMove,
-      moveSpeedInArea: 0.25,
-      isLeftSide
-    });
+    const killTime = 0.5;
+    const sizeInArea = new ex.Vector(0.125, 0.125 / 2);
+    const isSmallSize = false;
+    const moveSpeedInArea = 0.25;
 
-    const health = 50;
-    const enemyCreator = new EnemyCreator({
+    const enemyInfoId = 0;
+    const enemyInfo: Map<number, EnemyInfo> = new Map([
+      [
+        enemyInfoId,
+        {
+          muzzleCreator,
+          weaponCreator,
+          killTime,
+          sizeInArea,
+          isSmallSize,
+          moveSpeedInArea
+        }
+      ]
+    ]);
+
+    const squadInfo: SquadInfo[] = [
+      {
+        enemyInfoId,
+        moveType: EnemyMoveType.sideIn,
+        changeSide: true,
+        overTime: 0,
+        killTime: 2
+      }
+    ];
+
+    const playerDPS = 150;
+    const sec = new StageEnemyCreator({
+      scene,
       collisions,
       coordinatesConverter,
-      health,
-      muzzleCreator,
-      weaponCreator,
-      sizeInArea: new ex.Vector(0.125, 0.125 / 2)
+      playerDPS,
+      activateTime: 1,
+      moveTime: 0.5,
+      enemyInfo,
+      squadInfo
     });
 
-    const squadKillTime = 2;
-    const playerDPS = 150;
-    const enemyKillTime = health / playerDPS;
-    const spawnNum = Math.floor(squadKillTime / enemyKillTime);
-    const posGen = new SideEnter();
-    const activateTimeAndPositions = posGen.generate(
-      spawnNum,
-      enemyKillTime,
-      new ex.Vector(0.1, 0.1),
-      squadKillTime,
-      isLeftSide
-    );
-
-    return new SquadBuilder({
-      squad,
-      scene,
-      activateTime,
-      enemyCreator,
-      moverCreator,
-      onFinished: new EventDispatcher(),
-      activateTimeAndPositions
-    });
+    return sec.create(true);
   }
 }
