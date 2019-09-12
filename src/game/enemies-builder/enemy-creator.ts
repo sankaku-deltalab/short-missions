@@ -6,7 +6,7 @@ import { Character } from "../actor/character";
 import { HealthComponent } from "../health-component";
 import { ExtendedActor } from "../actor/extended-actor";
 import { MuzzleCreator } from "./muzzle-creator";
-import { StaticEnemyMoverCreator } from "./static-enemy-mover-creator";
+import { Mover } from "../mover/mover";
 
 export interface EnemyCreatorArgs {
   // TODO: Add visual thing
@@ -15,7 +15,6 @@ export interface EnemyCreatorArgs {
   health: number;
   muzzleCreator: MuzzleCreator;
   weaponCreator: WeaponCreator;
-  staticEnemyMoverCreator: StaticEnemyMoverCreator;
   sizeInArea: ex.Vector;
 }
 
@@ -30,7 +29,6 @@ export class EnemyCreator {
   private readonly health: number;
   private readonly muzzleCreator: MuzzleCreator;
   private readonly weaponCreator: WeaponCreator;
-  private readonly staticEnemyMoverCreator: StaticEnemyMoverCreator;
   private readonly sizeInArea: ex.Vector;
 
   public constructor(args: EnemyCreatorArgs) {
@@ -39,14 +37,10 @@ export class EnemyCreator {
     this.health = args.health;
     this.muzzleCreator = args.muzzleCreator;
     this.weaponCreator = args.weaponCreator;
-    this.staticEnemyMoverCreator = args.staticEnemyMoverCreator;
     this.sizeInArea = args.sizeInArea;
   }
 
-  public create(activatePosInArea: ex.Vector): Character {
-    // Create mover
-    const mover = this.staticEnemyMoverCreator.create(activatePosInArea);
-
+  public create(mover: Mover): Character {
     // Create character
     const sizeInCanvasScale = this.sizeInArea.scale(
       this.coordinatedConverter.areaSizeInCanvas

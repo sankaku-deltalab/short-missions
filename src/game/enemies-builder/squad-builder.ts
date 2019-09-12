@@ -3,14 +3,16 @@ import { EventDispatcher } from "../common/event-dispatcher";
 import { Squad } from "./squad";
 import { EnemyCreator } from "./enemy-creator";
 import { ZIndex } from "../common/z-index";
+import { ActivateTimeAndPosition } from "../contents/activate-position-generator/side-enter";
+import { StaticEnemyMoverCreator } from "./static-enemy-mover-creator";
 
 export interface SquadBuilderArgs {
   squad: Squad;
   scene: ex.Scene;
   onFinished: EventDispatcher<void>;
   enemyCreator: EnemyCreator;
-  activatePositions: ex.Vector[];
-  spawnDurationMS: number;
+  moverCreator: StaticEnemyMoverCreator;
+  activateTimeAndPositions: ActivateTimeAndPosition[];
   activateTime: number;
 }
 
@@ -22,8 +24,8 @@ export class SquadBuilder {
   private readonly scene: ex.Scene;
   public readonly onFinished: EventDispatcher<void>;
   private readonly enemyCreator: EnemyCreator;
-  private readonly spawnDurationMS: number;
-  private readonly activatePositions: ex.Vector[];
+  private readonly moverCreator: StaticEnemyMoverCreator;
+  private readonly activateTimeAndPositions: ActivateTimeAndPosition[];
   private readonly activateTime: number;
   private spawnedCount = 0;
   private timeSinceStartMS = 0;
@@ -33,8 +35,8 @@ export class SquadBuilder {
     this.squad = args.squad;
     this.onFinished = args.onFinished;
     this.enemyCreator = args.enemyCreator;
-    this.spawnDurationMS = args.spawnDurationMS;
-    this.activatePositions = args.activatePositions;
+    this.moverCreator = args.moverCreator;
+    this.activateTimeAndPositions = args.activateTimeAndPositions;
     this.activateTime = args.activateTime;
   }
 
@@ -52,14 +54,17 @@ export class SquadBuilder {
    * @param deltaTimeMS Delta time in milliseconds
    */
   public update(deltaTimeMS: number): void {
-    if (this.squad === undefined) return;
     this.timeSinceStartMS += deltaTimeMS;
 
-    while (this.timeSinceStartMS >= this.spawnDurationMS * this.spawnedCount) {
-      if (this.spawnedCount >= this.activatePositions.length) break;
+    const spawnNum = this.activateTimeAndPositions.length;
+    while (this.spawnedCount < spawnNum) {
+      const nextSpawnTimeMS =
+        this.activateTimeAndPositions[this.spawnedCount].timeSec * 1000;
+      if (nextSpawnTimeMS > this.timeSinceStartMS) break;
+
       this.spawnNextEnemy();
 
-      if (this.spawnedCount >= this.activatePositions.length) {
+      if (this.spawnedCount >= spawnNum) {
         this.finishSpawning();
       }
     }
@@ -72,8 +77,10 @@ export class SquadBuilder {
 
   private spawnNextEnemy(): void {
     // Create and setup enemy
-    const activatePos = this.activatePositions[this.spawnedCount];
-    const enemy = this.enemyCreator.create(activatePos);
+    const activatePos = this.activateTimeAndPositions[this.spawnedCount]
+      .position;
+    const mover = this.moverCreator.create(activatePos);
+    const enemy = this.enemyCreator.create(mover);
     enemy.startMover();
     const timer = new ex.Timer((): void => {
       const w = enemy.weapon;

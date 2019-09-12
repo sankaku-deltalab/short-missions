@@ -8,6 +8,7 @@ import { Squad } from "@/game/enemies-builder/squad";
 import { createSceneMock } from "../test-game-util";
 import { EventDispatcher } from "@/game/common/event-dispatcher";
 import { EnemyCreator } from "@/game/enemies-builder/enemy-creator";
+import { StaticEnemyMoverCreator } from "@/game/enemies-builder/static-enemy-mover-creator";
 import { Character } from "@/game/actor/character";
 import { ExtendedActor } from "@/game/actor/extended-actor";
 import { HealthComponent } from "@/game/health-component";
@@ -50,14 +51,23 @@ function createEnemyCreatorMock(): EnemyCreator {
   });
 }
 
+function createMoverMock(): Mover {
+  return simpleMock<Mover>({
+    onEnteringToArea: new EventDispatcher<void>(),
+    onExitingFromArea: new EventDispatcher<void>()
+  });
+}
+
 function createSquadBuilderArgsMock(): SquadBuilderArgs {
   return {
     squad: createSquadMock(),
     scene: createSceneMock(),
     onFinished: new EventDispatcher(),
     enemyCreator: createEnemyCreatorMock(),
-    activatePositions: [new ex.Vector(1, 2)],
-    spawnDurationMS: 100,
+    moverCreator: simpleMock<StaticEnemyMoverCreator>({
+      create: jest.fn().mockImplementation(createMoverMock)
+    }),
+    activateTimeAndPositions: [{ timeSec: 0, position: new ex.Vector(1, 2) }],
     activateTime: 1
   };
 }
@@ -68,16 +78,20 @@ describe("SquadBuilder", (): void => {
     const args = createSquadBuilderArgsMock();
     const enemy = createEnemyMock();
     args.enemyCreator.create = jest.fn().mockReturnValueOnce(enemy);
+    const mover = createMoverMock();
+    args.moverCreator.create = jest.fn().mockReturnValueOnce(mover);
     const activatePos = new ex.Vector(1, 2);
-    args.activatePositions = [activatePos];
-
+    args.activateTimeAndPositions = [{ timeSec: 0, position: activatePos }];
     const squadBuilder = new SquadBuilder(args);
 
     // When start building
     squadBuilder.start();
 
-    // Then character was created from EnemyCreator
-    expect(args.enemyCreator.create).toBeCalledWith(activatePos);
+    // Then mover was created from moverCreator
+    expect(args.moverCreator.create).toBeCalledWith(activatePos);
+
+    // And mover was used for EnemyCreator
+    expect(args.enemyCreator.create).toBeCalledWith(mover);
 
     // And created enemy was added to scene
     expect(args.scene.add).toBeCalledWith(enemy.actor);
@@ -97,8 +111,11 @@ describe("SquadBuilder", (): void => {
       .fn()
       .mockReturnValueOnce(enemy1)
       .mockReturnValueOnce(enemy2);
-    args.activatePositions = [new ex.Vector(1, 2), new ex.Vector(1, 2)];
-    args.spawnDurationMS = 100;
+    const durationMS = 500;
+    args.activateTimeAndPositions = [
+      { timeSec: 0, position: new ex.Vector(1, 2) },
+      { timeSec: durationMS / 1000, position: new ex.Vector(1, 2) }
+    ];
 
     const squadBuilder = new SquadBuilder(args);
 
@@ -106,7 +123,7 @@ describe("SquadBuilder", (): void => {
     squadBuilder.start();
 
     // And updated with enough time
-    squadBuilder.update(args.spawnDurationMS);
+    squadBuilder.update(durationMS);
 
     // Then building squad was dealt
     expect(args.enemyCreator.create).toBeCalledTimes(2);
@@ -118,8 +135,11 @@ describe("SquadBuilder", (): void => {
     const args = createSquadBuilderArgsMock();
     const enemy1 = createEnemyMock();
     args.enemyCreator.create = jest.fn().mockReturnValue(enemy1);
-    args.activatePositions = [new ex.Vector(1, 2), new ex.Vector(1, 2)];
-    args.spawnDurationMS = 100;
+    const durationMS = 500;
+    args.activateTimeAndPositions = [
+      { timeSec: 0, position: new ex.Vector(1, 2) },
+      { timeSec: durationMS / 1000, position: new ex.Vector(1, 2) }
+    ];
 
     const squadBuilder = new SquadBuilder(args);
 
@@ -127,9 +147,7 @@ describe("SquadBuilder", (): void => {
     squadBuilder.start();
 
     // And updated with enough time
-    squadBuilder.update(
-      args.spawnDurationMS * args.activatePositions.length * 20
-    );
+    squadBuilder.update(durationMS * args.activateTimeAndPositions.length * 20);
 
     // Then building squad was dealt
     expect(args.enemyCreator.create).toBeCalledTimes(2);
@@ -144,8 +162,11 @@ describe("SquadBuilder", (): void => {
       .fn()
       .mockReturnValueOnce(enemy1)
       .mockReturnValueOnce(enemy2);
-    args.activatePositions = [new ex.Vector(1, 2), new ex.Vector(1, 2)];
-    args.spawnDurationMS = 100;
+    const durationMS = 500;
+    args.activateTimeAndPositions = [
+      { timeSec: 0, position: new ex.Vector(1, 2) },
+      { timeSec: durationMS / 1000, position: new ex.Vector(1, 2) }
+    ];
 
     const squadBuilder = new SquadBuilder(args);
 
@@ -153,7 +174,7 @@ describe("SquadBuilder", (): void => {
     squadBuilder.start();
 
     // And updated with enough time
-    squadBuilder.update(args.spawnDurationMS);
+    squadBuilder.update(durationMS);
 
     // Then spawned enemy was started mover
     expect(args.enemyCreator.create).toBeCalledTimes(2);
@@ -164,8 +185,11 @@ describe("SquadBuilder", (): void => {
   it("dispatch event when finish spawning", (): void => {
     // Given SquadBuilder
     const args = createSquadBuilderArgsMock();
-    args.spawnDurationMS = 100;
-    args.activatePositions = [new ex.Vector(1, 1), new ex.Vector(2, 2)];
+    const durationMS = 500;
+    args.activateTimeAndPositions = [
+      { timeSec: 0, position: new ex.Vector(1, 2) },
+      { timeSec: durationMS / 1000, position: new ex.Vector(1, 2) }
+    ];
     args.onFinished = simpleMock<EventDispatcher<void>>({
       dispatch: jest.fn()
     });
@@ -176,8 +200,8 @@ describe("SquadBuilder", (): void => {
     squadBuilder.start();
 
     // And updated with enough time for full spawning
-    for (const _ of Array(args.activatePositions.length - 1)) {
-      squadBuilder.update(args.spawnDurationMS);
+    for (const timeAndPos of args.activateTimeAndPositions) {
+      squadBuilder.update(timeAndPos.timeSec * 1000);
     }
 
     // Then onFinished event was called
@@ -187,8 +211,11 @@ describe("SquadBuilder", (): void => {
   it("notify finish spawning to squad", (): void => {
     // Given SquadBuilder
     const args = createSquadBuilderArgsMock();
-    args.spawnDurationMS = 100;
-    args.activatePositions = [new ex.Vector(1, 1), new ex.Vector(2, 2)];
+    const durationMS = 500;
+    args.activateTimeAndPositions = [
+      { timeSec: 0, position: new ex.Vector(1, 2) },
+      { timeSec: durationMS / 1000, position: new ex.Vector(1, 2) }
+    ];
     args.onFinished = simpleMock<EventDispatcher<void>>({
       dispatch: jest.fn()
     });
@@ -199,8 +226,8 @@ describe("SquadBuilder", (): void => {
     squadBuilder.start();
 
     // And updated with enough time for full spawning
-    for (const _ of Array(args.activatePositions.length - 1)) {
-      squadBuilder.update(args.spawnDurationMS);
+    for (const timeAndPos of args.activateTimeAndPositions) {
+      squadBuilder.update(timeAndPos.timeSec * 1000);
     }
 
     // Then notify finish spawning to squad
@@ -212,16 +239,14 @@ describe("SquadBuilder", (): void => {
     const args = createSquadBuilderArgsMock();
     const enemy1 = createEnemyMock();
     args.enemyCreator.create = jest.fn().mockReturnValueOnce(enemy1);
-    args.activatePositions = [new ex.Vector(1, 2)];
-    args.spawnDurationMS = 100;
+    args.activateTimeAndPositions = [
+      { timeSec: 0, position: new ex.Vector(1, 2) }
+    ];
 
     const squadBuilder = new SquadBuilder(args);
 
     // When start building
     squadBuilder.start();
-
-    // And updated with enough time
-    squadBuilder.update(args.spawnDurationMS);
 
     // Then spawned enemy was set Z-Index
     expect(enemy1.actor.setZIndex).toBeCalledWith(ZIndex.enemy);
