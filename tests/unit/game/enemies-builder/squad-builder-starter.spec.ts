@@ -20,14 +20,15 @@ function createSquadBuilderStarterArgsMock(): SquadBuilderStarterArgs {
   onFinished.dispatch = jest.fn();
   return {
     onFinished,
-    squads: [simpleMock<Squad>(), simpleMock<Squad>()],
     builderInfo: [
       {
         startTime: 0,
+        squad: simpleMock<Squad>(),
         squadBuilder: createSquadBuilderMock()
       },
       {
         startTime: 1364,
+        squad: simpleMock<Squad>(),
         squadBuilder: createSquadBuilderMock()
       }
     ]
@@ -108,6 +109,7 @@ describe("SquadBuilderStarter", (): void => {
     const sbs = new SquadBuilderStarter(args);
 
     // Then SquadBuilderStarter can take squads
-    expect(sbs.takeStartingSquads()).toEqual(args.squads);
+    const squads = args.builderInfo.map(v => v.squad);
+    expect(sbs.takeStartingSquads()).toEqual(squads);
   });
 });

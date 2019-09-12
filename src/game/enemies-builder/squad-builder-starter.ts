@@ -4,18 +4,17 @@ import { Squad } from "./squad";
 
 export interface SquadBuilderInfo {
   startTime: number;
+  squad: Squad;
   squadBuilder: SquadBuilder;
 }
 
 export interface SquadBuilderStarterArgs {
   onFinished: EventDispatcher<void>;
-  squads: Squad[];
   builderInfo: SquadBuilderInfo[];
 }
 
 export class SquadBuilderStarter {
   public readonly onFinished: EventDispatcher<void>;
-  private readonly squads: Squad[];
   private readonly builderInfo: SquadBuilderInfo[];
   private startedCount = 0;
   private timeSinceStartMS = 0;
@@ -23,12 +22,11 @@ export class SquadBuilderStarter {
 
   public constructor(args: SquadBuilderStarterArgs) {
     this.onFinished = args.onFinished;
-    this.squads = args.squads;
     this.builderInfo = args.builderInfo;
   }
 
   public takeStartingSquads(): Squad[] {
-    return this.squads.map(v => v);
+    return this.builderInfo.map(v => v.squad);
   }
 
   /**

@@ -1,11 +1,6 @@
 import * as ex from "excalibur";
 import { simpleMock } from "../../../test-util";
-import { SquadBuilder } from "@/game/enemies-builder/squad-builder";
-import { EventDispatcher } from "@/game/common/event-dispatcher";
-import {
-  SquadBuilderStarterArgs,
-  SquadBuilderStarter
-} from "@/game/enemies-builder/squad-builder-starter";
+import { SquadBuilderStarter } from "@/game/enemies-builder/squad-builder-starter";
 import { WeaponCreator } from "@/game/enemies-builder/weapon-creator";
 import {
   StageEnemyCreator,
@@ -39,7 +34,8 @@ function createSquadInfoMock(): SquadInfo {
     moveType: EnemyMoveType.sideIn,
     changeSide: true,
     overTime: 0.25,
-    killTime: 0.5
+    killTime: 0.5,
+    activateTime: 1
   };
 }
 
@@ -49,7 +45,6 @@ function createStageEnemyCreatorArgsMock(): StageEnemyCreatorArgs {
     collisions: createCollisionsMock(),
     coordinatesConverter: simpleMock<CoordinatesConverter>(),
     playerDPS: 100,
-    activateTime: 1,
     moveTime: 0.5,
     enemyInfo: new Map([[1, createEnemyInfoMock()]]),
     squadInfo: [createSquadInfoMock(), createSquadInfoMock()]

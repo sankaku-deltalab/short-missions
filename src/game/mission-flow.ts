@@ -311,7 +311,8 @@ export class MissionFlow {
         moveType: EnemyMoveType.sideIn,
         changeSide: true,
         overTime: 0,
-        killTime: 2
+        killTime: 2,
+        activateTime: 0.5
       }
     ];
 
@@ -321,7 +322,6 @@ export class MissionFlow {
       collisions,
       coordinatesConverter,
       playerDPS,
-      activateTime: 1,
       moveTime: 0.5,
       enemyInfo,
       squadInfo

@@ -35,6 +35,7 @@ export interface SquadInfo {
   changeSide: boolean;
   overTime: number;
   killTime: number;
+  activateTime: number;
 }
 
 export interface StageEnemyCreatorArgs {
@@ -42,7 +43,6 @@ export interface StageEnemyCreatorArgs {
   collisions: Collisions;
   coordinatesConverter: CoordinatesConverter;
   playerDPS: number;
-  activateTime: number;
   moveTime: number;
   enemyInfo: Map<number, EnemyInfo>;
   squadInfo: SquadInfo[];
@@ -53,7 +53,6 @@ export class StageEnemyCreator {
   private readonly collisions: Collisions;
   private readonly coordinatesConverter: CoordinatesConverter;
   private readonly playerDPS: number;
-  private readonly activateTime: number;
   private readonly moveTime: number;
   private readonly squadInfo: SquadInfo[];
   private readonly enemyInfo: Map<number, EnemyInfo>;
@@ -65,7 +64,6 @@ export class StageEnemyCreator {
     this.collisions = args.collisions;
     this.coordinatesConverter = args.coordinatesConverter;
     this.playerDPS = args.playerDPS;
-    this.activateTime = args.activateTime;
     this.moveTime = args.moveTime;
     this.squadInfo = args.squadInfo;
     this.enemyInfo = args.enemyInfo;
@@ -86,11 +84,11 @@ export class StageEnemyCreator {
   public create(startFromLeft: boolean): SquadBuilderStarter {
     let prevFinishTime = 0;
     const inLeftSide = startFromLeft;
-    const squads: Squad[] = [];
     const builderInfo = this.squadInfo.map(
       (sqInfo: SquadInfo, index: number): SquadBuilderInfo => {
         const moveTime = sqInfo.changeSide ? this.moveTime : 0;
-        const startTime = prevFinishTime - sqInfo.overTime;
+        const startTime =
+          prevFinishTime - sqInfo.overTime - sqInfo.activateTime;
 
         const ec = this.enemyCreators.get(sqInfo.enemyInfoId);
         const ei = this.enemyInfo.get(sqInfo.enemyInfoId);
@@ -102,6 +100,7 @@ export class StageEnemyCreator {
           sqInfo.moveType
         );
         const moverCreator = this.createMoverCreator(
+          sqInfo,
           ei,
           sqInfo.moveType,
           inLeftSide
@@ -121,19 +120,21 @@ export class StageEnemyCreator {
           enemyCreator: ec,
           moverCreator,
           activateTimeAndPositions,
-          activateTime: this.activateTime
+          activateTime: sqInfo.activateTime
         });
 
         prevFinishTime += moveTime + sqInfo.killTime;
-        squads.push(squad);
         return {
           startTime,
+          squad,
           squadBuilder
         };
       }
     );
+    builderInfo.sort((a, b) => {
+      return a.startTime - b.startTime;
+    });
     return new SquadBuilderStarter({
-      squads,
       builderInfo,
       onFinished: new EventDispatcher()
     });
@@ -163,7 +164,8 @@ export class StageEnemyCreator {
   }
 
   private createMoverCreator(
-    info: EnemyInfo,
+    sqInfo: SquadInfo,
+    enInfo: EnemyInfo,
     _moveType: EnemyMoveType,
     isLeftSide: boolean
   ): StaticEnemyMoverCreator {
@@ -171,9 +173,9 @@ export class StageEnemyCreator {
     const routeType = EnemyMoveRouteType.sideMove;
     return new StaticEnemyMoverCreator({
       routeType,
-      activateTime: this.activateTime,
+      activateTime: sqInfo.activateTime,
       isLeftSide,
-      moveSpeedInArea: info.moveSpeedInArea
+      moveSpeedInArea: enInfo.moveSpeedInArea
     });
   }
 }
