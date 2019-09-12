@@ -43,7 +43,7 @@ export class Squad {
 
     this.membersStatus.set(member, SquadMemberStatus.living);
 
-    member.health.onDied.add((): void => {
+    member.health.onDied((): void => {
       this.memberWasFinished(member, SquadMemberStatus.died);
     });
 

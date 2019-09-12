@@ -33,7 +33,7 @@ export class Character implements ActorWrapper {
     this.mover = args.mover;
     this.isInArea = false;
 
-    this.health.onDied.add((): void => {
+    this.health.onDied((): void => {
       this.kill();
     });
 

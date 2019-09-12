@@ -62,7 +62,7 @@ describe("HealthComponent", (): void => {
     healthComponent.takeDamage(damage);
 
     // Then health was subtracted
-    expect(healthComponent.health).toBe(initialHealth - damage);
+    expect(healthComponent.health()).toBe(initialHealth - damage);
   });
 
   it.each`
@@ -81,7 +81,7 @@ describe("HealthComponent", (): void => {
       healthComponent.heal(healAmount);
 
       // Then health was added
-      expect(healthComponent.health).toBe(expectedHealth);
+      expect(healthComponent.health()).toBe(expectedHealth);
     }
   );
 
@@ -96,7 +96,7 @@ describe("HealthComponent", (): void => {
     healthComponent.takeDamage(damage);
 
     // Then healthComponent was dead
-    expect(healthComponent.isDead).toBe(true);
+    expect(healthComponent.isDead()).toBe(true);
   });
 
   it("can not heal while died", (): void => {
@@ -114,7 +114,7 @@ describe("HealthComponent", (): void => {
     healthComponent.heal(healAmount);
 
     // Then health was not added
-    expect(healthComponent.health).toBe(0);
+    expect(healthComponent.health()).toBe(0);
   });
 
   it("can die directory", (): void => {
@@ -128,7 +128,7 @@ describe("HealthComponent", (): void => {
     healthComponent.takeDamage(damage);
 
     // Then healthComponent was dead
-    expect(healthComponent.isDead).toBe(true);
+    expect(healthComponent.isDead()).toBe(true);
   });
 
   it("use callback when damaged", (): void => {
@@ -139,7 +139,7 @@ describe("HealthComponent", (): void => {
 
     // When set callback
     const onTakeDamageFunc = jest.fn();
-    healthComponent.onTakeDamage.add((damage: number): void => {
+    healthComponent.onTakeDamage((damage: number): void => {
       onTakeDamageFunc(damage);
     });
 
@@ -165,7 +165,7 @@ describe("HealthComponent", (): void => {
 
       // When set callback
       const onHealedFunc = jest.fn();
-      healthComponent.onHealed.add((healed: number): void => {
+      healthComponent.onHealed((healed: number): void => {
         onHealedFunc(healed);
       });
 
@@ -185,7 +185,7 @@ describe("HealthComponent", (): void => {
 
     // When set callback
     const onDiedFunc = jest.fn();
-    healthComponent.onDied.add((): void => {
+    healthComponent.onDied((): void => {
       onDiedFunc();
     });
 
@@ -214,7 +214,7 @@ describe("HealthComponent", (): void => {
     healthComponent.takeDamage(originalDamage);
 
     // Then damage was modified by absorber
-    expect(healthComponent.health).toBe(initialHealth - absorbedDamage);
+    expect(healthComponent.health()).toBe(initialHealth - absorbedDamage);
     expect(healthComponent.damageAbsorber).toBeCalledWith(originalDamage);
   });
 });

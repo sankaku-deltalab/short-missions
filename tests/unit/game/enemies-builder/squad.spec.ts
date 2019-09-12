@@ -9,7 +9,7 @@ import { HealthComponent } from "@/game/health-component";
 function createEnemyMock(): Character {
   const actor = simpleMock<ExtendedActor>();
   const health = simpleMock<HealthComponent>({
-    onDied: new EventDispatcher<void>()
+    onDied: jest.fn()
   });
   const mover = simpleMock<Mover>({
     onExitingFromArea: new EventDispatcher<void>()
@@ -67,7 +67,7 @@ describe("Squad", (): void => {
 
     // And all enemy was died
     for (const enemy of enemies) {
-      enemy.health.onDied.dispatch();
+      (enemy.health.onDied as any).mock.calls[0][0]();
     }
 
     // Then squad notify all member died
@@ -106,7 +106,7 @@ describe("Squad", (): void => {
 
     // And other enemy was died
     for (const enemy of dyingEnemies) {
-      enemy.health.onDied.dispatch();
+      (enemy.health.onDied as any).mock.calls[0][0]();
     }
 
     // Then squad notify escaped
@@ -139,7 +139,7 @@ describe("Squad", (): void => {
 
     // And all enemy was died
     for (const enemy of enemies) {
-      enemy.health.onDied.dispatch();
+      (enemy.health.onDied as any).mock.calls[0][0]();
     }
 
     // Then squad NOT notify all member died
@@ -159,7 +159,7 @@ describe("Squad", (): void => {
     // And enemy was escaped and died
     const finishTwice = (): void => {
       enemy.mover.onExitingFromArea.dispatch();
-      enemy.health.onDied.dispatch();
+      (enemy.health.onDied as any).mock.calls[0][0]();
     };
 
     // Then throw error
