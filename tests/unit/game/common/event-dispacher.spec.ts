@@ -19,10 +19,10 @@ describe("EventDispatcher", (): void => {
 
     // When add event
     const event = jest.fn();
-    eventDispatcher.add(event);
+    const removeEvent = eventDispatcher.add(event);
 
     // And remove event
-    eventDispatcher.remove(event);
+    removeEvent();
 
     // Then EventDispatcher doesn't have event
     expect(eventDispatcher.has(event)).toBe(false);
