@@ -74,7 +74,7 @@ export class StaticEnemyMover implements Mover {
    *
    * @param event Event remover
    */
-  onEnteringToArea(event: () => void): () => void {
+  public onEnteringToArea(event: () => void): () => void {
     return this._onEnteringToArea.add(event);
   }
 
@@ -83,7 +83,7 @@ export class StaticEnemyMover implements Mover {
    *
    * @param event Event remover
    */
-  onExitingFromArea(event: () => void): () => void {
+  public onExitingFromArea(event: () => void): () => void {
     return this._onExitingFromArea.add(event);
   }
 

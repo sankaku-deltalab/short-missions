@@ -57,7 +57,7 @@ describe("EnemyCreator", (): void => {
     const createdEnemy = ec.create(mover);
 
     // Then created enemy is not player side
-    expect(createdEnemy.isPlayerSide).toBe(false);
+    expect(createdEnemy.isPlayerSide()).toBe(false);
   });
 
   it("create character with muzzle", (): void => {

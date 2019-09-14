@@ -48,7 +48,7 @@ export class Bullet implements ActorWrapper {
 
   public init(args: BulletInitializeArgs): void {
     this.damage = args.damage;
-    this.actor.posInArea = args.posInArea;
+    this.actor.moveToPosInArea(args.posInArea);
     this.actor.rotation = args.rotation;
     this.actor.vel = ex.Vector.fromAngle(
       this.actor.rotation - Math.PI / 2
@@ -68,7 +68,7 @@ export class Bullet implements ActorWrapper {
   }
 
   public hitTo(other: Character): void {
-    other.health.takeDamage(this.damage);
+    other.takeDamage(this.damage);
     this.kill();
   }
 }

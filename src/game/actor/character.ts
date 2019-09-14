@@ -10,6 +10,7 @@ export interface CharacterArgs {
   health: HealthComponent;
   actor: ExtendedActor;
   mover: Mover;
+  weapon: Weapon;
 }
 
 /**
@@ -19,25 +20,21 @@ export interface CharacterArgs {
  */
 export class Character implements ActorWrapper {
   public readonly actor: ExtendedActor;
-  public readonly isPlayerSide: boolean;
-  public readonly health: HealthComponent;
-  public readonly mover: Mover;
-  private weaponInner?: Weapon;
+  private readonly _isPlayerSide: boolean;
+  private readonly healthComponent: HealthComponent;
+  private readonly mover: Mover;
+  private weapon: Weapon;
   private isInArea: boolean;
 
   public constructor(args: CharacterArgs) {
     this.actor = args.actor;
-    this.actor.owner = this;
-    this.isPlayerSide = args.isPlayerSide;
-    this.health = args.health;
+    this._isPlayerSide = args.isPlayerSide;
+    this.healthComponent = args.health;
     this.mover = args.mover;
+    this.weapon = args.weapon;
     this.isInArea = false;
 
-    this.health.onDied((): void => {
-      this.kill();
-    });
-
-    this.health.damageAbsorber = (damage: number): number => {
+    this.healthComponent.damageAbsorber = (damage: number): number => {
       return this.isInArea ? damage : 0;
     };
 
@@ -50,26 +47,145 @@ export class Character implements ActorWrapper {
     });
 
     // Setup collision
-    const collision = this.isPlayerSide
+    const collision = this._isPlayerSide
       ? args.actor.collisions.player
       : args.actor.collisions.enemy;
     this.actor.setCollision(collision);
   }
 
-  public get weapon(): Weapon | undefined {
-    return this.weaponInner;
+  public isPlayerSide(): boolean {
+    return this._isPlayerSide;
   }
 
-  public setWeapon(weapon: Weapon): void {
-    if (this.weapon !== undefined) throw new Error("weapon was already set");
-    this.weaponInner = weapon;
+  // Health component
+
+  /**
+   * Get health.
+   */
+  public health(): number {
+    return this.healthComponent.health();
   }
 
   /**
-   * Start owning mover.
+   * Get max health.
    */
-  public startMover(): void {
+  public maxHealth(): number {
+    return this.healthComponent.maxHealth();
+  }
+
+  /**
+   * Is dead.
+   */
+  public isDead(): boolean {
+    return this.healthComponent.isDead();
+  }
+
+  /**
+   * Take damage.
+   *
+   * @param damage Damage amount
+   */
+  public takeDamage(damage: number): void {
+    // TODO: Absorb damage at here.
+    return this.healthComponent.takeDamage(damage);
+  }
+
+  /**
+   * Heal damage.
+   * Health is clamped by maxHealth.
+   * Can not heal while dead.
+   *
+   * @param healAmount Heal amount
+   */
+  public heal(healAmount: number): void {
+    return this.healthComponent.heal(healAmount);
+  }
+
+  /**
+   * Kill this.
+   */
+  public die(): void {
+    this.healthComponent.die();
+    this.kill();
+  }
+
+  /**
+   * Add event on damaged.
+   *
+   * @param event Event remover
+   */
+  public onTakeDamage(event: (damage: number) => void): () => void {
+    return this.healthComponent.onTakeDamage(event);
+  }
+
+  /**
+   * Add event on healed.
+   *
+   * @param event Event remover
+   */
+  public onHealed(event: (amount: number) => void): () => void {
+    return this.healthComponent.onHealed(event);
+  }
+
+  /**
+   * Add event on died.
+   *
+   * @param event Event remover
+   */
+  public onDied(event: () => void): () => void {
+    return this.healthComponent.onDied(event);
+  }
+
+  // Mover
+
+  /**
+   * Start moving.
+   */
+  public startMoving(): void {
     this.mover.start(this);
+  }
+
+  /**
+   * Add event called when entering to area.
+   *
+   * @param event Event remover
+   */
+  public onEnteringToArea(event: () => void): () => void {
+    return this.mover.onEnteringToArea(event);
+  }
+
+  /**
+   * Add event called when exiting from area.
+   *
+   * @param event Event remover
+   */
+  public onExitingFromArea(event: () => void): () => void {
+    return this.mover.onExitingFromArea(event);
+  }
+
+  // Weapon
+
+  /**
+   * Is firing.
+   */
+  public isFiring(): boolean {
+    return this.weapon.isFiring;
+  }
+
+  /**
+   * Start firing.
+   */
+  public startFiring(): void {
+    this.weapon.startFiring();
+  }
+
+  /**
+   * Stop firing.
+   *
+   * @param immediately Immediately stop firing
+   */
+  public stopFiring(immediately = false): void {
+    this.weapon.stopFiring(immediately);
   }
 
   /**
@@ -90,8 +206,6 @@ export class Character implements ActorWrapper {
 
   public kill(): void {
     this.actor.kill();
-    if (this.weapon !== undefined) {
-      this.weapon.stopFiring(true);
-    }
+    this.weapon.stopFiring(true);
   }
 }

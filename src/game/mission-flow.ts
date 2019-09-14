@@ -105,7 +105,7 @@ export class MissionFlow {
 
     engine.addScene("mission", scene);
     engine.goToScene("mission");
-    if (pc.weapon !== undefined) pc.weapon.startFiring();
+    pc.startFiring();
 
     // TODO: Wait end game
 
@@ -168,6 +168,18 @@ export class MissionFlow {
       actor: muzzleActor
     });
 
+    // Create weapon
+    const wc = new WeaponCreator(
+      gt.concat(
+        gt.useMuzzle("centerMuzzle"),
+        gt.mltSpeed(2),
+        gt.repeat({ times: 1, interval: 4 }, gt.fire(gt.bullet()))
+      )
+    );
+    const weapon = wc.create({
+      centerMuzzle: muzzle
+    });
+
     // Create player character
     const pcActor = new ExtendedActor({
       posInArea,
@@ -184,7 +196,8 @@ export class MissionFlow {
       mover: new NullMover({
         onEnteringToArea: new EventDispatcher<void>(),
         onExitingFromArea: new EventDispatcher<void>()
-      })
+      }),
+      weapon
     });
 
     pc.actor.add(muzzle.actor);
@@ -192,19 +205,6 @@ export class MissionFlow {
     scene.add(pc.actor);
     scene.add(muzzle.actor);
 
-    // Create weapon
-    const wc = new WeaponCreator(
-      gt.concat(
-        gt.useMuzzle("centerMuzzle"),
-        gt.mltSpeed(2),
-        gt.repeat({ times: 1, interval: 4 }, gt.fire(gt.bullet()))
-      )
-    );
-    pc.setWeapon(
-      wc.create({
-        centerMuzzle: muzzle
-      })
-    );
     pc.actor.setZIndex(ZIndex.player);
     return pc;
   }

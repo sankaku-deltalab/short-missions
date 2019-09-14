@@ -81,10 +81,9 @@ export class SquadBuilder {
       .position;
     const mover = this.moverCreator.create(activatePos);
     const enemy = this.enemyCreator.create(mover);
-    enemy.startMover();
+    enemy.startMoving();
     const timer = new ex.Timer((): void => {
-      const w = enemy.weapon;
-      if (w !== undefined) w.startFiring();
+      enemy.startFiring();
     }, this.activateTime * 1000);
     this.scene.addTimer(timer);
 

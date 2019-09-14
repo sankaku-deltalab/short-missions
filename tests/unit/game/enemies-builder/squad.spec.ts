@@ -3,22 +3,14 @@ import { Squad, SquadFinishedReason } from "@/game/enemies-builder/squad";
 import { EventDispatcher } from "@/game/common/event-dispatcher";
 import { Character } from "@/game/actor/character";
 import { ExtendedActor } from "@/game/actor/extended-actor";
-import { Mover } from "@/game/mover/mover";
-import { HealthComponent } from "@/game/health-component";
 
 function createEnemyMock(): Character {
   const actor = simpleMock<ExtendedActor>();
-  const health = simpleMock<HealthComponent>({
-    onDied: jest.fn()
-  });
-  const mover = simpleMock<Mover>({
-    onEnteringToArea: jest.fn(),
-    onExitingFromArea: jest.fn()
-  });
   return simpleMock<Character>({
     actor,
-    health,
-    mover
+    onDied: jest.fn(),
+    onEnteringToArea: jest.fn(),
+    onExitingFromArea: jest.fn()
   });
 }
 
@@ -68,7 +60,7 @@ describe("Squad", (): void => {
 
     // And all enemy was died
     for (const enemy of enemies) {
-      (enemy.health.onDied as any).mock.calls[0][0]();
+      (enemy.onDied as any).mock.calls[0][0]();
     }
 
     // Then squad notify all member died
@@ -103,11 +95,11 @@ describe("Squad", (): void => {
     squad.notifyFinishSpawning();
 
     // And one of member was escaped
-    (escapingEnemy.mover.onExitingFromArea as any).mock.calls[0][0]();
+    (escapingEnemy.onExitingFromArea as any).mock.calls[0][0]();
 
     // And other enemy was died
     for (const enemy of dyingEnemies) {
-      (enemy.health.onDied as any).mock.calls[0][0]();
+      (enemy.onDied as any).mock.calls[0][0]();
     }
 
     // Then squad notify escaped
@@ -140,7 +132,7 @@ describe("Squad", (): void => {
 
     // And all enemy was died
     for (const enemy of enemies) {
-      (enemy.health.onDied as any).mock.calls[0][0]();
+      (enemy.onDied as any).mock.calls[0][0]();
     }
 
     // Then squad NOT notify all member died
@@ -159,8 +151,8 @@ describe("Squad", (): void => {
 
     // And enemy was escaped and died
     const finishTwice = (): void => {
-      (enemy.mover.onExitingFromArea as any).mock.calls[0][0]();
-      (enemy.health.onDied as any).mock.calls[0][0]();
+      (enemy.onExitingFromArea as any).mock.calls[0][0]();
+      (enemy.onDied as any).mock.calls[0][0]();
     };
 
     // Then throw error

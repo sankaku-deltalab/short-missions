@@ -38,16 +38,13 @@ export class Squad {
    * @param member New squad member
    */
   public add(member: Character): void {
-    const mover = member.mover;
-    if (mover === undefined) throw new Error("member must have mover");
-
     this.membersStatus.set(member, SquadMemberStatus.living);
 
-    member.health.onDied((): void => {
+    member.onDied((): void => {
       this.memberWasFinished(member, SquadMemberStatus.died);
     });
 
-    mover.onExitingFromArea((): void => {
+    member.onExitingFromArea((): void => {
       this.memberWasFinished(member, SquadMemberStatus.escaped);
     });
 
