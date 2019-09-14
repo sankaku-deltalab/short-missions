@@ -30,13 +30,13 @@ export interface MuzzleArgs extends ex.IActorArgs {
 export class Muzzle implements gt.Muzzle, ActorWrapper {
   private readonly damage: number;
   private readonly bulletsPool: BulletsPool;
-  public readonly isPlayerSide: boolean = true;
+  private readonly internalIsPlayerSide: boolean = true;
   public readonly actor: ExtendedActor;
 
   public constructor(args: MuzzleArgs) {
     this.damage = args.damage;
     this.bulletsPool = args.bulletsPool;
-    this.isPlayerSide = args.isPlayerSide;
+    this.internalIsPlayerSide = args.isPlayerSide;
     this.actor = args.actor;
   }
 
@@ -44,6 +44,10 @@ export class Muzzle implements gt.Muzzle, ActorWrapper {
 
   public kill(): void {
     this.actor.kill();
+  }
+
+  public isPlayerSide(): boolean {
+    return this.internalIsPlayerSide;
   }
 
   /**
@@ -71,7 +75,7 @@ export class Muzzle implements gt.Muzzle, ActorWrapper {
       rotation,
       damage: this.damage,
       speed: speed * this.actor.coordinatesConverter.areaSizeInCanvas,
-      isPlayerSide: this.isPlayerSide
+      isPlayerSide: this.isPlayerSide()
     });
   }
 
