@@ -94,7 +94,8 @@ export class HealthComponent {
   /**
    * Add event on damaged.
    *
-   * @param event Event remover
+   * @param event
+   * @returns Event remover
    */
   public onTakeDamage(event: (damage: number) => void): () => void {
     return this.internalOnTakeDamage.add(event);
@@ -103,7 +104,8 @@ export class HealthComponent {
   /**
    * Add event on healed.
    *
-   * @param event Event remover
+   * @param event
+   * @returns Event remover
    */
   public onHealed(event: (amount: number) => void): () => void {
     return this.internalOnHealed.add(event);
@@ -112,7 +114,8 @@ export class HealthComponent {
   /**
    * Add event on died.
    *
-   * @param event Event remover
+   * @param event
+   * @returns Event remover
    */
   public onDied(event: () => void): () => void {
     return this.internalOnDied.add(event);
