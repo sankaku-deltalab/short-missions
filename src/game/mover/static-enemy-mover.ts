@@ -40,7 +40,7 @@ export class StaticEnemyMover implements Mover {
   public start(owner: ActorWrapper): void {
     this.owner = owner;
     this.playedTimeMS = 0;
-    this.owner.actor.posInArea = this.route.getInitialPosition();
+    this.owner.actor.moveToPosInArea(this.route.getInitialPosition());
     this.updateOwnerIsInVisualArea();
   }
 
@@ -55,8 +55,8 @@ export class StaticEnemyMover implements Mover {
     const ownerIsInVisualAreaBeforeMove = this.ownerIsInVisualArea;
 
     this.playedTimeMS += deltaTimeMS;
-    this.owner.actor.posInArea = this.route.calcPositionInArea(
-      this.playedTimeMS
+    this.owner.actor.moveToPosInArea(
+      this.route.calcPositionInArea(this.playedTimeMS)
     );
 
     this.updateOwnerIsInVisualArea();

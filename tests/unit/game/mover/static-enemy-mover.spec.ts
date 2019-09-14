@@ -19,7 +19,7 @@ function createActorWrapperMock(cc?: CoordinatesConverter): ActorWrapper {
   return simpleMock<ActorWrapper>({
     actor: {
       coordinatesConverter,
-      set posInArea(_: ex.Vector) {}
+      moveToPosInArea: jest.fn()
     }
   });
 }
@@ -72,13 +72,12 @@ describe("StaticEnemyMover", (): void => {
 
     // And ActorWrapper
     const wrapper = createActorWrapperMock();
-    const ownerSetPosInArea = jest.spyOn(wrapper.actor, "posInArea", "set");
 
     // When start mover
     mover.start(wrapper);
 
     // Then owner actor was set posInArea
-    expect(ownerSetPosInArea).toBeCalledWith(initialPosInArea);
+    expect(wrapper.actor.moveToPosInArea).toBeCalledWith(initialPosInArea);
   });
 
   it("move owner when updated to route position", (): void => {
@@ -96,7 +95,6 @@ describe("StaticEnemyMover", (): void => {
 
     // And ActorWrapper
     const wrapper = createActorWrapperMock();
-    const ownerSetPosInArea = jest.spyOn(wrapper.actor, "posInArea", "set");
 
     // When start mover
     mover.start(wrapper);
@@ -109,7 +107,7 @@ describe("StaticEnemyMover", (): void => {
     expect(args.route.calcPositionInArea).toBeCalledWith(deltaTimeMS);
 
     // And move character to pos
-    expect(ownerSetPosInArea).toBeCalledWith(routePosInArea);
+    expect(wrapper.actor.moveToPosInArea).toBeCalledWith(routePosInArea);
   });
 
   it.each`
@@ -132,7 +130,6 @@ describe("StaticEnemyMover", (): void => {
           .mockReturnValueOnce(ownerInVisualAreaAtSecond) // second update pos (not) in visual area
       });
       const wrapper = createActorWrapperMock(cc);
-      jest.spyOn(wrapper.actor, "posInArea", "set");
 
       // When start mover
       mover.start(wrapper);
