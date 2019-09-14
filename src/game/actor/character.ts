@@ -34,10 +34,6 @@ export class Character implements ActorWrapper {
     this.weapon = args.weapon;
     this.isInArea = false;
 
-    this.healthComponent.damageAbsorber = (damage: number): number => {
-      return this.isInArea ? damage : 0;
-    };
-
     this.mover.onEnteringToArea((): void => {
       this.isInArea = true;
     });
@@ -86,8 +82,8 @@ export class Character implements ActorWrapper {
    * @param damage Damage amount
    */
   public takeDamage(damage: number): void {
-    // TODO: Absorb damage at here.
-    return this.healthComponent.takeDamage(damage);
+    const absorbedDamage = this.isInArea ? damage : 0;
+    return this.healthComponent.takeDamage(absorbedDamage);
   }
 
   /**

@@ -196,25 +196,4 @@ describe("HealthComponent", (): void => {
     // Then callback was called
     expect(onDiedFunc).toBeCalled();
   });
-
-  it("absorb damage if it was given", (): void => {
-    // Given HealthComponent
-    const initialHealth = 100;
-    const maxHealth = 200;
-    const healthComponent = new HealthComponent(initialHealth, maxHealth);
-
-    // When set absorber
-    const absorbedDamage = 40;
-    healthComponent.damageAbsorber = jest
-      .fn()
-      .mockReturnValueOnce(absorbedDamage);
-
-    // And take damage
-    const originalDamage = absorbedDamage + 50;
-    healthComponent.takeDamage(originalDamage);
-
-    // Then damage was modified by absorber
-    expect(healthComponent.health()).toBe(initialHealth - absorbedDamage);
-    expect(healthComponent.damageAbsorber).toBeCalledWith(originalDamage);
-  });
 });

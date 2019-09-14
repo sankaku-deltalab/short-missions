@@ -178,47 +178,45 @@ describe("Character", (): void => {
     expect(character.health()).toBe(initialHealth);
   });
 
-  it.skip("can take damage after entering to area", (): void => {
+  it("can take damage after entering to area", (): void => {
     // Given Character
     const args = createCharacterArgs();
     const character = new Character(args);
 
     // When entering to area
-    for (const event of (character.onEnteringToArea as any).mock.calls[0]) {
+    for (const event of (args.mover.onEnteringToArea as any).mock.calls[0]) {
       event();
     }
 
     // And take damage
-    const initialHealth = character.health();
-    const originalDamage = 1;
-    character.takeDamage(originalDamage);
+    const damage = 1;
+    character.takeDamage(damage);
 
     // Then health was damaged
-    expect(character.health()).toBe(initialHealth - originalDamage);
+    expect(args.health.takeDamage).toBeCalledWith(damage);
   });
 
-  it.skip("do not take damage after exiting to area", (): void => {
+  it("do not take damage after exiting to area", (): void => {
     // Given Character
     const args = createCharacterArgs();
     const character = new Character(args);
 
     // When entering to area
-    for (const event of (character.onEnteringToArea as any).mock.calls[0]) {
+    for (const event of (args.mover.onEnteringToArea as any).mock.calls[0]) {
       event();
     }
 
     // And exiting to area
-    for (const event of (character.onExitingFromArea as any).mock.calls[0]) {
+    for (const event of (args.mover.onExitingFromArea as any).mock.calls[0]) {
       event();
     }
 
     // And take damage
-    const initialHealth = character.health();
-    const originalDamage = 1;
-    character.takeDamage(originalDamage);
+    const damage = 1;
+    character.takeDamage(damage);
 
-    // Then health was not damaged
-    expect(character.health()).toBe(initialHealth);
+    // Then health was damaged
+    expect(args.health.takeDamage).toBeCalledWith(0);
   });
 
   it("kill actor when killed", (): void => {

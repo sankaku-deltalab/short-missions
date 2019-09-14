@@ -10,7 +10,6 @@ export class HealthComponent {
   private readonly internalOnTakeDamage: EventDispatcher<number>;
   private readonly internalOnHealed: EventDispatcher<number>;
   private readonly internalOnDied: EventDispatcher<void>;
-  public damageAbsorber: (originalDamage: number) => number;
 
   public constructor(initialHealth: number, maxHealth: number) {
     if (maxHealth <= 0) throw new Error("Max health <= 0");
@@ -25,7 +24,6 @@ export class HealthComponent {
     this.internalOnTakeDamage = new EventDispatcher();
     this.internalOnHealed = new EventDispatcher();
     this.internalOnDied = new EventDispatcher();
-    this.damageAbsorber = (d: number): number => d;
   }
 
   /**
@@ -56,9 +54,8 @@ export class HealthComponent {
    */
   public takeDamage(damage: number): void {
     if (damage <= 0) return;
-    const absorbedDamage = this.damageAbsorber(damage);
-    this.internalHealth -= absorbedDamage;
-    this.internalOnTakeDamage.dispatch(absorbedDamage);
+    this.internalHealth -= damage;
+    this.internalOnTakeDamage.dispatch(damage);
 
     if (this.internalHealth <= 0) {
       this.die();
