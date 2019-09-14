@@ -43,7 +43,7 @@ describe("NullMover", (): void => {
     mover.start(wrapper);
 
     // Then entering event was dispatched
-    expect(mover.onEnteringToArea.dispatch).toBeCalled();
+    expect(args.onEnteringToArea.dispatch).toBeCalled();
   });
 
   it("did not move owner when started", (): void => {

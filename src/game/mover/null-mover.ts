@@ -13,14 +13,14 @@ export interface NullMoverArgs {
  */
 export class NullMover implements Mover {
   /** Dispatch when owner entered to area. */
-  public readonly onEnteringToArea: EventDispatcher<void>;
+  private readonly _onEnteringToArea: EventDispatcher<void>;
 
   /** Dispatch when owner exiting from area. */
-  public readonly onExitingFromArea: EventDispatcher<void>;
+  private readonly _onExitingFromArea: EventDispatcher<void>;
 
   public constructor(args: NullMoverArgs) {
-    this.onEnteringToArea = args.onEnteringToArea;
-    this.onExitingFromArea = args.onExitingFromArea;
+    this._onEnteringToArea = args.onEnteringToArea;
+    this._onExitingFromArea = args.onExitingFromArea;
   }
 
   /**
@@ -29,7 +29,7 @@ export class NullMover implements Mover {
    * @param owner Moved by this.
    */
   public start(_owner: ActorWrapper): void {
-    this.onEnteringToArea.dispatch();
+    this._onEnteringToArea.dispatch();
   }
 
   /**
@@ -38,4 +38,22 @@ export class NullMover implements Mover {
    * @param owner Moved by this.
    */
   public update(_deltaTimeMS: number): void {}
+
+  /**
+   * Add event called when entering to area.
+   *
+   * @param event Event remover
+   */
+  onEnteringToArea(event: () => void): () => void {
+    return this._onEnteringToArea.add(event);
+  }
+
+  /**
+   * Add event called when exiting from area.
+   *
+   * @param event Event remover
+   */
+  onExitingFromArea(event: () => void): () => void {
+    return this._onExitingFromArea.add(event);
+  }
 }

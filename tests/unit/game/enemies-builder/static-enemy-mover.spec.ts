@@ -144,7 +144,7 @@ describe("StaticEnemyMover", (): void => {
 
       // Then event was dispatched
       const eventName = event as "onEnteringToArea" | "onExitingFromArea";
-      expect(mover[eventName].dispatch).toBeCalled();
+      expect(args[eventName].dispatch).toBeCalled();
     }
   );
 });

@@ -12,7 +12,8 @@ function createEnemyMock(): Character {
     onDied: jest.fn()
   });
   const mover = simpleMock<Mover>({
-    onExitingFromArea: new EventDispatcher<void>()
+    onEnteringToArea: jest.fn(),
+    onExitingFromArea: jest.fn()
   });
   return simpleMock<Character>({
     actor,
@@ -102,7 +103,7 @@ describe("Squad", (): void => {
     squad.notifyFinishSpawning();
 
     // And one of member was escaped
-    escapingEnemy.mover.onExitingFromArea.dispatch();
+    (escapingEnemy.mover.onExitingFromArea as any).mock.calls[0][0]();
 
     // And other enemy was died
     for (const enemy of dyingEnemies) {
@@ -158,7 +159,7 @@ describe("Squad", (): void => {
 
     // And enemy was escaped and died
     const finishTwice = (): void => {
-      enemy.mover.onExitingFromArea.dispatch();
+      (enemy.mover.onExitingFromArea as any).mock.calls[0][0]();
       (enemy.health.onDied as any).mock.calls[0][0]();
     };
 

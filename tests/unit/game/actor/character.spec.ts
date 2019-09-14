@@ -5,7 +5,6 @@ import { createCollisionsMock } from "../test-game-util";
 import { HealthComponent } from "@/game/health-component";
 import { ExtendedActor } from "@/game/actor/extended-actor";
 import { Mover } from "@/game/mover/mover";
-import { EventDispatcher } from "@/game/common/event-dispatcher";
 
 function createHealthComponentMock(): HealthComponent {
   return simpleMock<HealthComponent>({
@@ -26,8 +25,8 @@ function createMoverMock(): Mover {
   return simpleMock<Mover>({
     start: jest.fn(),
     update: jest.fn(),
-    onEnteringToArea: new EventDispatcher<void>(),
-    onExitingFromArea: new EventDispatcher<void>()
+    onEnteringToArea: jest.fn(),
+    onExitingFromArea: jest.fn()
   });
 }
 
@@ -216,7 +215,10 @@ describe("Character", (): void => {
     const character = new Character(args);
 
     // When entering to area
-    character.mover.onEnteringToArea.dispatch();
+    for (const event of (character.mover.onEnteringToArea as any).mock
+      .calls[0]) {
+      event();
+    }
 
     // And take damage
     const initialHealth = character.health.health();
@@ -233,10 +235,16 @@ describe("Character", (): void => {
     const character = new Character(args);
 
     // When entering to area
-    character.mover.onEnteringToArea.dispatch();
+    for (const event of (character.mover.onEnteringToArea as any).mock
+      .calls[0]) {
+      event();
+    }
 
     // And exiting to area
-    character.mover.onExitingFromArea.dispatch();
+    for (const event of (character.mover.onExitingFromArea as any).mock
+      .calls[0]) {
+      event();
+    }
 
     // And take damage
     const initialHealth = character.health.health;

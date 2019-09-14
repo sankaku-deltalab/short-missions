@@ -14,10 +14,10 @@ export interface StaticEnemyMoverArgs {
  */
 export class StaticEnemyMover implements Mover {
   /** Dispatch when owner entered to area. */
-  public readonly onEnteringToArea: EventDispatcher<void>;
+  private readonly _onEnteringToArea: EventDispatcher<void>;
 
   /** Dispatch when owner exiting from area. */
-  public readonly onExitingFromArea: EventDispatcher<void>;
+  private readonly _onExitingFromArea: EventDispatcher<void>;
 
   private playedTimeMS = 0;
   private owner?: ActorWrapper;
@@ -28,8 +28,8 @@ export class StaticEnemyMover implements Mover {
 
   public constructor(args: StaticEnemyMoverArgs) {
     this.route = args.route;
-    this.onEnteringToArea = args.onEnteringToArea;
-    this.onExitingFromArea = args.onExitingFromArea;
+    this._onEnteringToArea = args.onEnteringToArea;
+    this._onExitingFromArea = args.onExitingFromArea;
   }
 
   /**
@@ -69,14 +69,32 @@ export class StaticEnemyMover implements Mover {
     }
   }
 
+  /**
+   * Add event called when entering to area.
+   *
+   * @param event Event remover
+   */
+  onEnteringToArea(event: () => void): () => void {
+    return this._onEnteringToArea.add(event);
+  }
+
+  /**
+   * Add event called when exiting from area.
+   *
+   * @param event Event remover
+   */
+  onExitingFromArea(event: () => void): () => void {
+    return this._onExitingFromArea.add(event);
+  }
+
   private enter(): void {
     if (this.alreadyEnteredToArea) return;
-    this.onEnteringToArea.dispatch();
+    this._onEnteringToArea.dispatch();
   }
 
   private exit(): void {
     if (this.alreadyExitingFromArea) return;
-    this.onExitingFromArea.dispatch();
+    this._onExitingFromArea.dispatch();
   }
 
   private updateOwnerIsInVisualArea(): void {

@@ -47,7 +47,7 @@ export class Squad {
       this.memberWasFinished(member, SquadMemberStatus.died);
     });
 
-    mover.onExitingFromArea.add((): void => {
+    mover.onExitingFromArea((): void => {
       this.memberWasFinished(member, SquadMemberStatus.escaped);
     });
 

@@ -41,11 +41,11 @@ export class Character implements ActorWrapper {
       return this.isInArea ? damage : 0;
     };
 
-    this.mover.onEnteringToArea.add((): void => {
+    this.mover.onEnteringToArea((): void => {
       this.isInArea = true;
     });
 
-    this.mover.onExitingFromArea.add((): void => {
+    this.mover.onExitingFromArea((): void => {
       this.isInArea = false;
     });
 

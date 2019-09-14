@@ -10,12 +10,11 @@ import {
 } from "@/game/enemies-builder/enemy-creator";
 import { MuzzleCreator } from "@/game/enemies-builder/muzzle-creator";
 import { Mover } from "@/game/mover/mover";
-import { EventDispatcher } from "@/game/common/event-dispatcher";
 
 function createMoverMock(): Mover {
   return simpleMock<Mover>({
-    onEnteringToArea: new EventDispatcher<void>(),
-    onExitingFromArea: new EventDispatcher<void>()
+    onEnteringToArea: jest.fn(),
+    onExitingFromArea: jest.fn()
   });
 }
 

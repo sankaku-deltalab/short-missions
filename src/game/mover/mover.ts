@@ -1,13 +1,6 @@
 import { ActorWrapper } from "../actor/actor-wrapper";
-import { EventDispatcher } from "../common/event-dispatcher";
 
 export interface Mover {
-  /** Dispatch when owner entered to area. */
-  onEnteringToArea: EventDispatcher<void>;
-
-  /** Dispatch when owner exiting from area. */
-  onExitingFromArea: EventDispatcher<void>;
-
   /**
    * Set moved owner and start moving.
    *
@@ -21,4 +14,18 @@ export interface Mover {
    * @param deltaTimeMS Delta time in milliseconds.
    */
   update(deltaTimeMS: number): void;
+
+  /**
+   * Add event called when entering to area.
+   *
+   * @param event Event remover
+   */
+  onEnteringToArea(event: () => void): () => void;
+
+  /**
+   * Add event called when exiting from area.
+   *
+   * @param event Event remover
+   */
+  onExitingFromArea(event: () => void): () => void;
 }
