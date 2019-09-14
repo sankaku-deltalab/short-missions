@@ -116,7 +116,7 @@ export class MissionFlow {
       const squads = starter.takeStartingSquads();
       let finishedSquadCount = 0;
       for (const sq of squads) {
-        sq.onAllMemberFinished.add((): void => {
+        sq.onAllMemberFinished((): void => {
           finishedSquadCount += 1;
           if (finishedSquadCount === squads.length) {
             nodeCallback(null);

@@ -17,7 +17,7 @@ enum SquadMemberStatus {
  * When disappear all member, squad notify it.
  */
 export class Squad {
-  public readonly onAllMemberFinished: EventDispatcher<SquadFinishedReason>;
+  private readonly _onAllMemberFinished: EventDispatcher<SquadFinishedReason>;
   public readonly members: Set<Character>;
   private isSquadBuilding = true;
   private membersStatus: Map<Character, SquadMemberStatus>;
@@ -25,7 +25,7 @@ export class Squad {
   public constructor(
     onAllMemberFinished: EventDispatcher<SquadFinishedReason>
   ) {
-    this.onAllMemberFinished = onAllMemberFinished;
+    this._onAllMemberFinished = onAllMemberFinished;
     this.members = new Set();
     this.membersStatus = new Map();
   }
@@ -58,6 +58,17 @@ export class Squad {
     this.isSquadBuilding = false;
   }
 
+  /**
+   * Add event called when all member finished.
+   *
+   * @param event Event
+   */
+  public onAllMemberFinished(
+    event: (reason: SquadFinishedReason) => void
+  ): () => void {
+    return this._onAllMemberFinished.add(event);
+  }
+
   private canFinishSquad(): boolean {
     if (this.isSquadBuilding) return false;
 
@@ -88,6 +99,6 @@ export class Squad {
       ? SquadFinishedReason.allMemberDied
       : SquadFinishedReason.allMemberDiedOrEscaped;
 
-    this.onAllMemberFinished.dispatch(reason);
+    this._onAllMemberFinished.dispatch(reason);
   }
 }
