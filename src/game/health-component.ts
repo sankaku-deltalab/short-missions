@@ -7,10 +7,9 @@ export class HealthComponent {
   private internalHealth: number;
   private internalMaxHealth: number;
   private internalDead: boolean;
-  public readonly onTakeDamage: EventDispatcher<number>;
-  public readonly onHealed: EventDispatcher<number>;
-  public readonly onDied: EventDispatcher<void>;
-  public damageAbsorber: (originalDamage: number) => number;
+  private readonly internalOnTakeDamage: EventDispatcher<number>;
+  private readonly internalOnHealed: EventDispatcher<number>;
+  private readonly internalOnDied: EventDispatcher<void>;
 
   public constructor(initialHealth: number, maxHealth: number) {
     if (maxHealth <= 0) throw new Error("Max health <= 0");
@@ -22,30 +21,29 @@ export class HealthComponent {
     this.internalMaxHealth = maxHealth;
     this.internalDead = false;
 
-    this.onTakeDamage = new EventDispatcher();
-    this.onHealed = new EventDispatcher();
-    this.onDied = new EventDispatcher();
-    this.damageAbsorber = (d: number): number => d;
+    this.internalOnTakeDamage = new EventDispatcher();
+    this.internalOnHealed = new EventDispatcher();
+    this.internalOnDied = new EventDispatcher();
   }
 
   /**
    * Current health.
    */
-  public get health(): number {
+  public health(): number {
     return this.internalHealth;
   }
 
   /**
    * Max health.
    */
-  public get maxHealth(): number {
+  public maxHealth(): number {
     return this.internalMaxHealth;
   }
 
   /**
    * Is dead.
    */
-  public get isDead(): boolean {
+  public isDead(): boolean {
     return this.internalDead;
   }
 
@@ -56,11 +54,10 @@ export class HealthComponent {
    */
   public takeDamage(damage: number): void {
     if (damage <= 0) return;
-    const absorbedDamage = this.damageAbsorber(damage);
-    this.internalHealth -= absorbedDamage;
-    this.onTakeDamage.dispatch(absorbedDamage);
+    this.internalHealth -= damage;
+    this.internalOnTakeDamage.dispatch(damage);
 
-    if (this.health <= 0) {
+    if (this.internalHealth <= 0) {
       this.die();
     }
   }
@@ -73,17 +70,17 @@ export class HealthComponent {
    * @param healAmount Heal amount
    */
   public heal(healAmount: number): void {
-    const healable = !this.isDead && healAmount > 0;
+    const healable = !this.isDead() && healAmount > 0;
     if (!healable) {
-      this.onHealed.dispatch(0);
+      this.internalOnHealed.dispatch(0);
       return;
     }
 
-    const maxHealing = this.maxHealth - this.internalHealth;
+    const maxHealing = this.internalMaxHealth - this.internalHealth;
     const healing = Math.min(maxHealing, healAmount);
     this.internalHealth += healing;
 
-    this.onHealed.dispatch(healing);
+    this.internalOnHealed.dispatch(healing);
   }
 
   /**
@@ -91,6 +88,36 @@ export class HealthComponent {
    */
   public die(): void {
     this.internalDead = true;
-    this.onDied.dispatch();
+    this.internalOnDied.dispatch();
+  }
+
+  /**
+   * Add event on damaged.
+   *
+   * @param event
+   * @returns Event remover
+   */
+  public onTakeDamage(event: (damage: number) => void): () => void {
+    return this.internalOnTakeDamage.add(event);
+  }
+
+  /**
+   * Add event on healed.
+   *
+   * @param event
+   * @returns Event remover
+   */
+  public onHealed(event: (amount: number) => void): () => void {
+    return this.internalOnHealed.add(event);
+  }
+
+  /**
+   * Add event on died.
+   *
+   * @param event
+   * @returns Event remover
+   */
+  public onDied(event: () => void): () => void {
+    return this.internalOnDied.add(event);
   }
 }

@@ -17,7 +17,7 @@ enum SquadMemberStatus {
  * When disappear all member, squad notify it.
  */
 export class Squad {
-  public readonly onAllMemberFinished: EventDispatcher<SquadFinishedReason>;
+  private readonly _onAllMemberFinished: EventDispatcher<SquadFinishedReason>;
   public readonly members: Set<Character>;
   private isSquadBuilding = true;
   private membersStatus: Map<Character, SquadMemberStatus>;
@@ -25,7 +25,7 @@ export class Squad {
   public constructor(
     onAllMemberFinished: EventDispatcher<SquadFinishedReason>
   ) {
-    this.onAllMemberFinished = onAllMemberFinished;
+    this._onAllMemberFinished = onAllMemberFinished;
     this.members = new Set();
     this.membersStatus = new Map();
   }
@@ -38,16 +38,13 @@ export class Squad {
    * @param member New squad member
    */
   public add(member: Character): void {
-    const mover = member.mover;
-    if (mover === undefined) throw new Error("member must have mover");
-
     this.membersStatus.set(member, SquadMemberStatus.living);
 
-    member.health.onDied.add((): void => {
+    member.onDied((): void => {
       this.memberWasFinished(member, SquadMemberStatus.died);
     });
 
-    mover.onExitingFromArea.add((): void => {
+    member.onExitingFromArea((): void => {
       this.memberWasFinished(member, SquadMemberStatus.escaped);
     });
 
@@ -59,6 +56,17 @@ export class Squad {
    */
   public notifyFinishSpawning(): void {
     this.isSquadBuilding = false;
+  }
+
+  /**
+   * Add event called when all member finished.
+   *
+   * @param event Event
+   */
+  public onAllMemberFinished(
+    event: (reason: SquadFinishedReason) => void
+  ): () => void {
+    return this._onAllMemberFinished.add(event);
   }
 
   private canFinishSquad(): boolean {
@@ -91,6 +99,6 @@ export class Squad {
       ? SquadFinishedReason.allMemberDied
       : SquadFinishedReason.allMemberDiedOrEscaped;
 
-    this.onAllMemberFinished.dispatch(reason);
+    this._onAllMemberFinished.dispatch(reason);
   }
 }

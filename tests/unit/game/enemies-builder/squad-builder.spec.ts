@@ -11,7 +11,6 @@ import { EnemyCreator } from "@/game/enemies-builder/enemy-creator";
 import { StaticEnemyMoverCreator } from "@/game/enemies-builder/static-enemy-mover-creator";
 import { Character } from "@/game/actor/character";
 import { ExtendedActor } from "@/game/actor/extended-actor";
-import { HealthComponent } from "@/game/health-component";
 import { Mover } from "@/game/mover/mover";
 import { ZIndex } from "@/game/common/z-index";
 
@@ -31,17 +30,11 @@ function createEnemyMock(): Character {
       simpleMock<ExtendedActor>()
     ]
   });
-  const health = simpleMock<HealthComponent>({
-    onDied: new EventDispatcher<void>()
-  });
-  const mover = simpleMock<Mover>({
-    onExitingFromArea: new EventDispatcher<void>()
-  });
   return simpleMock<Character>({
     actor,
-    health,
-    mover,
-    startMover: jest.fn()
+    onDied: jest.fn(),
+    onExitingFromArea: jest.fn(),
+    startMoving: jest.fn()
   });
 }
 
@@ -178,8 +171,8 @@ describe("SquadBuilder", (): void => {
 
     // Then spawned enemy was started mover
     expect(args.enemyCreator.create).toBeCalledTimes(2);
-    expect(enemy1.startMover).toBeCalled();
-    expect(enemy2.startMover).toBeCalled();
+    expect(enemy1.startMoving).toBeCalled();
+    expect(enemy2.startMoving).toBeCalled();
   });
 
   it("dispatch event when finish spawning", (): void => {

@@ -22,7 +22,7 @@ export interface SquadBuilderArgs {
 export class SquadBuilder {
   private readonly squad: Squad;
   private readonly scene: ex.Scene;
-  public readonly onFinished: EventDispatcher<void>;
+  private readonly _onFinishedSpawning: EventDispatcher<void>;
   private readonly enemyCreator: EnemyCreator;
   private readonly moverCreator: StaticEnemyMoverCreator;
   private readonly activateTimeAndPositions: ActivateTimeAndPosition[];
@@ -33,7 +33,7 @@ export class SquadBuilder {
   public constructor(args: SquadBuilderArgs) {
     this.scene = args.scene;
     this.squad = args.squad;
-    this.onFinished = args.onFinished;
+    this._onFinishedSpawning = args.onFinished;
     this.enemyCreator = args.enemyCreator;
     this.moverCreator = args.moverCreator;
     this.activateTimeAndPositions = args.activateTimeAndPositions;
@@ -70,8 +70,17 @@ export class SquadBuilder {
     }
   }
 
+  /**
+   * Add event called when all enemy was spawned.
+   *
+   * @param event Event
+   */
+  public onFinishedSpawning(event: () => void): () => void {
+    return this._onFinishedSpawning.add(event);
+  }
+
   private finishSpawning(): void {
-    this.onFinished.dispatch();
+    this._onFinishedSpawning.dispatch();
     this.squad.notifyFinishSpawning();
   }
 
@@ -81,10 +90,9 @@ export class SquadBuilder {
       .position;
     const mover = this.moverCreator.create(activatePos);
     const enemy = this.enemyCreator.create(mover);
-    enemy.startMover();
+    enemy.startMoving();
     const timer = new ex.Timer((): void => {
-      const w = enemy.weapon;
-      if (w !== undefined) w.startFiring();
+      enemy.startFiring();
     }, this.activateTime * 1000);
     this.scene.addTimer(timer);
 

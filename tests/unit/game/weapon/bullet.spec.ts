@@ -3,7 +3,6 @@ import { Bullet } from "@/game/weapon/bullet";
 import { simpleMock } from "../../../test-util";
 import { createCollisionsMock } from "../test-game-util";
 import { Character } from "@/game/actor/character";
-import { HealthComponent } from "@/game/health-component";
 import { ZIndex } from "@/game/common/z-index";
 import { ExtendedActor } from "@/game/actor/extended-actor";
 import { CoordinatesConverter } from "@/game/common/coordinates-converter";
@@ -27,7 +26,15 @@ function createActorMock(): ExtendedActor {
     setCollision: jest.fn(),
     collisions: createCollisionsMock(),
     setZIndex: jest.fn(),
-    on: jest.fn()
+    on: jest.fn(),
+    moveToPosInArea: jest.fn()
+  });
+}
+
+function createEnemyCharacterMock(isPlayerSide: boolean): Character {
+  return simpleMock<Character>({
+    isPlayerSide,
+    takeDamage: jest.fn()
   });
 }
 
@@ -105,12 +112,7 @@ describe("Bullet", (): void => {
     const bullet = new Bullet(createActorMock());
 
     // And Character
-    const healthComponent = simpleMock<HealthComponent>();
-    healthComponent.takeDamage = jest.fn();
-    const character = simpleMock<Character>({
-      health: healthComponent,
-      isPlayerSide: !bulletIsPlayerSide
-    });
+    const character = createEnemyCharacterMock(!bulletIsPlayerSide);
 
     // When initialize bullet
     const damage = 10;
@@ -127,7 +129,7 @@ describe("Bullet", (): void => {
     bullet.hitTo(character);
 
     // Then character was damaged
-    expect(character.health.takeDamage).toBeCalledWith(damage);
+    expect(character.takeDamage).toBeCalledWith(damage);
   });
 
   it.each`

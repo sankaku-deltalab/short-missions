@@ -37,7 +37,7 @@ describe("ExtendedActor", (): void => {
 
     // When set wrapper to actor
     const setting = (): void => {
-      actor.owner = wrapper;
+      actor.useSelfInWrapper(wrapper);
     };
 
     // Then not throw error
@@ -73,7 +73,7 @@ describe("ExtendedActor", (): void => {
       const actorPropertyTyped = actorProperty as
         | "posInArea"
         | "posInVisualArea";
-      const actualPos = actor[actorPropertyTyped];
+      const actualPos = actor[actorPropertyTyped]();
 
       // Then position was get from CoordinatesConverter
       const expectedPos = positions[actorPropertyTyped];
@@ -95,8 +95,8 @@ describe("ExtendedActor", (): void => {
       collisions: simpleMock<Collisions>()
     });
 
-    // When get position in area or visual area
-    actor.posInArea = new ex.Vector(3, 4);
+    // When move position in area
+    actor.moveToPosInArea(new ex.Vector(3, 4));
 
     // Then position was get from CoordinatesConverter
     expect(actor.pos.x).toBe(posInCanvas.x);
@@ -177,7 +177,7 @@ describe("ExtendedActor", (): void => {
     });
 
     // When set wrapper to actor
-    actor.owner = wrapper;
+    actor.useSelfInWrapper(wrapper);
 
     // And update actor
     const collision = simpleMock<ex.CollisionGroup>();

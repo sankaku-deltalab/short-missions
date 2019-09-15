@@ -41,31 +41,34 @@ export class EnemyCreator {
   }
 
   public create(mover: Mover): Character {
-    // Create character
+    // Create actor
+    const color = ex.Color.Rose;
     const sizeInCanvasScale = this.sizeInArea.scale(
       this.coordinatedConverter.areaSizeInCanvas
     );
-    const color = ex.Color.Rose;
-    const enemy = new Character({
-      mover,
-      health: new HealthComponent(this.health, this.health),
-      isPlayerSide: false,
-      actor: new ExtendedActor({
-        // TODO: Add visual thing
-        color, // TODO: Remove color when visual was set
-        coordinatesConverter: this.coordinatedConverter,
-        width: sizeInCanvasScale.x,
-        height: sizeInCanvasScale.y,
-        collisions: this.collisions
-      })
+    const actor = new ExtendedActor({
+      // TODO: Add visual thing
+      color, // TODO: Remove color when visual was set
+      coordinatesConverter: this.coordinatedConverter,
+      width: sizeInCanvasScale.x,
+      height: sizeInCanvasScale.y,
+      collisions: this.collisions
     });
 
     // Create muzzles
-    const muzzles = this.muzzleCreator.create(enemy.actor);
+    const muzzles = this.muzzleCreator.create(actor);
 
     // Create weapon
     const weapon = this.weaponCreator.create(muzzles);
-    enemy.setWeapon(weapon);
+
+    // Create character
+    const enemy = new Character({
+      mover,
+      weapon,
+      health: new HealthComponent(this.health, this.health),
+      isPlayerSide: false,
+      actor
+    });
 
     return enemy;
   }

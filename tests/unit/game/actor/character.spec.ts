@@ -5,18 +5,37 @@ import { createCollisionsMock } from "../test-game-util";
 import { HealthComponent } from "@/game/health-component";
 import { ExtendedActor } from "@/game/actor/extended-actor";
 import { Mover } from "@/game/mover/mover";
-import { EventDispatcher } from "@/game/common/event-dispatcher";
 
 function createHealthComponentMock(): HealthComponent {
-  return new HealthComponent(10, 10);
+  return simpleMock<HealthComponent>({
+    damageAbsorber: jest.fn(),
+    health: jest.fn(),
+    maxHealth: jest.fn(),
+    isDead: jest.fn(),
+    takeDamage: jest.fn(),
+    heal: jest.fn(),
+    die: jest.fn(),
+    onTakeDamage: jest.fn(),
+    onHealed: jest.fn(),
+    onDied: jest.fn()
+  });
 }
 
 function createMoverMock(): Mover {
   return simpleMock<Mover>({
     start: jest.fn(),
     update: jest.fn(),
-    onEnteringToArea: new EventDispatcher<void>(),
-    onExitingFromArea: new EventDispatcher<void>()
+    onEnteringToArea: jest.fn(),
+    onExitingFromArea: jest.fn()
+  });
+}
+
+function createWeaponMock(): Weapon {
+  return simpleMock<Weapon>({
+    startFiring: jest.fn(),
+    stopFiring: jest.fn(),
+    isFiring: jest.fn().mockReturnValue(true),
+    tick: jest.fn()
   });
 }
 
@@ -26,7 +45,8 @@ function createActorMock(): ExtendedActor {
     collisions: createCollisionsMock(),
     setCollision: jest.fn(),
     kill: jest.fn(),
-    update: jest.fn()
+    update: jest.fn(),
+    useSelfInWrapper: jest.fn()
   });
 }
 
@@ -35,85 +55,48 @@ function createCharacterArgs(): CharacterArgs {
     isPlayerSide: true,
     health: createHealthComponentMock(),
     actor: createActorMock(),
-    mover: createMoverMock()
+    mover: createMoverMock(),
+    weapon: createWeaponMock()
   };
 }
 
 describe("Character", (): void => {
-  it("can set weapon", (): void => {
-    // Given Weapon
-    const weapon = simpleMock<Weapon>();
-
-    // And Character
-    const args = createCharacterArgs();
-    const character = new Character(args);
-
-    // When set weapon
-    character.setWeapon(weapon);
-
-    // Then weapon was set
-    expect(character.weapon).toBe(weapon);
-  });
-
-  it("throw error if set weapon twice", (): void => {
-    // Given Weapon
-    const weapon = simpleMock<Weapon>();
-
-    // And Character
-    const args = createCharacterArgs();
-    const character = new Character(args);
-
-    // When set weapon
-    character.setWeapon(weapon);
-
-    // And set weapon again
-    const nextWeapon = simpleMock<Weapon>();
-    const func = (): void => {
-      character.setWeapon(nextWeapon);
-    };
-
-    // Then throw error
-    expect(func).toThrowError();
-  });
-
   it("tick weapon when updated", (): void => {
-    // Given Weapon
-    const weapon = simpleMock<Weapon>();
-    weapon.tick = jest.fn();
-
-    // And Character
+    // Given Character
     const args = createCharacterArgs();
     const character = new Character(args);
 
-    // When set weapon
-    character.setWeapon(weapon);
-
-    // And update Character
+    // When update Character
     const engine = simpleMock<ex.Engine>();
     const deltaTime = 3;
     character.update(engine, deltaTime);
 
     // Then weapon was ticked
-    expect(weapon.tick).toBeCalledWith(deltaTime);
+    expect(args.weapon.tick).toBeCalledWith(deltaTime);
   });
 
   it("stop weapon immediately when killed", (): void => {
-    // Given Weapon
-    const weapon = simpleMock<Weapon>();
-    weapon.stopFiring = jest.fn();
-
-    // And Character
+    // Given Character
     const args = createCharacterArgs();
     const character = new Character(args);
 
-    // When set weapon
-    character.setWeapon(weapon);
-
-    // And Character was killed
+    // When Character was killed
     character.kill();
 
     // Then weapon was ticked
-    expect(weapon.stopFiring).toBeCalledWith(true);
+    expect(args.weapon.stopFiring).toBeCalledWith(true);
+  });
+
+  it("stop weapon immediately when died", (): void => {
+    // Given Character
+    const args = createCharacterArgs();
+    const character = new Character(args);
+
+    // When Character was died
+    character.die();
+
+    // Then weapon was ticked
+    expect(args.weapon.stopFiring).toBeCalledWith(true);
   });
 
   it.each`
@@ -121,7 +104,7 @@ describe("Character", (): void => {
     ${true}      | ${"player"}
     ${false}     | ${"enemy"}
   `(
-    "set collision as player if isPlayerSide",
+    "set collision as $collisionName if isPlayerSide is $isPlayerSide",
     ({ isPlayerSide, collisionName }): void => {
       // Given collisions
       const actor = createActorMock();
@@ -140,18 +123,14 @@ describe("Character", (): void => {
     }
   );
 
-  it("killed when health was died", (): void => {
-    // Given healthComponent
-    const health = new HealthComponent(10, 10);
-
-    // And Character
+  it("killed when died", (): void => {
+    // Given Character
     const args = createCharacterArgs();
-    args.health = health;
     const character = new Character(args);
     character.kill = jest.fn();
 
-    // When health was died
-    character.health.die();
+    // When died Character
+    character.die();
 
     // Then character was killed
     expect(character.kill).toBeCalled();
@@ -163,7 +142,7 @@ describe("Character", (): void => {
     const character = new Character(args);
 
     // When start mover
-    character.startMover();
+    character.startMoving();
 
     // Then mover was started
     expect(args.mover.start).toBeCalledWith(character);
@@ -175,7 +154,7 @@ describe("Character", (): void => {
     const character = new Character(args);
 
     // When start mover
-    character.startMover();
+    character.startMoving();
 
     // And update Character
     const deltaTime = 10;
@@ -191,12 +170,12 @@ describe("Character", (): void => {
     const character = new Character(args);
 
     // When take damage
-    const initialHealth = character.health.health;
+    const initialHealth = character.health();
     const originalDamage = 1;
-    character.health.takeDamage(originalDamage);
+    character.takeDamage(originalDamage);
 
     // Then health was not damaged
-    expect(character.health.health).toBe(initialHealth);
+    expect(character.health()).toBe(initialHealth);
   });
 
   it("can take damage after entering to area", (): void => {
@@ -205,15 +184,16 @@ describe("Character", (): void => {
     const character = new Character(args);
 
     // When entering to area
-    character.mover.onEnteringToArea.dispatch();
+    for (const event of (args.mover.onEnteringToArea as any).mock.calls[0]) {
+      event();
+    }
 
     // And take damage
-    const initialHealth = character.health.health;
-    const originalDamage = 1;
-    character.health.takeDamage(originalDamage);
+    const damage = 1;
+    character.takeDamage(damage);
 
     // Then health was damaged
-    expect(character.health.health).toBe(initialHealth - originalDamage);
+    expect(args.health.takeDamage).toBeCalledWith(damage);
   });
 
   it("do not take damage after exiting to area", (): void => {
@@ -222,18 +202,21 @@ describe("Character", (): void => {
     const character = new Character(args);
 
     // When entering to area
-    character.mover.onEnteringToArea.dispatch();
+    for (const event of (args.mover.onEnteringToArea as any).mock.calls[0]) {
+      event();
+    }
 
     // And exiting to area
-    character.mover.onExitingFromArea.dispatch();
+    for (const event of (args.mover.onExitingFromArea as any).mock.calls[0]) {
+      event();
+    }
 
     // And take damage
-    const initialHealth = character.health.health;
-    const originalDamage = 1;
-    character.health.takeDamage(originalDamage);
+    const damage = 1;
+    character.takeDamage(damage);
 
-    // Then health was not damaged
-    expect(character.health.health).toBe(initialHealth);
+    // Then health was damaged
+    expect(args.health.takeDamage).toBeCalledWith(0);
   });
 
   it("kill actor when killed", (): void => {

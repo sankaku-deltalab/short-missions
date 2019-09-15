@@ -40,6 +40,8 @@ export class Weapon {
 
   /**
    * Stop firing.
+   *
+   * @param immediately Immediately stop firing
    */
   public stopFiring(immediately = false): void {
     this.isRequestedFiring = false;

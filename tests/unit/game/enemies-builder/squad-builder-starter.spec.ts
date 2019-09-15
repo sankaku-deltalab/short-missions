@@ -11,7 +11,7 @@ function createSquadBuilderMock(): SquadBuilder {
   return simpleMock<SquadBuilder>({
     start: jest.fn(),
     update: jest.fn(),
-    onFinished: new EventDispatcher()
+    onFinishedSpawning: jest.fn()
   });
 }
 
@@ -96,7 +96,10 @@ describe("SquadBuilderStarter", (): void => {
 
     // And all SquadBuilder was finished
     for (const info of args.builderInfo) {
-      info.squadBuilder.onFinished.dispatch();
+      for (const [event] of (info.squadBuilder.onFinishedSpawning as any).mock
+        .calls) {
+        event();
+      }
     }
 
     // When SquadBuilderStarter was finished

@@ -17,17 +17,9 @@ export class EventDispatcher<T> {
    *
    * @param event
    */
-  public add(event: (value: T) => void): void {
+  public add(event: (value: T) => void): () => void {
     this.events.add(event);
-  }
-
-  /**
-   * Remove added event.
-   *
-   * @param event
-   */
-  public remove(event: (value: T) => void): void {
-    this.events.delete(event);
+    return (): void => this.remove(event);
   }
 
   /**
@@ -55,5 +47,14 @@ export class EventDispatcher<T> {
     this.events.forEach((event: (value: T) => void): void => {
       event(value);
     });
+  }
+
+  /**
+   * Remove added event.
+   *
+   * @param event
+   */
+  private remove(event: (value: T) => void): void {
+    this.events.delete(event);
   }
 }

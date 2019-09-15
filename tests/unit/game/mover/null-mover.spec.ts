@@ -1,4 +1,3 @@
-import * as ex from "excalibur";
 import { simpleMock } from "../../../test-util";
 import { EventDispatcher } from "@/game/common/event-dispatcher";
 import { CoordinatesConverter } from "@/game/common/coordinates-converter";
@@ -11,8 +10,8 @@ function createActorWrapperMock(): ActorWrapper {
   });
   const actor = {
     coordinatesConverter,
-    set pos(_: ex.Vector) {},
-    set posInArea(_: ex.Vector) {}
+    moveToPosInCanvas: jest.fn(),
+    moveToPosInArea: jest.fn()
   };
   return simpleMock<ActorWrapper>({ actor });
 }
@@ -43,7 +42,7 @@ describe("NullMover", (): void => {
     mover.start(wrapper);
 
     // Then entering event was dispatched
-    expect(mover.onEnteringToArea.dispatch).toBeCalled();
+    expect(args.onEnteringToArea.dispatch).toBeCalled();
   });
 
   it("did not move owner when started", (): void => {
@@ -53,15 +52,13 @@ describe("NullMover", (): void => {
 
     // And ActorWrapper
     const wrapper = createActorWrapperMock();
-    const setPos = jest.spyOn(wrapper.actor, "pos", "set");
-    const setPosInArea = jest.spyOn(wrapper.actor, "posInArea", "set");
 
     // When start mover
     mover.start(wrapper);
 
     // Then owner did not be moved
-    expect(setPos).not.toBeCalled();
-    expect(setPosInArea).not.toBeCalled();
+    expect(wrapper.actor.moveToPosInCanvas).not.toBeCalled();
+    expect(wrapper.actor.moveToPosInArea).not.toBeCalled();
   });
 
   it("did not move owner when updated", (): void => {
@@ -71,8 +68,6 @@ describe("NullMover", (): void => {
 
     // And ActorWrapper
     const wrapper = createActorWrapperMock();
-    const setPos = jest.spyOn(wrapper.actor, "pos", "set");
-    const setPosInArea = jest.spyOn(wrapper.actor, "posInArea", "set");
 
     // When start mover
     mover.start(wrapper);
@@ -81,7 +76,7 @@ describe("NullMover", (): void => {
     mover.update(10);
 
     // Then owner did not be moved
-    expect(setPos).not.toBeCalled();
-    expect(setPosInArea).not.toBeCalled();
+    expect(wrapper.actor.moveToPosInCanvas).not.toBeCalled();
+    expect(wrapper.actor.moveToPosInArea).not.toBeCalled();
   });
 });
