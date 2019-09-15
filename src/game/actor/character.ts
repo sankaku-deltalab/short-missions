@@ -39,6 +39,8 @@ export class Character implements ActorWrapper {
     this.muzzles = args.muzzles;
     this.isInArea = false;
 
+    this.actor.useSelfInWrapper(this);
+
     // Set muzzle as child of self
     for (const [_name, muzzle] of this.muzzles) {
       this.actor.add(muzzle.actor);
@@ -50,6 +52,11 @@ export class Character implements ActorWrapper {
     });
     this.mover.onExitingFromArea((): void => {
       this.isInArea = false;
+    });
+
+    // Kill this when died
+    this.healthComponent.onDied((): void => {
+      this.kill();
     });
 
     // Setup collision
@@ -132,7 +139,6 @@ export class Character implements ActorWrapper {
    */
   public die(): void {
     this.healthComponent.die();
-    this.kill();
   }
 
   /**
