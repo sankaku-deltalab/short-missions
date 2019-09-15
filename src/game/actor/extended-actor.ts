@@ -3,11 +3,29 @@ import { Collisions } from "../common/collision-groups";
 import { CoordinatesConverter } from "../common/coordinates-converter";
 import { ActorWrapper } from "./actor-wrapper";
 
-export interface ExtendedActorArgs extends ex.IActorArgs {
+interface ExtraArgs {
   posInArea?: ex.Vector;
+  sizeInArea?: ex.Vector;
   collisions: Collisions;
   coordinatesConverter: CoordinatesConverter;
 }
+
+export interface ExtendedActorArgs extends ex.IActorArgs, ExtraArgs {}
+
+/**
+ * To avoid assign extra args (e.g. posInArea) when called super class constructor, delete posInArea from args
+ *
+ * @param args
+ */
+const removeExtraArgs = (args: ExtendedActorArgs): ex.IActorArgs => {
+  const actorArgs = Object.assign({}, args);
+  delete actorArgs.posInArea;
+  delete actorArgs.sizeInArea;
+  delete actorArgs.collisions;
+  delete actorArgs.coordinatesConverter;
+
+  return actorArgs;
+};
 
 /**
  * ExtendedActor is used for `ActorWrapper`.
@@ -19,20 +37,25 @@ export class ExtendedActor extends ex.Actor {
   private _owner?: ActorWrapper;
 
   public constructor(args: ExtendedActorArgs) {
-    // to avoid assign posInArea when called super class constructor, delete posInArea from args
-    const posInArea = args.posInArea;
-    delete args.posInArea;
+    const actorArgs = removeExtraArgs(args);
+    super(actorArgs);
 
-    super(args);
     this.collisions = args.collisions;
     this.coordinatesConverter = args.coordinatesConverter;
 
-    if (posInArea !== undefined) {
-      this.moveToPosInArea(posInArea);
+    if (args.posInArea !== undefined) {
+      this.moveToPosInArea(args.posInArea);
+    }
+
+    if (args.sizeInArea !== undefined) {
+      const size = this.coordinatesConverter.toCanvasVector(args.sizeInArea);
+      this.width = size.x;
+      this.height = size.y;
     }
 
     this.on("postupdate", (event: ex.PostUpdateEvent): void => {
-      this.owner().update(event.engine, event.delta);
+      if (this._owner === undefined) return;
+      this._owner.update(event.engine, event.delta);
     });
   }
 
