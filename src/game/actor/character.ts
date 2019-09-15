@@ -4,6 +4,8 @@ import { ExtendedActor } from "./extended-actor";
 import { HealthComponent } from "../health-component";
 import { ActorWrapper } from "./actor-wrapper";
 import { Mover } from "../mover/mover";
+import { Muzzle } from "../weapon/muzzle";
+import { ZIndex } from "../common/z-index";
 
 export interface CharacterArgs {
   isPlayerSide: boolean;
@@ -11,6 +13,7 @@ export interface CharacterArgs {
   actor: ExtendedActor;
   mover: Mover;
   weapon: Weapon;
+  muzzles: Map<string, Muzzle>;
 }
 
 /**
@@ -24,6 +27,7 @@ export class Character implements ActorWrapper {
   private readonly healthComponent: HealthComponent;
   private readonly mover: Mover;
   private weapon: Weapon;
+  private readonly muzzles: Map<string, Muzzle>;
   private isInArea: boolean;
 
   public constructor(args: CharacterArgs) {
@@ -32,12 +36,18 @@ export class Character implements ActorWrapper {
     this.healthComponent = args.health;
     this.mover = args.mover;
     this.weapon = args.weapon;
+    this.muzzles = args.muzzles;
     this.isInArea = false;
 
+    // Set muzzle as child of self
+    for (const [_name, muzzle] of this.muzzles) {
+      this.actor.add(muzzle.actor);
+    }
+
+    // Update status when enter to or exit from area
     this.mover.onEnteringToArea((): void => {
       this.isInArea = true;
     });
-
     this.mover.onExitingFromArea((): void => {
       this.isInArea = false;
     });
@@ -49,8 +59,28 @@ export class Character implements ActorWrapper {
     this.actor.setCollision(collision);
   }
 
+  /**
+   * Self is player side character.
+   */
   public isPlayerSide(): boolean {
     return this._isPlayerSide;
+  }
+
+  /**
+   * Add self to scene.
+   * Use this function instead of `ex.Scene.add`
+   *
+   * @param scene
+   */
+  public addSelfToScene(scene: ex.Scene): void {
+    scene.add(this.actor);
+    for (const [_name, muzzle] of this.muzzles) {
+      scene.add(muzzle.actor);
+    }
+
+    // Set z-index
+    const zIndex = this.isPlayerSide() ? ZIndex.player : ZIndex.enemy;
+    this.actor.setZIndex(zIndex);
   }
 
   // Health component

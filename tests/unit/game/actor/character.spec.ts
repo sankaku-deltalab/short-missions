@@ -1,10 +1,11 @@
 import { simpleMock } from "../../../test-util";
 import { Weapon } from "@/game/weapon/weapon";
 import { Character, CharacterArgs } from "@/game/actor/character";
-import { createCollisionsMock } from "../test-game-util";
+import { createCollisionsMock, createSceneMock } from "../test-game-util";
 import { HealthComponent } from "@/game/health-component";
 import { ExtendedActor } from "@/game/actor/extended-actor";
 import { Mover } from "@/game/mover/mover";
+import { Muzzle } from "@/game/weapon/muzzle";
 
 function createHealthComponentMock(): HealthComponent {
   return simpleMock<HealthComponent>({
@@ -39,14 +40,22 @@ function createWeaponMock(): Weapon {
   });
 }
 
+function createMuzzleMock(): Muzzle {
+  return simpleMock<Muzzle>({
+    actor: simpleMock()
+  });
+}
+
 function createActorMock(): ExtendedActor {
   return simpleMock<ExtendedActor>({
+    add: jest.fn(),
     on: jest.fn(),
     collisions: createCollisionsMock(),
     setCollision: jest.fn(),
     kill: jest.fn(),
     update: jest.fn(),
-    useSelfInWrapper: jest.fn()
+    useSelfInWrapper: jest.fn(),
+    setZIndex: jest.fn()
   });
 }
 
@@ -56,11 +65,45 @@ function createCharacterArgs(): CharacterArgs {
     health: createHealthComponentMock(),
     actor: createActorMock(),
     mover: createMoverMock(),
-    weapon: createWeaponMock()
+    weapon: createWeaponMock(),
+    muzzles: new Map<string, Muzzle>([
+      ["muzzle1", createMuzzleMock()],
+      ["muzzle2", createMuzzleMock()]
+    ])
   };
 }
 
 describe("Character", (): void => {
+  it("can add self to scene with muzzles", (): void => {
+    // Given Character
+    const args = createCharacterArgs();
+    const character = new Character(args);
+
+    // And scene
+    const scene = createSceneMock();
+
+    // When add Character to scene
+    character.addSelfToScene(scene);
+
+    // Then muzzles was added to scene
+    expect(args.muzzles.size).not.toBe(0);
+    for (const [_muzzleName, muzzle] of args.muzzles) {
+      expect(scene.add).toBeCalledWith(muzzle.actor);
+    }
+  });
+
+  it("add muzzles to self", (): void => {
+    // When create Character
+    const args = createCharacterArgs();
+    const character = new Character(args);
+
+    // Then muzzles was added to Character
+    expect(args.muzzles.size).not.toBe(0);
+    for (const [_muzzleName, muzzle] of args.muzzles) {
+      expect(character.actor.add).toBeCalledWith(muzzle.actor);
+    }
+  });
+
   it("tick weapon when updated", (): void => {
     // Given Character
     const args = createCharacterArgs();

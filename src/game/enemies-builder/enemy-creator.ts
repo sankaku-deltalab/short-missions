@@ -56,7 +56,7 @@ export class EnemyCreator {
     });
 
     // Create muzzles
-    const muzzles = this.muzzleCreator.create(actor);
+    const muzzles = this.muzzleCreator.create();
 
     // Create weapon
     const weapon = this.weaponCreator.create(muzzles);
@@ -67,7 +67,8 @@ export class EnemyCreator {
       weapon,
       health: new HealthComponent(this.health, this.health),
       isPlayerSide: false,
-      actor
+      actor,
+      muzzles
     });
 
     return enemy;

@@ -24,9 +24,7 @@ describe("WeaponCreator", (): void => {
     const wc = new WeaponCreator(gun);
 
     // When create weapon
-    const muzzles = {
-      centerMuzzle: simpleMock<Muzzle>()
-    };
+    const muzzles = new Map([["centerMuzzle", simpleMock<Muzzle>()]]);
     const weapon = wc.create(muzzles);
 
     // Then weapon is Weapon class

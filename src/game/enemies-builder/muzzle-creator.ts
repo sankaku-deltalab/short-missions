@@ -31,10 +31,11 @@ export class MuzzleCreator {
     this.muzzleInfoList = args.muzzleInfoList;
   }
 
-  public create(muzzlesOwner: ex.Actor): { [key: string]: Muzzle } {
-    const muzzles: { [key: string]: Muzzle } = {};
-
-    this.muzzleInfoList.forEach((info: MuzzleInfo): void => {
+  public create(): Map<string, Muzzle> {
+    const muzzlesKeyValue = this.muzzleInfoList.map((info: MuzzleInfo): [
+      string,
+      Muzzle
+    ] => {
       const pos = this.coordinatesConverter.toCanvasVector(info.offsetInArea);
       const muzzle = new Muzzle({
         bulletsPool: info.bulletsPool,
@@ -46,11 +47,9 @@ export class MuzzleCreator {
           collisions: this.collisions
         })
       });
-      muzzles[info.name] = muzzle;
-
-      muzzlesOwner.add(muzzle.actor);
+      return [info.name, muzzle];
     });
 
-    return muzzles;
+    return new Map(muzzlesKeyValue);
   }
 }

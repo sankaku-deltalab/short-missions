@@ -158,7 +158,9 @@ export class MissionFlow {
     // Create Muzzle
     const muzzleActor = new ExtendedActor({
       coordinatesConverter,
-      posInArea: posInArea.add(new ex.Vector(0.125 / 4, 0)),
+      pos: coordinatesConverter.toCanvasVector(
+        posInArea.add(new ex.Vector(0.125 / 4, 0))
+      ),
       collisions: this.stgGameManager.collisions
     });
     const muzzle = new Muzzle({
@@ -167,6 +169,7 @@ export class MissionFlow {
       isPlayerSide: true,
       actor: muzzleActor
     });
+    const muzzles = new Map([["centerMuzzle", muzzle]]);
 
     // Create weapon
     const wc = new WeaponCreator(
@@ -176,9 +179,7 @@ export class MissionFlow {
         gt.repeat({ times: 1, interval: 4 }, gt.fire(gt.bullet()))
       )
     );
-    const weapon = wc.create({
-      centerMuzzle: muzzle
-    });
+    const weapon = wc.create(muzzles);
 
     // Create player character
     const pcActor = new ExtendedActor({
@@ -197,15 +198,10 @@ export class MissionFlow {
         onEnteringToArea: new EventDispatcher<void>(),
         onExitingFromArea: new EventDispatcher<void>()
       }),
-      weapon
+      weapon,
+      muzzles
     });
-
-    pc.actor.add(muzzle.actor);
-    muzzle.actor.pos = muzzle.actor.pos.sub(pc.actor.pos);
-    scene.add(pc.actor);
-    scene.add(muzzle.actor);
-
-    pc.actor.setZIndex(ZIndex.player);
+    pc.addSelfToScene(scene);
     return pc;
   }
 

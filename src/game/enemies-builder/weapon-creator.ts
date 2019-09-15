@@ -17,8 +17,10 @@ export class WeaponCreator {
    *
    * @param muzzles Muzzles would be used by created weapon.
    */
-  public create(muzzles: { [key: string]: Muzzle }): Weapon {
-    const player = gt.createDefaultPlayer(muzzles);
+  public create(muzzles: Map<string, Muzzle>): Weapon {
+    const player = gt.createDefaultPlayer(
+      Object.fromEntries(muzzles.entries())
+    );
     player.setGunTree(this.guntree);
     return new Weapon(player);
   }
