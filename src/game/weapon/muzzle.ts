@@ -14,18 +14,6 @@ export interface MuzzleArgs extends ex.IActorArgs {
 
 /**
  * Muzzle represent bullet firing system.
- *
- * @example
- * > import * as gt from "guntree";
- * >
- * > const character = foo;
- * > const muzzle = new Muzzle(bar);
- * > character.add(muzzle);
- * >
- * > const player = gt.Player({ "centerMuzzle": muzzle })
- * > player.setGunTree(gt.nop());
- * > const weapon = new Weapon(player);
- * > weapon.start();
  */
 export class Muzzle implements gt.Muzzle, ActorWrapper {
   private readonly damage: number;
