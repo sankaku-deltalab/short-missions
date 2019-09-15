@@ -69,7 +69,7 @@ export class SquadBuilderStarter {
 
   private startNextBuilder(): void {
     const builder = this.builderInfo[this.startedCount].squadBuilder;
-    builder.onFinished.add((): void => {
+    builder.onFinishedSpawning((): void => {
       this.notifyFinishBuilder();
     });
     builder.start();
