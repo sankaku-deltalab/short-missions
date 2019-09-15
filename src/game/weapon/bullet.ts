@@ -13,7 +13,7 @@ export interface BulletInitializeArgs {
 }
 
 export class Bullet implements ActorWrapper {
-  public isPlayerSideInner = true;
+  private _isPlayerSide = true;
   public readonly actor: ExtendedActor;
   private damage = 0;
 
@@ -23,14 +23,14 @@ export class Bullet implements ActorWrapper {
     actor.on("precollision", (event: ex.PreCollisionEvent<ex.Actor>): void => {
       const other = event.other;
       if (!(other instanceof ExtendedActor)) return;
-      const character = other.owner;
+      const character = other.owner();
       if (!(character instanceof Character)) return;
       this.hitTo(character);
     });
   }
 
-  public get isPlayerSide(): boolean {
-    return this.isPlayerSideInner;
+  public isPlayerSide(): boolean {
+    return this._isPlayerSide;
   }
 
   /**
@@ -53,10 +53,10 @@ export class Bullet implements ActorWrapper {
     this.actor.vel = ex.Vector.fromAngle(
       this.actor.rotation - Math.PI / 2
     ).scale(args.speed);
-    this.isPlayerSideInner = args.isPlayerSide;
+    this._isPlayerSide = args.isPlayerSide;
 
     const cols = this.actor.collisions;
-    const collision = this.isPlayerSide ? cols.playerBullet : cols.enemyBullet;
+    const collision = args.isPlayerSide ? cols.playerBullet : cols.enemyBullet;
     this.actor.setCollision(collision);
 
     const zIndex = args.isPlayerSide ? ZIndex.playerBullet : ZIndex.enemyBullet;
