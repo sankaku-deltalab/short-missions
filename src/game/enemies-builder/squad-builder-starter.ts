@@ -14,14 +14,14 @@ export interface SquadBuilderStarterArgs {
 }
 
 export class SquadBuilderStarter {
-  public readonly onFinished: EventDispatcher<void>;
+  private readonly _onFinishedSpawning: EventDispatcher<void>;
   private readonly builderInfo: SquadBuilderInfo[];
   private startedCount = 0;
   private timeSinceStartMS = 0;
   private builderFinishedCount = 0;
 
   public constructor(args: SquadBuilderStarterArgs) {
-    this.onFinished = args.onFinished;
+    this._onFinishedSpawning = args.onFinished;
     this.builderInfo = args.builderInfo;
   }
 
@@ -59,11 +59,20 @@ export class SquadBuilderStarter {
     }
   }
 
+  /**
+   * Add event called when all enemy was spawned.
+   *
+   * @param event Event
+   */
+  public onFinishedSpawning(event: () => void): () => void {
+    return this._onFinishedSpawning.add(event);
+  }
+
   private notifyFinishBuilder(): void {
     const builderNum = this.builderInfo.length;
     this.builderFinishedCount += 1;
     if (this.builderFinishedCount >= builderNum) {
-      this.onFinished.dispatch();
+      this._onFinishedSpawning.dispatch();
     }
   }
 
