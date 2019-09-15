@@ -33,13 +33,11 @@ function createBulletsBool(
   collisions: Collisions,
   sizeInArea: ex.Vector
 ): BulletsPool {
-  const size = coordinatesConverter.toCanvasVector(sizeInArea);
   const bulletsPool = new BulletsPool();
   for (const _ of Array(bulletsNum)) {
     const bulletActor = new ExtendedActor({
       coordinatesConverter,
-      width: size.y,
-      height: size.x,
+      sizeInArea,
       color: ex.Color.Black,
       collisions
     });
@@ -158,9 +156,7 @@ export class MissionFlow {
     // Create Muzzle
     const muzzleActor = new ExtendedActor({
       coordinatesConverter,
-      pos: coordinatesConverter.toCanvasVector(
-        posInArea.add(new ex.Vector(0.125 / 4, 0))
-      ),
+      pos: coordinatesConverter.toCanvasVector(new ex.Vector(0.125 / 4, 0)),
       collisions: this.stgGameManager.collisions
     });
     const muzzle = new Muzzle({
