@@ -12,7 +12,6 @@ import { StaticEnemyMoverCreator } from "@/game/enemies-builder/static-enemy-mov
 import { Character } from "@/game/actor/character";
 import { ExtendedActor } from "@/game/actor/extended-actor";
 import { Mover } from "@/game/mover/mover";
-import { ZIndex } from "@/game/common/z-index";
 
 function createSquadMock(): Squad {
   return simpleMock<Squad>({
@@ -34,7 +33,8 @@ function createEnemyMock(): Character {
     actor,
     onDied: jest.fn(),
     onExitingFromArea: jest.fn(),
-    startMoving: jest.fn()
+    startMoving: jest.fn(),
+    addSelfToScene: jest.fn()
   });
 }
 
@@ -83,16 +83,11 @@ describe("SquadBuilder", (): void => {
     // Then mover was created from moverCreator
     expect(args.moverCreator.create).toBeCalledWith(activatePos);
 
-    // And mover was used for EnemyCreator
+    // And Character was created with mover
     expect(args.enemyCreator.create).toBeCalledWith(mover);
 
-    // And created enemy was added to scene
-    expect(args.scene.add).toBeCalledWith(enemy.actor);
-
-    // And children of created enemy was added to scene
-    for (const child of enemy.actor.children) {
-      expect(args.scene.add).toBeCalledWith(child);
-    }
+    // And Character start moving
+    expect(enemy.startMoving).toBeCalled();
   });
 
   it("spawn second enemy when updated with enough time", (): void => {
@@ -120,7 +115,6 @@ describe("SquadBuilder", (): void => {
 
     // Then building squad was dealt
     expect(args.enemyCreator.create).toBeCalledTimes(2);
-    expect(args.scene.add).toBeCalledWith(enemy2.actor);
   });
 
   it("spawning enemy count is same of activate positions num", (): void => {
@@ -227,7 +221,7 @@ describe("SquadBuilder", (): void => {
     expect(args.squad.notifyFinishSpawning).toBeCalled();
   });
 
-  it("set Z-Index as enemy", (): void => {
+  it("add spawned enemy to scene", (): void => {
     // Given SquadBuilder
     const args = createSquadBuilderArgsMock();
     const enemy1 = createEnemyMock();
@@ -241,7 +235,7 @@ describe("SquadBuilder", (): void => {
     // When start building
     squadBuilder.start();
 
-    // Then spawned enemy was set Z-Index
-    expect(enemy1.actor.setZIndex).toBeCalledWith(ZIndex.enemy);
+    // Then spawned enemy was added to scene
+    expect(enemy1.addSelfToScene).toBeCalledWith(args.scene);
   });
 });

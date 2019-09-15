@@ -2,7 +2,6 @@ import * as ex from "excalibur";
 import { EventDispatcher } from "../common/event-dispatcher";
 import { Squad } from "./squad";
 import { EnemyCreator } from "./enemy-creator";
-import { ZIndex } from "../common/z-index";
 import { ActivateTimeAndPosition } from "../contents/activate-position-generator/side-enter";
 import { StaticEnemyMoverCreator } from "./static-enemy-mover-creator";
 
@@ -90,20 +89,16 @@ export class SquadBuilder {
       .position;
     const mover = this.moverCreator.create(activatePos);
     const enemy = this.enemyCreator.create(mover);
+
+    enemy.addSelfToScene(this.scene);
+    this.squad.add(enemy);
     enemy.startMoving();
+
+    // Enemy start firing after activated
     const timer = new ex.Timer((): void => {
       enemy.startFiring();
     }, this.activateTime * 1000);
     this.scene.addTimer(timer);
-
-    // Add enemy to scene
-    this.scene.add(enemy.actor);
-    for (const child of enemy.actor.children) {
-      this.scene.add(child);
-    }
-    enemy.actor.setZIndex(ZIndex.enemy);
-
-    this.squad.add(enemy);
 
     this.spawnedCount += 1;
   }

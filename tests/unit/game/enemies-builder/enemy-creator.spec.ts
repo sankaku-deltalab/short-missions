@@ -24,7 +24,7 @@ function createEnemyCreatorArgs(): EnemyCreatorArgs {
     coordinatesConverter: simpleMock<CoordinatesConverter>(),
     health: 100,
     muzzleCreator: simpleMock<MuzzleCreator>({
-      create: jest.fn()
+      create: jest.fn().mockReturnValue(new Map())
     }),
     weaponCreator: simpleMock<WeaponCreator>({
       create: jest.fn()
@@ -67,10 +67,10 @@ describe("EnemyCreator", (): void => {
 
     // When create enemy
     const mover = createMoverMock();
-    const createdEnemy = ec.create(mover);
+    const _createdEnemy = ec.create(mover);
 
     // Then created enemy with muzzle
-    expect(args.muzzleCreator.create).toBeCalledWith(createdEnemy.actor);
+    expect(args.muzzleCreator.create).toBeCalled();
   });
 
   it("create character with weapon", (): void => {

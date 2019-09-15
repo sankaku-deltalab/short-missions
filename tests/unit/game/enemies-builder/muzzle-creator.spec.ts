@@ -48,45 +48,13 @@ describe("MuzzleCreator", (): void => {
     ];
     const mc = new MuzzleCreator(args);
 
-    // And owner actor
-    const owner = simpleMock<ex.Actor>({
-      add: jest.fn()
-    });
-
     // When create enemy
-    const createdMuzzles = mc.create(owner);
+    const createdMuzzles = mc.create();
 
     // Then created enemy was added to scene
     for (const [name, muzzle] of Object.entries(createdMuzzles)) {
       expect(name).toBe("centerMuzzle");
       expect(muzzle).toBeInstanceOf(Muzzle);
-    }
-  });
-
-  it("add created muzzles to owner", (): void => {
-    // Give EnemyCreator
-    const args = createMuzzleCreatorArgs();
-    args.muzzleInfoList = [
-      {
-        name: "centerMuzzle",
-        offsetInArea: new ex.Vector(0.1, 0),
-        damage: 10,
-        bulletsPool: simpleMock<BulletsPool>()
-      }
-    ];
-    const mc = new MuzzleCreator(args);
-
-    // And owner actor
-    const owner = simpleMock<ex.Actor>({
-      add: jest.fn()
-    });
-
-    // When create enemy
-    const createdMuzzles = mc.create(owner);
-
-    // Then created enemy was added to scene
-    for (const [_name, muzzle] of Object.entries(createdMuzzles)) {
-      expect(owner.add).toBeCalledWith(muzzle.actor);
     }
   });
 });
