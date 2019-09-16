@@ -1,10 +1,8 @@
 import * as ex from "excalibur";
-import { ActivatePositionGenerator } from "@/game/enemies-builder/activate-position-generator";
-
-export interface ActivateTimeAndPosition {
-  timeSec: number;
-  position: ex.Vector;
-}
+import {
+  ActivatePositionGenerator,
+  ActivateTimeAndPosition
+} from "@/game/enemies-builder/activate-position-generator";
 
 /**
  * Entering enemies from side of area.

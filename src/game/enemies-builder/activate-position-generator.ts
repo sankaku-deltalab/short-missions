@@ -1,5 +1,10 @@
 import * as ex from "excalibur";
 
+export interface ActivateTimeAndPosition {
+  timeSec: number;
+  position: ex.Vector;
+}
+
 /**
  * Generate enemy activate position and time.
  */
@@ -19,5 +24,5 @@ export interface ActivatePositionGenerator {
     enemySizeInArea: ex.Vector,
     squadKillTimeSec: number,
     isLeftSide: boolean
-  ): { timeSec: number; position: ex.Vector }[];
+  ): ActivateTimeAndPosition[];
 }
