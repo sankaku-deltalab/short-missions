@@ -134,6 +134,10 @@ export class StageEnemyCreator {
     builderInfo.sort((a, b) => {
       return a.startTime - b.startTime;
     });
+    const offset = builderInfo[0].startTime;
+    for (const info of builderInfo) {
+      info.startTime -= offset;
+    }
     return new SquadBuilderStarter({
       builderInfo,
       onFinished: new EventDispatcher()
