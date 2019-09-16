@@ -14,9 +14,13 @@ import {
   StaticEnemyMoverCreator,
   EnemyMoveRouteType
 } from "./static-enemy-mover-creator";
+import { TopEnter } from "../contents/activate-position-generator/top-enter";
+import { TopWideEnter } from "../contents/activate-position-generator/top-wide-enter";
 
 export enum EnemyMoveType {
-  sideIn = "sideIn"
+  sideIn = "sideIn",
+  topIn = "topIn",
+  topWideIn = "topWideIn"
 }
 
 export interface EnemyInfo {
@@ -157,20 +161,24 @@ export class StageEnemyCreator {
 
   private createActivatePositionGenerator(
     _info: EnemyInfo,
-    _moveType: EnemyMoveType
+    moveType: EnemyMoveType
   ): ActivatePositionGenerator {
-    // TODO: Use more type
-    return new SideEnter();
+    if (moveType === EnemyMoveType.sideIn) return new SideEnter();
+    if (moveType === EnemyMoveType.topIn) return new TopEnter();
+    if (moveType === EnemyMoveType.topWideIn) return new TopWideEnter();
+    throw new Error("Unknown move type");
   }
 
   private createMoverCreator(
     sqInfo: SquadInfo,
     enInfo: EnemyInfo,
-    _moveType: EnemyMoveType,
+    moveType: EnemyMoveType,
     isLeftSide: boolean
   ): StaticEnemyMoverCreator {
-    // TODO: Use more type
-    const routeType = EnemyMoveRouteType.sideMove;
+    const routeType =
+      moveType === EnemyMoveType.sideIn
+        ? EnemyMoveRouteType.sideMove
+        : EnemyMoveRouteType.drop;
     return new StaticEnemyMoverCreator({
       routeType,
       activateTime: sqInfo.activateTime,
