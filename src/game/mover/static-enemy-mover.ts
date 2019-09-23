@@ -40,8 +40,10 @@ export class StaticEnemyMover implements Mover {
   public start(owner: ActorWrapper): void {
     this.owner = owner;
     this.playedTimeMS = 0;
+    this.ownerIsInVisualArea = false;
+    this.alreadyEnteredToArea = false;
+    this.alreadyExitingFromArea = false;
     this.owner.actor.moveToPosInArea(this.route.getInitialPosition());
-    this.updateOwnerIsInVisualArea();
   }
 
   /**

@@ -22,7 +22,6 @@ import { Collisions } from "./common/collision-groups";
 import {
   EnemyInfo,
   EnemyMoveType,
-  SquadInfo,
   StageEnemyCreator
 } from "./enemies-builder/stage-enemy-creator";
 import { SquadBuilderStarter } from "./enemies-builder/squad-builder-starter";
@@ -278,7 +277,7 @@ export class MissionFlow {
       )
     );
     const killTime = 0.5;
-    const sizeInArea = new ex.Vector(0.125, 0.125 / 2);
+    const sizeInArea = new ex.Vector(0.125 / 2, 0.125);
     const isSmallSize = false;
     const moveSpeedInArea = 0.25;
 
@@ -297,17 +296,6 @@ export class MissionFlow {
       ]
     ]);
 
-    const squadInfo: SquadInfo[] = [
-      {
-        enemyInfoId,
-        moveType: EnemyMoveType.sideIn,
-        changeSide: true,
-        overTime: 0,
-        killTime: 2,
-        activateTime: 0.5
-      }
-    ];
-
     const playerDPS = 150;
     const sec = new StageEnemyCreator({
       scene,
@@ -316,7 +304,32 @@ export class MissionFlow {
       playerDPS,
       moveTime: 0.5,
       enemyInfo,
-      squadInfo
+      squadInfo: [
+        {
+          enemyInfoId,
+          moveType: EnemyMoveType.sideIn,
+          changeSide: true,
+          overTime: 0,
+          killTime: 2,
+          activateTime: 0.5
+        },
+        {
+          enemyInfoId,
+          moveType: EnemyMoveType.topIn,
+          changeSide: true,
+          overTime: 0,
+          killTime: 2,
+          activateTime: 0.5
+        },
+        {
+          enemyInfoId,
+          moveType: EnemyMoveType.topWideIn,
+          changeSide: true,
+          overTime: 0,
+          killTime: 2,
+          activateTime: 0.5
+        }
+      ]
     });
 
     return sec.create(true);

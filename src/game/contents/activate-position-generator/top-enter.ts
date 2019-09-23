@@ -15,28 +15,33 @@ export class TopEnter implements ActivatePositionGenerator {
     squadKillTimeSec: number,
     isLeftSide: boolean
   ): ActivateTimeAndPosition[] {
-    const horizontalNumMax = Math.max(
-      1,
-      Math.floor(0.9 * (0.5 / enemySizeInArea.y))
-    );
+    const spawnableYStart = enemySizeInArea.y / 2;
+    const spawnableYEnd = 3 / 8 - enemySizeInArea.y / 2;
+    const spawnableWidth = spawnableYEnd - spawnableYStart;
+    const horizontalNumMax = Math.max(1, spawnableWidth / enemySizeInArea.y);
     const horizontalNum = Math.min(spawnNum, horizontalNumMax);
     const verticalNumMax = Math.ceil(spawnNum / horizontalNum);
     const spawnDuration =
       spawnNum > 1 ? (squadKillTimeSec - enemyKillTimeSec) / (spawnNum - 1) : 0;
     const ySign = isLeftSide ? -1 : 1;
-    const posXMin = 0.2;
+    const posXMin = 0.3;
     const posXDiff = 0.2 / verticalNumMax;
-    const posYMin = Math.min(0.25, 0.25 / horizontalNum);
-    const posYDiff = 0.5 / horizontalNum;
+    const posYList = new Array(horizontalNum)
+      .fill(0)
+      .map((_, index): number => {
+        const stackNum = horizontalNum - index - 1;
+        return spawnableYEnd - stackNum * enemySizeInArea.y;
+      });
     return Array(spawnNum)
       .fill(0)
       .map(
         (_: number, count: number): ActivateTimeAndPosition => {
           const verticalIdx = Math.floor(count / horizontalNum);
           const horizontalIdx = count - verticalIdx * horizontalNum;
+          const posY = posYList[horizontalIdx];
           const position = new ex.Vector(
             posXMin + verticalIdx * posXDiff,
-            ySign * (posYMin + horizontalIdx * posYDiff)
+            ySign * posY
           );
           return {
             timeSec: spawnDuration * count,

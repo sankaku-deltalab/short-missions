@@ -15,29 +15,37 @@ export class TopWideEnter implements ActivatePositionGenerator {
     squadKillTimeSec: number,
     isLeftSide: boolean
   ): ActivateTimeAndPosition[] {
-    const horizontalNumMax = Math.max(
-      spawnNum,
-      Math.floor(0.95 * (1 / enemySizeInArea.y))
-    );
-    const verticalNumMax = Math.ceil(spawnNum / horizontalNumMax);
-    const horizontalNum = Math.ceil(spawnNum / verticalNumMax);
+    const spawnableYStart = 3 / 8 - enemySizeInArea.y / 2;
+    const spawnableYEnd = -spawnableYStart;
+    const spawnableWidth = Math.abs(spawnableYEnd - spawnableYStart);
+    const horizontalNumMax = Math.max(1, spawnableWidth / enemySizeInArea.y);
+    const horizontalNum = Math.min(spawnNum, horizontalNumMax);
     const spawnDuration =
       spawnNum > 1 ? (squadKillTimeSec - enemyKillTimeSec) / (spawnNum - 1) : 0;
     const ySign = isLeftSide ? -1 : 1;
-    const posXMin = 0.2;
-    const posXDiff = 0.2 / verticalNumMax;
-    const posYMin = Math.min(0.25, 0.25 / horizontalNum);
-    const posYDiff = 0.5 / horizontalNum;
+    const posXList = new Array(horizontalNum)
+      .fill(0)
+      .map((_, index): number => {
+        const posXStart = 0.3;
+        const posXStop = 0.5;
+        const rate = index / horizontalNum;
+        return rate * posXStop + (1 - rate) * posXStart;
+      });
+    const posYList = new Array(horizontalNum)
+      .fill(0)
+      .map((_, index): number => {
+        const posYStart = spawnableYStart;
+        const posYStop = spawnableYEnd;
+        const rate = index / horizontalNum;
+        return rate * posYStop + (1 - rate) * posYStart;
+      });
     return Array(spawnNum)
       .fill(0)
       .map(
         (_: number, count: number): ActivateTimeAndPosition => {
-          const horizontalIdx = Math.floor(count / verticalNumMax);
-          const verticalIdx = count - horizontalIdx * verticalNumMax;
-          const position = new ex.Vector(
-            posXMin + verticalIdx * posXDiff,
-            ySign * (posYMin + horizontalIdx * posYDiff)
-          );
+          const posX = posXList[count];
+          const posY = posYList[count];
+          const position = new ex.Vector(posX, ySign * posY);
           return {
             timeSec: spawnDuration * count,
             position

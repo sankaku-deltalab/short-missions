@@ -40,7 +40,7 @@ export class BasicMoveRoute implements EnemyMoveRoute {
    */
   public calcPositionInArea(timeMS: number): ex.Vector {
     const time = timeMS / 1000;
-    const enteredTime = this.enteringMove.duration;
+    const enteredTime = Math.min(this.enteringMove.duration, this.activateTime);
     const enteringInterpolatedTime = this.activateTime;
     const baseMovedTime = enteringInterpolatedTime + this.baseMove.duration;
     const exitingInterpolatedTime = baseMovedTime + this.exitInterpolateTime;
@@ -72,10 +72,10 @@ export class BasicMoveRoute implements EnemyMoveRoute {
       const duration = time - enteredTime;
       const interpTime = this.calcEnteringInterpolateTime();
       const accel = baseVel.sub(enterVel).scale(1 / interpTime);
-      // x = x_0 + v_0^2 + 1/2 * a * t^2
+      // x = x_0 + (v_0 + 1/2 * a * t) * t
       const movedInInterp = enterVel
-        .scale(enterVel)
-        .add(accel.scale(duration ** 2 / 2));
+        .add(accel.scale(duration / 2))
+        .scale(duration);
       return enteredPos.add(movedInInterp);
     } else if (time < baseMovedTime) {
       // Base move
@@ -86,10 +86,10 @@ export class BasicMoveRoute implements EnemyMoveRoute {
       const duration = time - baseMovedTime;
       const interpTime = this.exitInterpolateTime;
       const accel = exitVel.sub(baseVel).scale(1 / interpTime);
-      // x = x_0 + v_0^2 + 1/2 * a * t^2
+      // x = x_0 + (v_0 + 1/2 * a * t) * t
       const movedInInterp = baseVel
-        .scale(baseVel)
-        .add(accel.scale(duration ** 2 / 2));
+        .add(accel.scale(duration / 2))
+        .scale(duration);
       return baseMovedPos.add(movedInInterp);
     } else {
       // Exit move
@@ -134,6 +134,9 @@ export class BasicMoveRoute implements EnemyMoveRoute {
   }
 
   private calcMovingVelocityInArea(moving: Moving): ex.Vector {
-    return ex.Vector.fromAngle(moving.direction - Math.PI).scale(moving.speed);
+    const rotation = moving.direction;
+    const x = Math.cos(rotation);
+    const y = Math.sin(rotation);
+    return new ex.Vector(x, y).scale(moving.speed);
   }
 }

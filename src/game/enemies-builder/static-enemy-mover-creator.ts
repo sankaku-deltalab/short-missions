@@ -78,13 +78,13 @@ export class StaticEnemyMoverCreator {
     };
     const baseMove = {
       direction: Math.PI,
-      speed: this.moveSpeedInArea / 2,
+      speed: this.moveSpeedInArea / 4,
       duration: 3
     };
     const exitInterpolateTime = 0.5;
     const exitingMove = {
       direction: Math.PI,
-      speed: this.moveSpeedInArea / 2,
+      speed: this.moveSpeedInArea,
       duration: 10
     };
     return new BasicMoveRoute({
