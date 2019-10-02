@@ -29,8 +29,8 @@ export class TopEnter implements ActivatePositionGenerator {
     const posYList = new Array(horizontalNum)
       .fill(0)
       .map((_, index): number => {
-        const stackNum = horizontalNum - index - 1;
-        return spawnableYEnd - stackNum * enemySizeInArea.y;
+        const unit = 3 / 8 / (horizontalNum + 1);
+        return unit * (index + 1);
       });
     return Array(spawnNum)
       .fill(0)

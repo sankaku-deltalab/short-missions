@@ -34,10 +34,9 @@ export class TopWideEnter implements ActivatePositionGenerator {
     const posYList = new Array(horizontalNum)
       .fill(0)
       .map((_, index): number => {
-        const posYStart = spawnableYStart;
-        const posYStop = spawnableYEnd;
-        const rate = index / horizontalNum;
-        return rate * posYStop + (1 - rate) * posYStart;
+        const unit = 3 / 4 / (horizontalNum + 1);
+        const rightMost = 3 / 8;
+        return rightMost - unit * (index + 1);
       });
     return Array(spawnNum)
       .fill(0)
