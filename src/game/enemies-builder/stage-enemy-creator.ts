@@ -14,9 +14,13 @@ import {
   StaticEnemyMoverCreator,
   EnemyMoveRouteType
 } from "./static-enemy-mover-creator";
+import { TopEnter } from "../contents/activate-position-generator/top-enter";
+import { TopWideEnter } from "../contents/activate-position-generator/top-wide-enter";
 
 export enum EnemyMoveType {
-  sideIn = "sideIn"
+  sideIn = "sideIn",
+  topIn = "topIn",
+  topWideIn = "topWideIn"
 }
 
 export interface EnemyInfo {
@@ -32,7 +36,7 @@ export interface EnemyInfo {
 export interface SquadInfo {
   enemyInfoId: number;
   moveType: EnemyMoveType;
-  changeSide: boolean;
+  activateInOtherSideOfPlayer: boolean;
   overTime: number;
   killTime: number;
   activateTime: number;
@@ -81,14 +85,17 @@ export class StageEnemyCreator {
     });
   }
 
-  public create(startFromLeft: boolean): SquadBuilderStarter {
+  public create(playerStartFromLeft: boolean): SquadBuilderStarter {
     let prevFinishTime = 0;
-    const inLeftSide = startFromLeft;
+    let playerIsInLeftSide = playerStartFromLeft;
     const builderInfo = this.squadInfo.map(
       (sqInfo: SquadInfo, index: number): SquadBuilderInfo => {
-        const moveTime = sqInfo.changeSide ? this.moveTime : 0;
-        const startTime =
-          prevFinishTime - sqInfo.overTime - sqInfo.activateTime;
+        const timeBeforePrevSquadFinished =
+          sqInfo.activateTime + sqInfo.overTime;
+        const startTime = prevFinishTime - timeBeforePrevSquadFinished;
+        const enemyIsInLeft = sqInfo.activateInOtherSideOfPlayer
+          ? !playerIsInLeftSide
+          : playerIsInLeftSide;
 
         const ec = this.enemyCreators.get(sqInfo.enemyInfoId);
         const ei = this.enemyInfo.get(sqInfo.enemyInfoId);
@@ -103,14 +110,14 @@ export class StageEnemyCreator {
           sqInfo,
           ei,
           sqInfo.moveType,
-          inLeftSide
+          enemyIsInLeft
         );
         const activateTimeAndPositions = posGen.generate(
           this.spawnNum[index],
           ei.killTime,
           ei.sizeInArea,
           sqInfo.killTime,
-          inLeftSide
+          enemyIsInLeft
         );
         const squad = new Squad(new EventDispatcher<SquadFinishedReason>());
         const squadBuilder = new SquadBuilder({
@@ -123,7 +130,13 @@ export class StageEnemyCreator {
           activateTime: sqInfo.activateTime
         });
 
-        prevFinishTime += moveTime + sqInfo.killTime;
+        const moveTime = sqInfo.activateInOtherSideOfPlayer ? this.moveTime : 0;
+        const timeAfterPrevSquadFinished = moveTime + sqInfo.killTime;
+        prevFinishTime += timeAfterPrevSquadFinished;
+        playerIsInLeftSide = posGen.playerIsInLeftWhenEnemiesFinished(
+          playerIsInLeftSide,
+          enemyIsInLeft
+        );
         return {
           startTime,
           squad,
@@ -134,9 +147,9 @@ export class StageEnemyCreator {
     builderInfo.sort((a, b) => {
       return a.startTime - b.startTime;
     });
-    const offset = builderInfo[0].startTime;
+    const startTimeOffset = builderInfo[0].startTime;
     for (const info of builderInfo) {
-      info.startTime -= offset;
+      info.startTime -= startTimeOffset;
     }
     return new SquadBuilderStarter({
       builderInfo,
@@ -161,20 +174,24 @@ export class StageEnemyCreator {
 
   private createActivatePositionGenerator(
     _info: EnemyInfo,
-    _moveType: EnemyMoveType
+    moveType: EnemyMoveType
   ): ActivatePositionGenerator {
-    // TODO: Use more type
-    return new SideEnter();
+    if (moveType === EnemyMoveType.sideIn) return new SideEnter();
+    if (moveType === EnemyMoveType.topIn) return new TopEnter();
+    if (moveType === EnemyMoveType.topWideIn) return new TopWideEnter();
+    throw new Error("Unknown move type");
   }
 
   private createMoverCreator(
     sqInfo: SquadInfo,
     enInfo: EnemyInfo,
-    _moveType: EnemyMoveType,
+    moveType: EnemyMoveType,
     isLeftSide: boolean
   ): StaticEnemyMoverCreator {
-    // TODO: Use more type
-    const routeType = EnemyMoveRouteType.sideMove;
+    const routeType =
+      moveType === EnemyMoveType.sideIn
+        ? EnemyMoveRouteType.sideMove
+        : EnemyMoveRouteType.drop;
     return new StaticEnemyMoverCreator({
       routeType,
       activateTime: sqInfo.activateTime,

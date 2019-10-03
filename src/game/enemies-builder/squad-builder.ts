@@ -2,8 +2,8 @@ import * as ex from "excalibur";
 import { EventDispatcher } from "../common/event-dispatcher";
 import { Squad } from "./squad";
 import { EnemyCreator } from "./enemy-creator";
-import { ActivateTimeAndPosition } from "../contents/activate-position-generator/side-enter";
 import { StaticEnemyMoverCreator } from "./static-enemy-mover-creator";
+import { ActivateTimeAndPosition } from "./activate-position-generator";
 
 export interface SquadBuilderArgs {
   squad: Squad;
@@ -26,6 +26,7 @@ export class SquadBuilder {
   private readonly moverCreator: StaticEnemyMoverCreator;
   private readonly activateTimeAndPositions: ActivateTimeAndPosition[];
   private readonly activateTime: number;
+  private alreadyStarted = false;
   private spawnedCount = 0;
   private timeSinceStartMS = 0;
 
@@ -44,6 +45,7 @@ export class SquadBuilder {
    */
   public start(): void {
     this.timeSinceStartMS = 0;
+    this.alreadyStarted = true;
     this.update(0);
   }
 
@@ -53,6 +55,7 @@ export class SquadBuilder {
    * @param deltaTimeMS Delta time in milliseconds
    */
   public update(deltaTimeMS: number): void {
+    if (!this.alreadyStarted) return;
     this.timeSinceStartMS += deltaTimeMS;
 
     const spawnNum = this.activateTimeAndPositions.length;

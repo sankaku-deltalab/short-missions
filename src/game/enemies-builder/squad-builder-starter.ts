@@ -34,6 +34,7 @@ export class SquadBuilderStarter {
    */
   public start(): void {
     this.timeSinceStartMS = 0;
+    this.startedCount = 0;
     this.update(0);
   }
 

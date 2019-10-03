@@ -2,13 +2,14 @@ import { StaticEnemyMover } from "../mover/static-enemy-mover";
 import { EnemyMoveRoute } from "../mover/enemy-move-route";
 import { StraightMoveRoute } from "../contents/enemy-move-route/straight-move-route";
 import { EventDispatcher } from "../common/event-dispatcher";
+import { BasicMoveRoute } from "../contents/enemy-move-route/basic-move-route";
 
 /**
  * Enemy move route types.
  */
 export enum EnemyMoveRouteType {
-  sideMove = "sideMove"
-  // TODO: Add new types later
+  sideMove = "sideMove",
+  drop = "drop"
 }
 
 export interface StaticEnemyMoverCreatorArgs {
@@ -52,7 +53,9 @@ export class StaticEnemyMoverCreator {
     if (this.routeType === EnemyMoveRouteType.sideMove) {
       return this.createSideMoveRoute(activePosInArea);
     }
-    // TODO: Add new types later
+    if (this.routeType === EnemyMoveRouteType.drop) {
+      return this.creteDropMoveRoute(activePosInArea);
+    }
     throw new Error("Unknown route type");
   }
 
@@ -63,6 +66,34 @@ export class StaticEnemyMoverCreator {
       moveAngleDegInArea,
       activateTime: this.activateTime,
       moveSpeedInArea: this.moveSpeedInArea
+    });
+  }
+
+  private creteDropMoveRoute(activePosInArea: ex.Vector): EnemyMoveRoute {
+    const enteringInterpTime = Math.min(0.1, this.activateTime);
+    const enteringMove = {
+      direction: Math.PI,
+      speed: this.moveSpeedInArea,
+      duration: enteringInterpTime
+    };
+    const baseMove = {
+      direction: Math.PI,
+      speed: this.moveSpeedInArea / 4,
+      duration: 3
+    };
+    const exitInterpolateTime = 0.5;
+    const exitingMove = {
+      direction: Math.PI,
+      speed: this.moveSpeedInArea,
+      duration: 10
+    };
+    return new BasicMoveRoute({
+      activePosInArea,
+      activateTime: this.activateTime,
+      enteringMove,
+      baseMove,
+      exitingMove,
+      exitInterpolateTime
     });
   }
 }
