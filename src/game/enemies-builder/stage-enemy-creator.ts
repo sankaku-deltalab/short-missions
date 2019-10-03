@@ -85,15 +85,17 @@ export class StageEnemyCreator {
     });
   }
 
-  public create(startFromLeft: boolean): SquadBuilderStarter {
+  public create(playerStartFromLeft: boolean): SquadBuilderStarter {
     let prevFinishTime = 0;
-    let inLeftSide = !startFromLeft;
+    let playerIsInLeftSide = playerStartFromLeft;
     const builderInfo = this.squadInfo.map(
       (sqInfo: SquadInfo, index: number): SquadBuilderInfo => {
         const timeBeforePrevSquadFinished =
           sqInfo.activateTime + sqInfo.overTime;
         const startTime = prevFinishTime - timeBeforePrevSquadFinished;
-        if (sqInfo.changeSide) inLeftSide = !inLeftSide;
+        const enemyIsInLeft = sqInfo.changeSide
+          ? !playerIsInLeftSide
+          : playerIsInLeftSide;
 
         const ec = this.enemyCreators.get(sqInfo.enemyInfoId);
         const ei = this.enemyInfo.get(sqInfo.enemyInfoId);
@@ -108,14 +110,14 @@ export class StageEnemyCreator {
           sqInfo,
           ei,
           sqInfo.moveType,
-          inLeftSide
+          enemyIsInLeft
         );
         const activateTimeAndPositions = posGen.generate(
           this.spawnNum[index],
           ei.killTime,
           ei.sizeInArea,
           sqInfo.killTime,
-          inLeftSide
+          enemyIsInLeft
         );
         const squad = new Squad(new EventDispatcher<SquadFinishedReason>());
         const squadBuilder = new SquadBuilder({
@@ -131,6 +133,10 @@ export class StageEnemyCreator {
         const moveTime = sqInfo.changeSide ? this.moveTime : 0;
         const timeAfterPrevSquadFinished = moveTime + sqInfo.killTime;
         prevFinishTime += timeAfterPrevSquadFinished;
+        playerIsInLeftSide = posGen.playerIsInLeftWhenEnemiesFinished(
+          playerIsInLeftSide,
+          enemyIsInLeft
+        );
         return {
           startTime,
           squad,

@@ -8,6 +8,13 @@ import {
  * Entering enemies from side of area.
  */
 export class SideEnter implements ActivatePositionGenerator {
+  public playerIsInLeftWhenEnemiesFinished(
+    playerIsInLeftWhenStarted: boolean,
+    _enemiesInInLeft: boolean
+  ): boolean {
+    return !playerIsInLeftWhenStarted;
+  }
+
   public generate(
     spawnNum: number,
     enemyKillTimeSec: number,

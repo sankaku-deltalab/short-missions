@@ -8,6 +8,13 @@ import {
  * Entering enemies from top of left or right.
  */
 export class TopEnter implements ActivatePositionGenerator {
+  public playerIsInLeftWhenEnemiesFinished(
+    _playerIsInLeftWhenStarted: boolean,
+    enemiesInInLeft: boolean
+  ): boolean {
+    return enemiesInInLeft;
+  }
+
   public generate(
     spawnNum: number,
     enemyKillTimeSec: number,
