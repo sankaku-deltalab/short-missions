@@ -308,7 +308,7 @@ export class MissionFlow {
         {
           enemyInfoId,
           moveType: EnemyMoveType.sideIn,
-          changeSide: true,
+          activateInOtherSideOfPlayer: true,
           overTime: 0,
           killTime: 2,
           activateTime: 0.5
@@ -316,7 +316,7 @@ export class MissionFlow {
         {
           enemyInfoId,
           moveType: EnemyMoveType.topIn,
-          changeSide: true,
+          activateInOtherSideOfPlayer: true,
           overTime: 0,
           killTime: 2,
           activateTime: 0.5
@@ -324,7 +324,7 @@ export class MissionFlow {
         {
           enemyInfoId,
           moveType: EnemyMoveType.topWideIn,
-          changeSide: true,
+          activateInOtherSideOfPlayer: true,
           overTime: 0,
           killTime: 2,
           activateTime: 0.5

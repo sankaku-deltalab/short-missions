@@ -32,7 +32,7 @@ function createSquadInfoMock(): SquadInfo {
   return {
     enemyInfoId: 1,
     moveType: EnemyMoveType.sideIn,
-    changeSide: true,
+    activateInOtherSideOfPlayer: true,
     overTime: 0.25,
     killTime: 0.5,
     activateTime: 1

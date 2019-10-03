@@ -36,7 +36,7 @@ export interface EnemyInfo {
 export interface SquadInfo {
   enemyInfoId: number;
   moveType: EnemyMoveType;
-  changeSide: boolean;
+  activateInOtherSideOfPlayer: boolean;
   overTime: number;
   killTime: number;
   activateTime: number;
@@ -93,7 +93,7 @@ export class StageEnemyCreator {
         const timeBeforePrevSquadFinished =
           sqInfo.activateTime + sqInfo.overTime;
         const startTime = prevFinishTime - timeBeforePrevSquadFinished;
-        const enemyIsInLeft = sqInfo.changeSide
+        const enemyIsInLeft = sqInfo.activateInOtherSideOfPlayer
           ? !playerIsInLeftSide
           : playerIsInLeftSide;
 
@@ -130,7 +130,7 @@ export class StageEnemyCreator {
           activateTime: sqInfo.activateTime
         });
 
-        const moveTime = sqInfo.changeSide ? this.moveTime : 0;
+        const moveTime = sqInfo.activateInOtherSideOfPlayer ? this.moveTime : 0;
         const timeAfterPrevSquadFinished = moveTime + sqInfo.killTime;
         prevFinishTime += timeAfterPrevSquadFinished;
         playerIsInLeftSide = posGen.playerIsInLeftWhenEnemiesFinished(
