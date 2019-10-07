@@ -63,10 +63,9 @@ export class Weapon {
     while (this.pooledMilliSeconds >= frameMilliSec) {
       this.pooledMilliSeconds -= frameMilliSec;
 
+      this.player.tick();
       if (this.isRequestedFiring && !this.player.isRunning) {
         this.player.start();
-      } else {
-        this.player.tick();
       }
     }
 
