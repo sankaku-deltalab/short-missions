@@ -19,6 +19,7 @@ export class Bullet implements ActorWrapper {
 
   public constructor(actor: ExtendedActor) {
     this.actor = actor;
+    this.actor.useSelfInWrapper(this);
 
     actor.on("precollision", (event: ex.PreCollisionEvent<ex.Actor>): void => {
       const other = event.other;

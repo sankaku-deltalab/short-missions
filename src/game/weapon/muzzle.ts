@@ -26,6 +26,7 @@ export class Muzzle implements gt.Muzzle, ActorWrapper {
     this.bulletsPool = args.bulletsPool;
     this.internalIsPlayerSide = args.isPlayerSide;
     this.actor = args.actor;
+    this.actor.useSelfInWrapper(this);
   }
 
   public update(_engine: ex.Engine, _deltaTimeMS: number): void {}
