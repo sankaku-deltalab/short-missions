@@ -4,6 +4,7 @@ import * as gt from "guntree";
 import { BulletsPool } from "./bullets-pool";
 import { ActorWrapper } from "../actor/actor-wrapper";
 import { ExtendedActor } from "../actor/extended-actor";
+import { Character } from "../actor/character";
 
 export interface MuzzleArgs extends ex.IActorArgs {
   damage: number;
@@ -19,6 +20,7 @@ export class Muzzle implements gt.Muzzle, ActorWrapper {
   private readonly damage: number;
   private readonly bulletsPool: BulletsPool;
   private readonly internalIsPlayerSide: boolean = true;
+  private currentTarget?: Character;
   public readonly actor: ExtendedActor;
 
   public constructor(args: MuzzleArgs) {
@@ -72,10 +74,7 @@ export class Muzzle implements gt.Muzzle, ActorWrapper {
    * Get muzzle transform.
    */
   public getMuzzleTransform(): mat.Matrix {
-    // const areaPos = this.actor.posInArea;
-    const areaPos = this.actor.coordinatesConverter.toAreaPoint(
-      this.actor.getWorldPos()
-    );
+    const areaPos = this.actor.getWorldPosInArea();
 
     return mat.transform(
       mat.translate(areaPos.x, areaPos.y),
@@ -87,6 +86,32 @@ export class Muzzle implements gt.Muzzle, ActorWrapper {
    * Get enemy transform.
    */
   public getEnemyTransform(): mat.Matrix {
-    throw new Error("Write this");
+    // If target is not exist, then search enemy
+    if (this.currentTarget === undefined || this.currentTarget.isDead()) {
+      // Collect enemies for this
+      const enemies: Character[] = [];
+      for (const ac of this.actor.scene.actors) {
+        if (!(ac instanceof ExtendedActor)) continue;
+        const owner = ac.owner();
+        if (!(owner instanceof Character)) continue;
+        if (owner.isPlayerSide() === this.isPlayerSide()) continue;
+        enemies.push(owner);
+      }
+
+      if (enemies.length > 0) {
+        this.currentTarget = enemies[0];
+      }
+    }
+
+    // If target isn't, then aim front of muzzle
+    if (this.currentTarget === undefined) {
+      return mat.transform(mat.translate(0.5), this.getMuzzleTransform());
+    }
+
+    const targetAreaPos = this.currentTarget.actor.getWorldPosInArea();
+    return mat.transform(
+      mat.translate(targetAreaPos.x, targetAreaPos.y),
+      mat.rotate(this.currentTarget.actor.getWorldRotation())
+    );
   }
 }
