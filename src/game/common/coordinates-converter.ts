@@ -139,4 +139,14 @@ export class CoordinatesConverter {
     const coords = [pointInVisualArea.x, pointInVisualArea.y];
     return coords.every((v: number): boolean => -0.5 <= v && v <= 0.5);
   }
+
+  /**
+   * Check point in area is in visual area.
+   *
+   * @param pointInArea Point in area
+   */
+  public areaPointIsInVisualArea(pointInArea: mat.Point): boolean {
+    const pointInCanvas = this.toCanvasPoint(pointInArea);
+    return this.canvasPointIsInVisualArea(pointInCanvas);
+  }
 }

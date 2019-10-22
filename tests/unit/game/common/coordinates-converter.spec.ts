@@ -238,6 +238,33 @@ describe("CoordinatesConverter", (): void => {
   );
 
   it.each`
+    visualAreaSizeInCanvas | pointInArea                                  | expectedIsInArea
+    ${{ x: 200, y: 400 }}  | ${{ x: 0.5 - delta, y: 0.25 - delta }}       | ${true}
+    ${{ x: 200, y: 400 }}  | ${{ x: 0.5 + delta, y: 0.25 }}               | ${false}
+    ${{ x: 200, y: 400 }}  | ${{ x: 0.5, y: 0.25 + delta }}               | ${false}
+    ${{ x: 200, y: 400 }}  | ${{ x: -(0.5 + delta), y: -(0.25 + delta) }} | ${false}
+  `(
+    "can check area point $pointInArea is (not) in visual area",
+    ({ visualAreaSizeInCanvas, pointInArea, expectedIsInArea }): void => {
+      // Given CoordinatesConverter
+      const cc = new CoordinatesConverter({
+        visualAreaSizeInCanvas,
+        areaSizeInCanvas: visualAreaSizeInCanvas.y,
+        centerInCanvas: {
+          x: visualAreaSizeInCanvas.x / 2,
+          y: visualAreaSizeInCanvas.y / 2
+        }
+      });
+
+      // When check is in visual area
+      const isInArea = cc.areaPointIsInVisualArea(pointInArea);
+
+      // Then get point is in visual area
+      expect(isInArea).toBe(expectedIsInArea);
+    }
+  );
+
+  it.each`
     areaSizeInCanvas | centerInCanvas        | areaVector              | expectedCanvasVector
     ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 0, y: 0 }}       | ${{ x: 0, y: 0 }}
     ${400}           | ${{ x: 200, y: 200 }} | ${{ x: 0.5, y: 0 }}     | ${{ x: 0, y: -200 }}
