@@ -27,7 +27,8 @@ function createActorMock(): ExtendedActor {
     collisions: createCollisionsMock(),
     setZIndex: jest.fn(),
     on: jest.fn(),
-    moveToPosInArea: jest.fn()
+    moveToPosInArea: jest.fn(),
+    useSelfInWrapper: jest.fn()
   });
 }
 

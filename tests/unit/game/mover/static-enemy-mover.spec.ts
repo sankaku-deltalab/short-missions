@@ -122,12 +122,10 @@ describe("StaticEnemyMover", (): void => {
       const mover = new StaticEnemyMover(args);
 
       // And ActorWrapper
-      const cc = simpleMock<CoordinatesConverter>({
-        canvasPointIsInVisualArea: jest
-          .fn()
-          .mockReturnValueOnce(ownerInVisualAreaAtFirst) // Initial pos (not) in visual area
-          .mockReturnValueOnce(ownerInVisualAreaAtFirst) // first update pos (not) in visual area
-          .mockReturnValueOnce(ownerInVisualAreaAtSecond) // second update pos (not) in visual area
+      const cc = new CoordinatesConverter({
+        areaSizeInCanvas: 1,
+        centerInCanvas: { x: 0, y: 0 },
+        visualAreaSizeInCanvas: { x: 1, y: 1 }
       });
       const wrapper = createActorWrapperMock(cc);
 
@@ -136,7 +134,18 @@ describe("StaticEnemyMover", (): void => {
 
       // And update mover twice
       const deltaTimeMS = 10;
+      if (ownerInVisualAreaAtFirst) {
+        wrapper.actor.pos = new ex.Vector(0, 0);
+      } else {
+        wrapper.actor.pos = new ex.Vector(1, 1);
+      }
       mover.update(deltaTimeMS);
+
+      if (ownerInVisualAreaAtSecond) {
+        wrapper.actor.pos = new ex.Vector(0, 0);
+      } else {
+        wrapper.actor.pos = new ex.Vector(1, 1);
+      }
       mover.update(deltaTimeMS);
 
       // Then event was dispatched
