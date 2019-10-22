@@ -47,10 +47,10 @@ export class Character implements ActorWrapper {
     }
 
     // Update status when enter to or exit from area
-    this.mover.onEnteringToArea((): void => {
+    this.actor.onEnteringToArea((): void => {
       this.isInArea = true;
     });
-    this.mover.onExitingFromArea((): void => {
+    this.actor.onExitingFromArea((): void => {
       this.isInArea = false;
     });
 
@@ -189,7 +189,7 @@ export class Character implements ActorWrapper {
    * @returns Event remover
    */
   public onEnteringToArea(event: () => void): () => void {
-    return this.mover.onEnteringToArea(event);
+    return this.actor.onEnteringToArea(event);
   }
 
   /**
@@ -199,7 +199,7 @@ export class Character implements ActorWrapper {
    * @returns Event remover
    */
   public onExitingFromArea(event: () => void): () => void {
-    return this.mover.onExitingFromArea(event);
+    return this.actor.onExitingFromArea(event);
   }
 
   // Weapon

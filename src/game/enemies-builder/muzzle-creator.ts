@@ -3,6 +3,7 @@ import { BulletsPool } from "../weapon/bullets-pool";
 import { Collisions } from "../common/collision-groups";
 import { CoordinatesConverter } from "../common/coordinates-converter";
 import { ExtendedActor } from "../actor/extended-actor";
+import { EventDispatcher } from "../common/event-dispatcher";
 
 export interface MuzzleCreatorArgs {
   collisions: Collisions;
@@ -44,7 +45,9 @@ export class MuzzleCreator {
         actor: new ExtendedActor({
           pos,
           coordinatesConverter: this.coordinatesConverter,
-          collisions: this.collisions
+          collisions: this.collisions,
+          onEnteringToArea: new EventDispatcher<void>(),
+          onExitingFromArea: new EventDispatcher<void>()
         })
       });
       return [info.name, muzzle];

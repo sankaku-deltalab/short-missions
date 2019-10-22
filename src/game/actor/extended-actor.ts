@@ -2,12 +2,15 @@ import * as ex from "excalibur";
 import { Collisions } from "../common/collision-groups";
 import { CoordinatesConverter } from "../common/coordinates-converter";
 import { ActorWrapper } from "./actor-wrapper";
+import { EventDispatcher } from "../common/event-dispatcher";
 
 interface ExtraArgs {
   posInArea?: ex.Vector;
   sizeInArea?: ex.Vector;
   collisions: Collisions;
   coordinatesConverter: CoordinatesConverter;
+  onEnteringToArea: EventDispatcher<void>;
+  onExitingFromArea: EventDispatcher<void>;
 }
 
 export interface ExtendedActorArgs extends ex.IActorArgs, ExtraArgs {}
@@ -35,6 +38,9 @@ export class ExtendedActor extends ex.Actor {
   public readonly collisions: Collisions;
   public readonly coordinatesConverter: CoordinatesConverter;
   private _owner?: ActorWrapper;
+  private readonly _onEnteringToArea: EventDispatcher<void>;
+  private readonly _onExitingFromArea: EventDispatcher<void>;
+  private isInVisualArea: boolean;
 
   public constructor(args: ExtendedActorArgs) {
     const actorArgs = removeExtraArgs(args);
@@ -42,10 +48,16 @@ export class ExtendedActor extends ex.Actor {
 
     this.collisions = args.collisions;
     this.coordinatesConverter = args.coordinatesConverter;
+    this._onEnteringToArea = args.onEnteringToArea;
+    this._onExitingFromArea = args.onExitingFromArea;
 
     if (args.posInArea !== undefined) {
       this.moveToPosInArea(args.posInArea);
     }
+
+    this.isInVisualArea = this.coordinatesConverter.canvasPointIsInVisualArea(
+      this.pos
+    );
 
     if (args.sizeInArea !== undefined) {
       const size = this.coordinatesConverter.toCanvasVector(args.sizeInArea);
@@ -54,8 +66,20 @@ export class ExtendedActor extends ex.Actor {
     }
 
     this.on("postupdate", (event: ex.PostUpdateEvent): void => {
-      if (this._owner === undefined) return;
-      this._owner.update(event.engine, event.delta);
+      if (this._owner !== undefined) {
+        this._owner.update(event.engine, event.delta);
+      }
+
+      const oldIsInVA = this.isInVisualArea;
+      this.isInVisualArea = this.coordinatesConverter.canvasPointIsInVisualArea(
+        this.pos
+      );
+
+      if (!oldIsInVA && this.isInVisualArea) {
+        this._onEnteringToArea.dispatch();
+      } else if (oldIsInVA && !this.isInVisualArea) {
+        this._onExitingFromArea.dispatch();
+      }
     });
   }
 
@@ -118,6 +142,26 @@ export class ExtendedActor extends ex.Actor {
    */
   public getWorldPosInArea(): ex.Vector {
     return this.coordinatesConverter.toAreaPoint(this.getWorldPos());
+  }
+
+  /**
+   * Add event called when entering to area.
+   *
+   * @param event
+   * @returns Event remover
+   */
+  public onEnteringToArea(event: () => void): () => void {
+    return this._onEnteringToArea.add(event);
+  }
+
+  /**
+   * Add event called when exiting from area.
+   *
+   * @param event
+   * @returns Event remover
+   */
+  public onExitingFromArea(event: () => void): () => void {
+    return this._onExitingFromArea.add(event);
   }
 
   /**

@@ -1,7 +1,6 @@
 import { StaticEnemyMover } from "../mover/static-enemy-mover";
 import { EnemyMoveRoute } from "../mover/enemy-move-route";
 import { StraightMoveRoute } from "../contents/enemy-move-route/straight-move-route";
-import { EventDispatcher } from "../common/event-dispatcher";
 import { BasicMoveRoute } from "../contents/enemy-move-route/basic-move-route";
 
 /**
@@ -43,9 +42,7 @@ export class StaticEnemyMoverCreator {
    */
   public create(activePosInArea: ex.Vector): StaticEnemyMover {
     return new StaticEnemyMover({
-      route: this.createRoute(activePosInArea),
-      onEnteringToArea: new EventDispatcher<void>(),
-      onExitingFromArea: new EventDispatcher<void>()
+      route: this.createRoute(activePosInArea)
     });
   }
 

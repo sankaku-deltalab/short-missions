@@ -12,16 +12,15 @@ import { MuzzleCreator } from "@/game/enemies-builder/muzzle-creator";
 import { Mover } from "@/game/mover/mover";
 
 function createMoverMock(): Mover {
-  return simpleMock<Mover>({
-    onEnteringToArea: jest.fn(),
-    onExitingFromArea: jest.fn()
-  });
+  return simpleMock<Mover>();
 }
 
 function createEnemyCreatorArgs(): EnemyCreatorArgs {
   return {
     collisions: createCollisionsMock(),
-    coordinatesConverter: simpleMock<CoordinatesConverter>(),
+    coordinatesConverter: simpleMock<CoordinatesConverter>({
+      canvasPointIsInVisualArea: jest.fn().mockReturnValue(true)
+    }),
     health: 100,
     muzzleCreator: simpleMock<MuzzleCreator>({
       create: jest.fn().mockReturnValue(new Map())

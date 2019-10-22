@@ -5,7 +5,6 @@ import {
   StaticEnemyMoverArgs
 } from "@/game/mover/static-enemy-mover";
 import { EnemyMoveRoute } from "@/game/mover/enemy-move-route";
-import { EventDispatcher } from "@/game/common/event-dispatcher";
 import { CoordinatesConverter } from "@/game/common/coordinates-converter";
 import { ActorWrapper } from "@/game/actor/actor-wrapper";
 
@@ -24,12 +23,6 @@ function createActorWrapperMock(cc?: CoordinatesConverter): ActorWrapper {
   });
 }
 
-function createEventDispatcherMock(): EventDispatcher<void> {
-  return simpleMock<EventDispatcher<void>>({
-    dispatch: jest.fn()
-  });
-}
-
 function createRouteMock(): EnemyMoveRoute {
   return simpleMock<EnemyMoveRoute>({
     getInitialPosition: jest.fn(),
@@ -39,9 +32,7 @@ function createRouteMock(): EnemyMoveRoute {
 
 function createStaticEnemyMoverArgsMock(): StaticEnemyMoverArgs {
   return {
-    route: createRouteMock(),
-    onEnteringToArea: createEventDispatcherMock(),
-    onExitingFromArea: createEventDispatcherMock()
+    route: createRouteMock()
   };
 }
 
@@ -109,48 +100,4 @@ describe("StaticEnemyMover", (): void => {
     // And move character to pos
     expect(wrapper.actor.moveToPosInArea).toBeCalledWith(routePosInArea);
   });
-
-  it.each`
-    event                  | ownerInVisualAreaAtFirst | ownerInVisualAreaAtSecond
-    ${"onEnteringToArea"}  | ${false}                 | ${true}
-    ${"onExitingFromArea"} | ${true}                  | ${false}
-  `(
-    "dispatch $event when character into or out visual area",
-    ({ event, ownerInVisualAreaAtFirst, ownerInVisualAreaAtSecond }): void => {
-      // Given StaticEnemyMover
-      const args = createStaticEnemyMoverArgsMock();
-      const mover = new StaticEnemyMover(args);
-
-      // And ActorWrapper
-      const cc = new CoordinatesConverter({
-        areaSizeInCanvas: 1,
-        centerInCanvas: { x: 0, y: 0 },
-        visualAreaSizeInCanvas: { x: 1, y: 1 }
-      });
-      const wrapper = createActorWrapperMock(cc);
-
-      // When start mover
-      mover.start(wrapper);
-
-      // And update mover twice
-      const deltaTimeMS = 10;
-      if (ownerInVisualAreaAtFirst) {
-        wrapper.actor.pos = new ex.Vector(0, 0);
-      } else {
-        wrapper.actor.pos = new ex.Vector(1, 1);
-      }
-      mover.update(deltaTimeMS);
-
-      if (ownerInVisualAreaAtSecond) {
-        wrapper.actor.pos = new ex.Vector(0, 0);
-      } else {
-        wrapper.actor.pos = new ex.Vector(1, 1);
-      }
-      mover.update(deltaTimeMS);
-
-      // Then event was dispatched
-      const eventName = event as "onEnteringToArea" | "onExitingFromArea";
-      expect(args[eventName].dispatch).toBeCalled();
-    }
-  );
 });

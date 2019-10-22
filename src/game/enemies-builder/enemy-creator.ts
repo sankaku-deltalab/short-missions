@@ -7,6 +7,7 @@ import { HealthComponent } from "../health-component";
 import { ExtendedActor } from "../actor/extended-actor";
 import { MuzzleCreator } from "./muzzle-creator";
 import { Mover } from "../mover/mover";
+import { EventDispatcher } from "../common/event-dispatcher";
 
 export interface EnemyCreatorArgs {
   // TODO: Add visual thing
@@ -49,10 +50,13 @@ export class EnemyCreator {
     const actor = new ExtendedActor({
       // TODO: Add visual thing
       color, // TODO: Remove color when visual was set
+      posInArea: new ex.Vector(1, 1),
       coordinatesConverter: this.coordinatedConverter,
       width: sizeInCanvasScale.y,
       height: sizeInCanvasScale.x,
-      collisions: this.collisions
+      collisions: this.collisions,
+      onEnteringToArea: new EventDispatcher<void>(),
+      onExitingFromArea: new EventDispatcher<void>()
     });
 
     // Create muzzles
