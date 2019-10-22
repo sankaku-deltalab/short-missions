@@ -17,7 +17,7 @@ function createFireDataMock(): gt.FireData {
 
 function createCoordinatesConverterMock(): CoordinatesConverter {
   const cc = new CoordinatesConverter({
-    areaSizeInCanvas: 1,
+    areaSizeInCanvas: 2,
     visualAreaSizeInCanvas: { x: 2, y: 2 },
     centerInCanvas: { x: 1, y: 1 }
   });
@@ -47,12 +47,17 @@ function createBulletMock(): Bullet {
   });
 }
 
+function createBulletsPoolMock(): [BulletsPool, Bullet] {
+  const bullet = createBulletMock();
+  const bulletsPool = simpleMock<BulletsPool>();
+  bulletsPool.pop = jest.fn().mockReturnValueOnce(bullet);
+  return [bulletsPool, bullet];
+}
+
 describe("Muzzle", (): void => {
   it("use bullet poped from pool", (): void => {
     // Given BulletsPool
-    const bullet = createBulletMock();
-    const bulletsPool = simpleMock<BulletsPool>();
-    bulletsPool.pop = jest.fn().mockReturnValueOnce(bullet);
+    const [bulletsPool, bullet] = createBulletsPoolMock();
 
     // And Muzzle in scene
     const muzzle = new Muzzle({
@@ -73,9 +78,7 @@ describe("Muzzle", (): void => {
 
   it("init bullets with damage", (): void => {
     // Given BulletsPool
-    const bullet = createBulletMock();
-    const bulletsPool = simpleMock<BulletsPool>();
-    bulletsPool.pop = jest.fn().mockReturnValueOnce(bullet);
+    const [bulletsPool, bullet] = createBulletsPoolMock();
 
     // And Muzzle in scene
     const damage = 10;
@@ -129,10 +132,7 @@ describe("Muzzle", (): void => {
 
   it("add actor to scene when initialized", (): void => {
     // Given BulletsPool
-    const bullet = createBulletMock();
-    const bulletsPool = simpleMock<BulletsPool>({
-      pop: jest.fn().mockReturnValueOnce(bullet)
-    });
+    const [bulletsPool, bullet] = createBulletsPoolMock();
 
     // And Muzzle in scene
     const muzzle = new Muzzle({
@@ -148,5 +148,28 @@ describe("Muzzle", (): void => {
 
     // Then bullet actor was added to muzzle's scene
     expect(muzzle.actor.scene.add).toBeCalledWith(bullet.actor);
+  });
+
+  it("do not fire from out of visual area", (): void => {
+    // Given BulletsPool
+    const [bulletsPool, bullet] = createBulletsPoolMock();
+
+    // And Muzzle in scene
+    const damage = 10;
+    const muzzle = new Muzzle({
+      damage,
+      bulletsPool,
+      isPlayerSide: true,
+      actor: createActorMock()
+    });
+    muzzle.actor.scene = createSceneMock();
+
+    // When fire from muzzle in outside of visual area
+    const data = createFireDataMock();
+    data.transform = mat.translate(0.6, 0.6);
+    muzzle.fire(data, simpleMock());
+
+    // Then bullet is not fired
+    expect(bullet.init).not.toBeCalled();
   });
 });
