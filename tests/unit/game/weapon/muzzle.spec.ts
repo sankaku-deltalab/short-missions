@@ -35,7 +35,8 @@ function createActorMock(): ExtendedActor {
   return simpleMock<ExtendedActor>({
     coordinatesConverter: createCoordinatesConverterMock(),
     kill: jest.fn(),
-    update: jest.fn()
+    update: jest.fn(),
+    useSelfInWrapper: jest.fn()
   });
 }
 
