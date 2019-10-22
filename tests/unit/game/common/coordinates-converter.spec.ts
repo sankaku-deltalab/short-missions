@@ -232,7 +232,7 @@ describe("CoordinatesConverter", (): void => {
       // When check is in visual area
       const isInArea = cc.canvasPointIsInVisualArea(pointInCanvas);
 
-      // Then get point in canvas
+      // Then get point is in visual area
       expect(isInArea).toBe(expectedIsInArea);
     }
   );
