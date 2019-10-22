@@ -48,9 +48,6 @@ export class Muzzle implements gt.Muzzle, ActorWrapper {
    * @param bullet Firing bullet.
    */
   public fire(data: gt.FireData, _bullet: gt.Bullet): void {
-    const bullet = this.bulletsPool.pop();
-    if (bullet === undefined) return;
-
     const [posInAreaPoint, rotationDeg, _scale] = gt.decomposeTransform(
       data.transform
     );
@@ -60,12 +57,19 @@ export class Muzzle implements gt.Muzzle, ActorWrapper {
     if (speed === undefined)
       throw new Error("GunTree parameter must have 'speed'");
 
+    // do not fire from outside of visual area
+    const cc = this.actor.coordinatesConverter;
+    if (!cc.areaPointIsInVisualArea(posInArea)) return;
+
+    const bullet = this.bulletsPool.pop();
+    if (bullet === undefined) return;
+
     this.actor.scene.add(bullet.actor);
     bullet.init({
       posInArea,
       rotation,
       damage: this.damage,
-      speed: speed * this.actor.coordinatesConverter.areaSizeInCanvas,
+      speed: speed * cc.areaSizeInCanvas,
       isPlayerSide: this.isPlayerSide()
     });
   }

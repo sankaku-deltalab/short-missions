@@ -55,7 +55,9 @@ function createActorMock(): ExtendedActor {
     kill: jest.fn(),
     update: jest.fn(),
     useSelfInWrapper: jest.fn(),
-    setZIndex: jest.fn()
+    setZIndex: jest.fn(),
+    onEnteringToArea: jest.fn(),
+    onExitingFromArea: jest.fn()
   });
 }
 
@@ -227,8 +229,8 @@ describe("Character", (): void => {
     const character = new Character(args);
 
     // When entering to area
-    for (const event of (args.mover.onEnteringToArea as any).mock.calls[0]) {
-      event();
+    for (const eventArgs of (args.actor.onEnteringToArea as any).mock.calls) {
+      eventArgs[0]();
     }
 
     // And take damage
@@ -245,13 +247,13 @@ describe("Character", (): void => {
     const character = new Character(args);
 
     // When entering to area
-    for (const event of (args.mover.onEnteringToArea as any).mock.calls[0]) {
-      event();
+    for (const eventArgs of (args.actor.onEnteringToArea as any).mock.calls) {
+      eventArgs[0]();
     }
 
     // And exiting to area
-    for (const event of (args.mover.onExitingFromArea as any).mock.calls[0]) {
-      event();
+    for (const eventArgs of (args.actor.onExitingFromArea as any).mock.calls) {
+      eventArgs[0]();
     }
 
     // And take damage

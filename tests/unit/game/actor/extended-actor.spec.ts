@@ -4,11 +4,14 @@ import { ExtendedActor } from "@/game/actor/extended-actor";
 import { CoordinatesConverter } from "@/game/common/coordinates-converter";
 import { Collisions } from "@/game/common/collision-groups";
 import { ActorWrapper } from "@/game/actor/actor-wrapper";
+import { EventDispatcher } from "@/game/common/event-dispatcher";
 
 describe("ExtendedActor", (): void => {
   it("need CoordinatesConverter and Collisions when constructed", (): void => {
     // Given CoordinatesConverter
-    const coordinatesConverter = simpleMock<CoordinatesConverter>();
+    const coordinatesConverter = simpleMock<CoordinatesConverter>({
+      canvasPointIsInVisualArea: jest.fn().mockReturnValue(true)
+    });
 
     // And Collisions
     const collisions = simpleMock<Collisions>();
@@ -17,7 +20,9 @@ describe("ExtendedActor", (): void => {
     const create = (): void => {
       new ExtendedActor({
         coordinatesConverter,
-        collisions
+        collisions,
+        onEnteringToArea: new EventDispatcher(),
+        onExitingFromArea: new EventDispatcher()
       });
     };
 
@@ -31,8 +36,12 @@ describe("ExtendedActor", (): void => {
 
     // And ExtendedActor
     const actor = new ExtendedActor({
-      coordinatesConverter: simpleMock<CoordinatesConverter>(),
-      collisions: simpleMock<Collisions>()
+      coordinatesConverter: simpleMock<CoordinatesConverter>({
+        canvasPointIsInVisualArea: jest.fn().mockReturnValue(true)
+      }),
+      collisions: simpleMock<Collisions>(),
+      onEnteringToArea: new EventDispatcher(),
+      onExitingFromArea: new EventDispatcher()
     });
 
     // When set wrapper to actor
@@ -60,13 +69,16 @@ describe("ExtendedActor", (): void => {
         toAreaPoint: jest.fn().mockReturnValueOnce(positions.posInArea),
         toVisualAreaPoint: jest
           .fn()
-          .mockReturnValueOnce(positions.posInVisualArea)
+          .mockReturnValueOnce(positions.posInVisualArea),
+        canvasPointIsInVisualArea: jest.fn().mockReturnValue(true)
       });
 
       // And ExtendedActor
       const actor = new ExtendedActor({
         coordinatesConverter,
-        collisions: simpleMock<Collisions>()
+        collisions: simpleMock<Collisions>(),
+        onEnteringToArea: new EventDispatcher(),
+        onExitingFromArea: new EventDispatcher()
       });
 
       // When get position in area or visual area
@@ -86,13 +98,16 @@ describe("ExtendedActor", (): void => {
     // Given CoordinatesConverter
     const posInCanvas = { x: 1, y: 2 };
     const coordinatesConverter = simpleMock<CoordinatesConverter>({
-      toCanvasPoint: jest.fn().mockReturnValueOnce(posInCanvas)
+      toCanvasPoint: jest.fn().mockReturnValueOnce(posInCanvas),
+      canvasPointIsInVisualArea: jest.fn().mockReturnValue(true)
     });
 
     // And ExtendedActor
     const actor = new ExtendedActor({
       coordinatesConverter,
-      collisions: simpleMock<Collisions>()
+      collisions: simpleMock<Collisions>(),
+      onEnteringToArea: new EventDispatcher(),
+      onExitingFromArea: new EventDispatcher()
     });
 
     // When move position in area
@@ -107,7 +122,8 @@ describe("ExtendedActor", (): void => {
     // Given CoordinatesConverter
     const posInCanvas = { x: 1, y: 2 };
     const coordinatesConverter = simpleMock<CoordinatesConverter>({
-      toCanvasPoint: jest.fn().mockReturnValue(posInCanvas)
+      toCanvasPoint: jest.fn().mockReturnValue(posInCanvas),
+      canvasPointIsInVisualArea: jest.fn().mockReturnValue(true)
     });
 
     // And ex.Vector as posInArea
@@ -117,7 +133,9 @@ describe("ExtendedActor", (): void => {
     const actor = new ExtendedActor({
       posInArea,
       coordinatesConverter,
-      collisions: simpleMock<Collisions>()
+      collisions: simpleMock<Collisions>(),
+      onEnteringToArea: new EventDispatcher(),
+      onExitingFromArea: new EventDispatcher()
     });
 
     // Then position was get from CoordinatesConverter
@@ -129,14 +147,17 @@ describe("ExtendedActor", (): void => {
     // Given CoordinatesConverter
     const expectedPosInArea = { x: 1, y: 2 };
     const coordinatesConverter = simpleMock<CoordinatesConverter>({
-      toAreaPoint: jest.fn().mockReturnValue(expectedPosInArea)
+      toAreaPoint: jest.fn().mockReturnValue(expectedPosInArea),
+      canvasPointIsInVisualArea: jest.fn().mockReturnValue(true)
     });
 
     // And construct ExtendedActor
     const pos = new ex.Vector(5, 6);
     const actor = new ExtendedActor({
       coordinatesConverter,
-      collisions: simpleMock<Collisions>()
+      collisions: simpleMock<Collisions>(),
+      onEnteringToArea: new EventDispatcher(),
+      onExitingFromArea: new EventDispatcher()
     });
     actor.getWorldPos = jest.fn().mockReturnValueOnce(pos);
 
@@ -152,8 +173,12 @@ describe("ExtendedActor", (): void => {
   it("can set collision", (): void => {
     // Given ExtendedActor
     const actor = new ExtendedActor({
-      coordinatesConverter: simpleMock<CoordinatesConverter>(),
-      collisions: simpleMock<Collisions>()
+      coordinatesConverter: simpleMock<CoordinatesConverter>({
+        canvasPointIsInVisualArea: jest.fn().mockReturnValue(true)
+      }),
+      collisions: simpleMock<Collisions>(),
+      onEnteringToArea: new EventDispatcher(),
+      onExitingFromArea: new EventDispatcher()
     });
 
     // When set collision
@@ -167,8 +192,12 @@ describe("ExtendedActor", (): void => {
   it("update owner when updated", (): void => {
     // Given ExtendedActor
     const actor = new ExtendedActor({
-      coordinatesConverter: simpleMock<CoordinatesConverter>(),
-      collisions: simpleMock<Collisions>()
+      coordinatesConverter: simpleMock<CoordinatesConverter>({
+        canvasPointIsInVisualArea: jest.fn().mockReturnValue(true)
+      }),
+      collisions: simpleMock<Collisions>(),
+      onEnteringToArea: new EventDispatcher(),
+      onExitingFromArea: new EventDispatcher()
     });
 
     // And ActorWrapper
@@ -186,4 +215,51 @@ describe("ExtendedActor", (): void => {
     // Then body was set collision
     expect(actor.body.collider.group).toBe(collision);
   });
+
+  it.each`
+    event                  | isInVisualAreaAtFirst | isInVisualAreaAtSecond
+    ${"onEnteringToArea"}  | ${false}              | ${true}
+    ${"onExitingFromArea"} | ${true}               | ${false}
+  `(
+    "dispatch onEnteringToArea when actor into or out visual area",
+    ({ event, isInVisualAreaAtFirst, isInVisualAreaAtSecond }): void => {
+      // Given ExtendedActor (not) in visual area
+      const cc = new CoordinatesConverter({
+        areaSizeInCanvas: 100,
+        centerInCanvas: { x: 50, y: 50 },
+        visualAreaSizeInCanvas: { x: 100, y: 100 }
+      });
+      const args = {
+        coordinatesConverter: cc,
+        collisions: simpleMock<Collisions>(),
+        onEnteringToArea: simpleMock<EventDispatcher<void>>({
+          dispatch: jest.fn()
+        }),
+        onExitingFromArea: simpleMock<EventDispatcher<void>>({
+          dispatch: jest.fn()
+        })
+      };
+
+      const actor = new ExtendedActor(args);
+
+      // When move actor to (not) in visual area
+      if (isInVisualAreaAtFirst) {
+        actor.moveToPosInCanvas(new ex.Vector(0, 0));
+      } else {
+        actor.moveToPosInCanvas(new ex.Vector(101, 101));
+      }
+      actor.update(simpleMock(), 1);
+
+      if (isInVisualAreaAtSecond) {
+        actor.moveToPosInCanvas(new ex.Vector(0, 0));
+      } else {
+        actor.moveToPosInCanvas(new ex.Vector(101, 101));
+      }
+      actor.update(simpleMock(), 1);
+
+      // Then event was dispatched
+      const ev = event as ("onEnteringToArea" | "onExitingFromArea");
+      expect(args[ev].dispatch).toBeCalled();
+    }
+  );
 });

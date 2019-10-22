@@ -38,7 +38,9 @@ function createBulletsBool(
       coordinatesConverter,
       sizeInArea,
       color: ex.Color.Black,
-      collisions
+      collisions,
+      onEnteringToArea: new EventDispatcher<void>(),
+      onExitingFromArea: new EventDispatcher<void>()
     });
     const bullet = new Bullet(bulletActor);
     bulletActor.on("exitviewport", (): void => {
@@ -156,7 +158,9 @@ export class MissionFlow {
     const muzzleActor = new ExtendedActor({
       coordinatesConverter,
       pos: coordinatesConverter.toCanvasVector(new ex.Vector(0.125 / 4, 0)),
-      collisions: this.stgGameManager.collisions
+      collisions: this.stgGameManager.collisions,
+      onEnteringToArea: new EventDispatcher<void>(),
+      onExitingFromArea: new EventDispatcher<void>()
     });
     const muzzle = new Muzzle({
       bulletsPool,
@@ -183,7 +187,9 @@ export class MissionFlow {
       width: 50,
       height: 50,
       color: ex.Color.Azure,
-      collisions: this.stgGameManager.collisions
+      collisions: this.stgGameManager.collisions,
+      onEnteringToArea: new EventDispatcher<void>(),
+      onExitingFromArea: new EventDispatcher<void>()
     });
     const pc = new Character({
       health: new HealthComponent(3, 7),
