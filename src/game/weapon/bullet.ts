@@ -16,10 +16,14 @@ export class Bullet implements ActorWrapper {
   private _isPlayerSide = true;
   public readonly actor: ExtendedActor;
   private damage = 0;
+  private killTimer: ex.Timer;
 
   public constructor(actor: ExtendedActor) {
     this.actor = actor;
     this.actor.useSelfInWrapper(this);
+    this.killTimer = new ex.Timer((): void => {
+      this.kill();
+    }, 200);
 
     actor.on("precollision", (event: ex.PreCollisionEvent<ex.Actor>): void => {
       const other = event.other;
@@ -27,6 +31,11 @@ export class Bullet implements ActorWrapper {
       const character = other.owner();
       if (!(character instanceof Character)) return;
       this.hitTo(character);
+    });
+
+    actor.onExitingFromArea(() => {
+      this.killTimer.reset();
+      actor.scene.addTimer(this.killTimer);
     });
   }
 
@@ -45,6 +54,7 @@ export class Bullet implements ActorWrapper {
 
   public kill(): void {
     this.actor.kill();
+    this.killTimer.cancel();
   }
 
   public init(args: BulletInitializeArgs): void {
