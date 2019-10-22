@@ -139,6 +139,8 @@ export class Character implements ActorWrapper {
    */
   public die(): void {
     this.healthComponent.die();
+    this.stopFiring(true);
+    this.kill();
   }
 
   /**
@@ -243,6 +245,6 @@ export class Character implements ActorWrapper {
 
   public kill(): void {
     this.actor.kill();
-    this.weapon.stopFiring(true);
+    this.stopFiring(true);
   }
 }
