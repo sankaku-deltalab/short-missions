@@ -263,13 +263,13 @@ export class MissionFlow {
     const weaponCreator = new WeaponCreator(
       gt.concat(
         gt.useMuzzle("centerMuzzle"),
+        gt.useVirtualMuzzle(gt.aimingMuzzle()),
         gt.mltSpeed(0.5),
-        gt.addAngle(180),
         gt.sequential(
-          gt.repeat({ times: 4, interval: 10 }, gt.fire(gt.bullet())),
+          gt.repeat({ times: 3, interval: 30 }, gt.fire(gt.bullet())),
           gt.wait(15),
           gt.repeat(
-            { times: 2, interval: 3 },
+            { times: 2, interval: 10 },
             gt.nWay({ ways: 3, totalAngle: 90 }, gt.fire(gt.bullet()))
           ),
           gt.wait(30)
@@ -296,7 +296,7 @@ export class MissionFlow {
       ]
     ]);
 
-    const playerDPS = 150;
+    const playerDPS = 10 * (60 / 4);
     const sec = new StageEnemyCreator({
       scene,
       collisions,
