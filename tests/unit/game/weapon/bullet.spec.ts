@@ -28,7 +28,9 @@ function createActorMock(): ExtendedActor {
     setZIndex: jest.fn(),
     on: jest.fn(),
     moveToPosInArea: jest.fn(),
-    useSelfInWrapper: jest.fn()
+    useSelfInWrapper: jest.fn(),
+    onEnteringToArea: jest.fn(),
+    onExitingFromArea: jest.fn()
   });
 }
 

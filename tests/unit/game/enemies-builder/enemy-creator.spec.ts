@@ -19,6 +19,7 @@ function createEnemyCreatorArgs(): EnemyCreatorArgs {
   return {
     collisions: createCollisionsMock(),
     coordinatesConverter: simpleMock<CoordinatesConverter>({
+      toCanvasPoint: jest.fn().mockImplementation(v => v),
       canvasPointIsInVisualArea: jest.fn().mockReturnValue(true)
     }),
     health: 100,
