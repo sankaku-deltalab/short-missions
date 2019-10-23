@@ -112,7 +112,7 @@ export class MissionFlow {
     const waitEnemiesFinished = (
       nodeCallback: (err: Error | null) => void
     ): void => {
-      const squads = starter.takeStartingSquads();
+      const squads = starter.startingSquads();
       let finishedSquadCount = 0;
       for (const sq of squads) {
         sq.onAllMemberFinished((): void => {

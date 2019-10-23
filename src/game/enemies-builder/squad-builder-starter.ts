@@ -25,7 +25,7 @@ export class SquadBuilderStarter {
     this.builderInfo = args.builderInfo;
   }
 
-  public takeStartingSquads(): Squad[] {
+  public startingSquads(): Squad[] {
     return this.builderInfo.map(v => v.squad);
   }
 
