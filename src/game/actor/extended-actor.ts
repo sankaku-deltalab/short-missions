@@ -55,9 +55,7 @@ export class ExtendedActor extends ex.Actor {
       this.moveToPosInArea(args.posInArea);
     }
 
-    this.isInVisualArea = this.coordinatesConverter.canvasPointIsInVisualArea(
-      this.pos
-    );
+    this.isInVisualArea = false;
 
     if (args.sizeInArea !== undefined) {
       const size = this.coordinatesConverter.toCanvasVector(args.sizeInArea);
