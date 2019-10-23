@@ -26,6 +26,13 @@ import {
 } from "./enemies-builder/stage-enemy-creator";
 import { SquadBuilderStarter } from "./enemies-builder/squad-builder-starter";
 
+export enum MissionFinishReason {
+  clear = "clear",
+  failed = "failed",
+  aborted = "aborted",
+  unknown = "unknown"
+}
+
 function createBulletsBool(
   bulletsNum: number,
   coordinatesConverter: CoordinatesConverter,
@@ -106,11 +113,11 @@ export class MissionFlow {
     engine.goToScene("mission");
     pc.startFiring();
 
-    // TODO: Wait end game
+    // Wait end game
 
-    // wait enemy died
+    // wait all enemy finished
     const waitEnemiesFinished = (
-      nodeCallback: (err: Error | null) => void
+      resolve: (err: Error | null, result: MissionFinishReason) => void
     ): void => {
       const squads = starter.startingSquads();
       let finishedSquadCount = 0;
@@ -118,17 +125,36 @@ export class MissionFlow {
         sq.onAllMemberFinished((): void => {
           finishedSquadCount += 1;
           if (finishedSquadCount === squads.length) {
-            nodeCallback(null);
+            resolve(null, MissionFinishReason.clear);
           }
         });
       }
+    };
+
+    // wait player finished
+    const waitPlayerDead = (
+      resolve: (err: Error | null, result: MissionFinishReason) => void
+    ): void => {
+      const wrappedResolve = (): void => {
+        resolve(null, MissionFinishReason.failed);
+      };
+      pc.onDied(wrappedResolve);
     };
 
     const pause = promisify((milliSec: number, f: Function): void => {
       setTimeout(f, milliSec);
     });
 
-    await Promise.race([promisify(waitEnemiesFinished)(), pause(10 * 1000)]);
+    const finishReason = await Promise.race<Promise<MissionFinishReason>>([
+      promisify(waitEnemiesFinished)(),
+      promisify(waitPlayerDead)()
+    ]);
+
+    if (finishReason === MissionFinishReason.clear) {
+      alert("clear");
+    } else if (finishReason === MissionFinishReason.failed) {
+      alert("failed");
+    }
 
     await pause(2 * 1000);
 
