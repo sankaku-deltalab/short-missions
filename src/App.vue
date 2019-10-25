@@ -2,7 +2,7 @@
   <v-app id="app">
     <GameCanvas ref="game-canvas" />
     <v-fade-transition>
-      <span v-show="!stgMode">
+      <span v-show="sholdShowMenu()">
         <Menu />
         <StageSelector @mission-selected="playMission" />
       </span>
@@ -17,6 +17,7 @@ import StageSelector from "./components/StageSelector.vue";
 import GameCanvas from "./components/GameCanvas.vue";
 import { createEngine } from "@/game/engine-creator";
 import { STGGameManager } from "@/game/stg-game-manager";
+import { OutGameUIRequest, UIRequests } from "@/game/ui-request";
 import { MissionFlow } from "./game/mission-flow";
 
 @Component({
@@ -27,22 +28,31 @@ import { MissionFlow } from "./game/mission-flow";
   }
 })
 export default class App extends Vue {
-  private stgMode = false;
   private stgGameManager!: STGGameManager;
+  private uiRequests: UIRequests = {
+    outGameUIRequest: OutGameUIRequest.none,
+    inGameUIRequests: {
+      stgUI: false,
+      stageClearUI: false,
+      stageFailedUI: false
+    }
+  };
 
   public mounted(): void {
     // Setup game
     const gameCanvas = this.$refs["game-canvas"] as GameCanvas;
     const engine = createEngine(gameCanvas.getCanvas());
-    this.stgGameManager = new STGGameManager(engine);
-    engine.start();
+    this.stgGameManager = new STGGameManager(engine, this.uiRequests);
+    this.stgGameManager.start();
+  }
+
+  public sholdShowMenu(): boolean {
+    return this.uiRequests.outGameUIRequest === OutGameUIRequest.menu;
   }
 
   private async playMission(selectedMissionId: number): Promise<void> {
-    this.stgMode = true;
     const flow = new MissionFlow(this.stgGameManager);
     await flow.playMission(selectedMissionId);
-    this.stgMode = false;
   }
 }
 </script>

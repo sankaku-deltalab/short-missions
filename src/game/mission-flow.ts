@@ -25,6 +25,7 @@ import {
   StageEnemyCreator
 } from "./enemies-builder/stage-enemy-creator";
 import { SquadBuilderStarter } from "./enemies-builder/squad-builder-starter";
+import { OutGameUIRequest } from "./ui-request";
 
 export enum MissionFinishReason {
   clear = "clear",
@@ -71,6 +72,7 @@ export class MissionFlow {
   public async playMission(_missionId: number): Promise<void> {
     const engine = this.stgGameManager.engine;
     const coordinatesConverter = this.stgGameManager.coordinatesConverter;
+    const uiRequests = this.stgGameManager.uiRequests;
 
     // Setup scene
     const scene = new ex.Scene(engine);
@@ -105,6 +107,10 @@ export class MissionFlow {
 
     // Setup input
     const inputReceiver = this.setupMovementInputReceiver(engine.input, pc);
+
+    // Setup UI
+    uiRequests.outGameUIRequest = OutGameUIRequest.none;
+    uiRequests.inGameUIRequests.stgUI = true;
 
     // TODO: Start game
     starter.start();
@@ -151,18 +157,24 @@ export class MissionFlow {
     ]);
 
     if (finishReason === MissionFinishReason.clear) {
-      alert("clear");
+      uiRequests.inGameUIRequests.stageClearUI = true;
+      await pause(2 * 1000);
     } else if (finishReason === MissionFinishReason.failed) {
-      alert("failed");
+      uiRequests.inGameUIRequests.stageFailedUI = true;
+      await pause(2 * 1000);
     }
-
-    await pause(2 * 1000);
 
     // TODO: Show result
     // Clear all
     inputReceiver.disableInput(engine.input);
     engine.removeScene(scene);
     engine.goToScene("root");
+
+    // Return to menu
+    uiRequests.outGameUIRequest = OutGameUIRequest.menu;
+    uiRequests.inGameUIRequests.stgUI = false;
+    uiRequests.inGameUIRequests.stageClearUI = false;
+    uiRequests.inGameUIRequests.stageFailedUI = false;
   }
 
   private setupPlayerCharacter(
