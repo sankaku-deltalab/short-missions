@@ -1,6 +1,12 @@
 <template>
   <v-app id="app">
     <GameCanvas ref="game-canvas" />
+    <v-container fill-height v-show="sholdShowStageClearUI()">
+      <v-alert>Clear!</v-alert>
+    </v-container>
+    <v-container fill-height v-show="sholdShowStageFailedUI()">
+      <v-alert>Failed...</v-alert>
+    </v-container>
     <v-fade-transition>
       <span v-show="sholdShowMenu()">
         <Menu />
@@ -48,6 +54,14 @@ export default class App extends Vue {
 
   public sholdShowMenu(): boolean {
     return this.uiRequests.outGameUIRequest === OutGameUIRequest.menu;
+  }
+
+  public sholdShowStageClearUI(): boolean {
+    return this.uiRequests.inGameUIRequests.stageClearUI;
+  }
+
+  public sholdShowStageFailedUI(): boolean {
+    return this.uiRequests.inGameUIRequests.stageFailedUI;
   }
 
   private async playMission(selectedMissionId: number): Promise<void> {
