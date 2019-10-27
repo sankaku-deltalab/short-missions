@@ -7,6 +7,10 @@
     <v-container fill-height v-show="sholdShowStageFailedUI()">
       <v-alert>Failed...</v-alert>
     </v-container>
+    <STGUI
+      v-show="sholdShowSTGUI()"
+      :stg-play-info="uiRequests.stgPlayInfo"
+    ></STGUI>
     <v-fade-transition>
       <span v-show="sholdShowMenu()">
         <Menu />
@@ -21,6 +25,7 @@ import { Component, Vue } from "vue-property-decorator";
 import Menu from "./components/Menu.vue";
 import StageSelector from "./components/StageSelector.vue";
 import GameCanvas from "./components/GameCanvas.vue";
+import STGUI from "./components/STGUI.vue";
 import { createEngine } from "@/game/engine-creator";
 import { STGGameManager } from "@/game/stg-game-manager";
 import { OutGameUIRequest, UIRequests } from "@/game/ui-request";
@@ -30,7 +35,8 @@ import { MissionFlow } from "./game/mission-flow";
   components: {
     Menu,
     StageSelector,
-    GameCanvas
+    GameCanvas,
+    STGUI
   }
 })
 export default class App extends Vue {
@@ -41,6 +47,10 @@ export default class App extends Vue {
       stgUI: false,
       stageClearUI: false,
       stageFailedUI: false
+    },
+    stgPlayInfo: {
+      healthMax: 2,
+      health: 1
     }
   };
 
@@ -62,6 +72,10 @@ export default class App extends Vue {
 
   public sholdShowStageFailedUI(): boolean {
     return this.uiRequests.inGameUIRequests.stageFailedUI;
+  }
+
+  public sholdShowSTGUI(): boolean {
+    return this.uiRequests.inGameUIRequests.stgUI;
   }
 
   private async playMission(selectedMissionId: number): Promise<void> {

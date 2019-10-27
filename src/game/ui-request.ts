@@ -10,7 +10,13 @@ export interface InGameUIRequests {
   stageFailedUI: boolean;
 }
 
+export interface STGPlayInfo {
+  healthMax: number;
+  health: number;
+}
+
 export interface UIRequests {
   outGameUIRequest: OutGameUIRequest;
   inGameUIRequests: InGameUIRequests;
+  stgPlayInfo: STGPlayInfo;
 }

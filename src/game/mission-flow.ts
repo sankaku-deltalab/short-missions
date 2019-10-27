@@ -112,6 +112,12 @@ export class MissionFlow {
     uiRequests.outGameUIRequest = OutGameUIRequest.none;
     uiRequests.inGameUIRequests.stgUI = true;
 
+    const updateUI = (_event: ex.PostUpdateEvent): void => {
+      uiRequests.stgPlayInfo.health = pc.health();
+      uiRequests.stgPlayInfo.healthMax = pc.maxHealth();
+    };
+    engine.on("postupdate", updateUI);
+
     // TODO: Start game
     starter.start();
 
@@ -175,6 +181,7 @@ export class MissionFlow {
     uiRequests.inGameUIRequests.stgUI = false;
     uiRequests.inGameUIRequests.stageClearUI = false;
     uiRequests.inGameUIRequests.stageFailedUI = false;
+    engine.off("postupdate", updateUI);
   }
 
   private setupPlayerCharacter(
