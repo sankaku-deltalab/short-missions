@@ -8,7 +8,7 @@
       <v-alert>Failed...</v-alert>
     </v-container>
     <STGUI
-      v-show="sholdShowSTGUI()"
+      v-if="sholdShowSTGUI()"
       :stg-play-info="uiRequests.stgPlayInfo"
     ></STGUI>
     <v-fade-transition>
@@ -53,6 +53,7 @@ export default class App extends Vue {
       health: 1
     }
   };
+  private rate = 1;
 
   public mounted(): void {
     // Setup game

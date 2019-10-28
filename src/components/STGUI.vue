@@ -1,6 +1,9 @@
 <template>
-  <v-container fluid>
-    <v-row align="end" class="full-size">
+  <v-container fluid fill-hight class="on-top">
+    <v-row>
+      <v-btn small>Pause</v-btn>
+    </v-row>
+    <v-row>
       <v-rating
         :length="stgPlayInfo.healthMax"
         v-model="stgPlayInfo.health"
@@ -8,7 +11,7 @@
         readonly
         full-icon="mdi-heart"
         empty-icon="mdi-heart-outline"
-      ></v-rating>
+      />
     </v-row>
   </v-container>
 </template>
@@ -21,19 +24,14 @@ import { STGPlayInfo } from "@/game/ui-request";
 export default class STGUI extends Vue {
   @Prop()
   private stgPlayInfo!: STGPlayInfo;
+
+  private message = "";
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.full-size {
-  position: fixed;
-  top: 0px;
-  left: 0px;
-  margin: 0px;
-  padding: 0px;
-  border: 0px;
-  height: 100%;
-  width: 100%;
+.on-top {
+  position: absolute;
 }
 </style>
