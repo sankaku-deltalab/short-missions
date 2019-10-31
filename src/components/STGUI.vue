@@ -1,21 +1,15 @@
 <template>
   <v-container fluid fill-hight class="on-top">
-    <v-row>
-      <v-col cols="9">
-        <v-rating
-          :length="stgPlayInfo.healthMax"
-          v-model="stgPlayInfo.health"
-          dense
-          readonly
-          full-icon="mdi-heart"
-          empty-icon="mdi-heart-outline"
-        />
+    <v-row justify="space-between">
+      <v-col cols="3">
+        <v-icon v-for="_ in stgPlayInfo.health" :key="_" color="pink">
+          mdi-heart
+        </v-icon>
+        <v-icon class="d-none">mdi-heart</v-icon>
       </v-col>
       <v-col cols="3">
         <v-btn small>Pause</v-btn>
       </v-col>
-    </v-row>
-    <v-row>
     </v-row>
   </v-container>
 </template>
