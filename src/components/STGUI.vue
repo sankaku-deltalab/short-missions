@@ -1,17 +1,21 @@
 <template>
   <v-container fluid fill-hight class="on-top">
     <v-row>
-      <v-btn small>Pause</v-btn>
+      <v-col cols="9">
+        <v-rating
+          :length="stgPlayInfo.healthMax"
+          v-model="stgPlayInfo.health"
+          dense
+          readonly
+          full-icon="mdi-heart"
+          empty-icon="mdi-heart-outline"
+        />
+      </v-col>
+      <v-col cols="3">
+        <v-btn small>Pause</v-btn>
+      </v-col>
     </v-row>
     <v-row>
-      <v-rating
-        :length="stgPlayInfo.healthMax"
-        v-model="stgPlayInfo.health"
-        dense
-        readonly
-        full-icon="mdi-heart"
-        empty-icon="mdi-heart-outline"
-      />
     </v-row>
   </v-container>
 </template>
