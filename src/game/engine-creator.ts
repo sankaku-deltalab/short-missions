@@ -15,7 +15,7 @@ export function createEngine(canvas: HTMLCanvasElement): ex.Engine {
     width: canvas.width,
     height: canvas.height,
     canvasElementId: "__anyId",
-    pointerScope: ex.Input.PointerScope.Canvas,
+    pointerScope: ex.Input.PointerScope.Document,
     backgroundColor: ex.Color.DarkGray,
     suppressMinimumBrowserFeatureDetection: true,
     suppressConsoleBootMessage: true

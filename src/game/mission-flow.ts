@@ -25,6 +25,14 @@ import {
   StageEnemyCreator
 } from "./enemies-builder/stage-enemy-creator";
 import { SquadBuilderStarter } from "./enemies-builder/squad-builder-starter";
+import { OutGameUIRequest } from "./ui-request";
+
+export enum MissionFinishReason {
+  clear = "clear",
+  failed = "failed",
+  aborted = "aborted",
+  unknown = "unknown"
+}
 
 function createBulletsBool(
   bulletsNum: number,
@@ -64,6 +72,7 @@ export class MissionFlow {
   public async playMission(_missionId: number): Promise<void> {
     const engine = this.stgGameManager.engine;
     const coordinatesConverter = this.stgGameManager.coordinatesConverter;
+    const uiRequests = this.stgGameManager.uiRequests;
 
     // Setup scene
     const scene = new ex.Scene(engine);
@@ -99,6 +108,16 @@ export class MissionFlow {
     // Setup input
     const inputReceiver = this.setupMovementInputReceiver(engine.input, pc);
 
+    // Setup UI
+    uiRequests.outGameUIRequest = OutGameUIRequest.none;
+    uiRequests.inGameUIRequests.stgUI = true;
+
+    const updateUI = (_event: ex.PostUpdateEvent): void => {
+      uiRequests.stgPlayInfo.health = pc.health();
+      uiRequests.stgPlayInfo.healthMax = pc.maxHealth();
+    };
+    engine.on("postupdate", updateUI);
+
     // TODO: Start game
     starter.start();
 
@@ -106,37 +125,63 @@ export class MissionFlow {
     engine.goToScene("mission");
     pc.startFiring();
 
-    // TODO: Wait end game
+    // Wait end game
 
-    // wait enemy died
+    // wait all enemy finished
     const waitEnemiesFinished = (
-      nodeCallback: (err: Error | null) => void
+      resolve: (err: Error | null, result: MissionFinishReason) => void
     ): void => {
-      const squads = starter.takeStartingSquads();
+      const squads = starter.startingSquads();
       let finishedSquadCount = 0;
       for (const sq of squads) {
         sq.onAllMemberFinished((): void => {
           finishedSquadCount += 1;
           if (finishedSquadCount === squads.length) {
-            nodeCallback(null);
+            resolve(null, MissionFinishReason.clear);
           }
         });
       }
+    };
+
+    // wait player finished
+    const waitPlayerDead = (
+      resolve: (err: Error | null, result: MissionFinishReason) => void
+    ): void => {
+      const wrappedResolve = (): void => {
+        resolve(null, MissionFinishReason.failed);
+      };
+      pc.onDied(wrappedResolve);
     };
 
     const pause = promisify((milliSec: number, f: Function): void => {
       setTimeout(f, milliSec);
     });
 
-    await Promise.race([promisify(waitEnemiesFinished)(), pause(10 * 1000)]);
+    const finishReason = await Promise.race<Promise<MissionFinishReason>>([
+      promisify(waitEnemiesFinished)(),
+      promisify(waitPlayerDead)()
+    ]);
 
-    await pause(2 * 1000);
+    if (finishReason === MissionFinishReason.clear) {
+      uiRequests.inGameUIRequests.stageClearUI = true;
+      await pause(2 * 1000);
+    } else if (finishReason === MissionFinishReason.failed) {
+      uiRequests.inGameUIRequests.stageFailedUI = true;
+      await pause(2 * 1000);
+    }
 
     // TODO: Show result
     // Clear all
     inputReceiver.disableInput(engine.input);
     engine.removeScene(scene);
     engine.goToScene("root");
+
+    // Return to menu
+    uiRequests.outGameUIRequest = OutGameUIRequest.menu;
+    uiRequests.inGameUIRequests.stgUI = false;
+    uiRequests.inGameUIRequests.stageClearUI = false;
+    uiRequests.inGameUIRequests.stageFailedUI = false;
+    engine.off("postupdate", updateUI);
   }
 
   private setupPlayerCharacter(

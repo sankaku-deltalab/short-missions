@@ -1,8 +1,18 @@
 <template>
   <v-app id="app">
     <GameCanvas ref="game-canvas" />
+    <v-container fill-height v-show="sholdShowStageClearUI()">
+      <v-alert>Clear!</v-alert>
+    </v-container>
+    <v-container fill-height v-show="sholdShowStageFailedUI()">
+      <v-alert>Failed...</v-alert>
+    </v-container>
+    <STGUI
+      v-if="sholdShowSTGUI()"
+      :stg-play-info="uiRequests.stgPlayInfo"
+    ></STGUI>
     <v-fade-transition>
-      <span v-show="!stgMode">
+      <span v-show="sholdShowMenu()">
         <Menu />
         <StageSelector @mission-selected="playMission" />
       </span>
@@ -15,34 +25,63 @@ import { Component, Vue } from "vue-property-decorator";
 import Menu from "./components/Menu.vue";
 import StageSelector from "./components/StageSelector.vue";
 import GameCanvas from "./components/GameCanvas.vue";
+import STGUI from "./components/STGUI.vue";
 import { createEngine } from "@/game/engine-creator";
 import { STGGameManager } from "@/game/stg-game-manager";
+import { OutGameUIRequest, UIRequests } from "@/game/ui-request";
 import { MissionFlow } from "./game/mission-flow";
 
 @Component({
   components: {
     Menu,
     StageSelector,
-    GameCanvas
+    GameCanvas,
+    STGUI
   }
 })
 export default class App extends Vue {
-  private stgMode = false;
   private stgGameManager!: STGGameManager;
+  private uiRequests: UIRequests = {
+    outGameUIRequest: OutGameUIRequest.none,
+    inGameUIRequests: {
+      stgUI: false,
+      stageClearUI: false,
+      stageFailedUI: false
+    },
+    stgPlayInfo: {
+      healthMax: 2,
+      health: 1
+    }
+  };
+  private rate = 1;
 
   public mounted(): void {
     // Setup game
     const gameCanvas = this.$refs["game-canvas"] as GameCanvas;
     const engine = createEngine(gameCanvas.getCanvas());
-    this.stgGameManager = new STGGameManager(engine);
-    engine.start();
+    this.stgGameManager = new STGGameManager(engine, this.uiRequests);
+    this.stgGameManager.start();
+  }
+
+  public sholdShowMenu(): boolean {
+    return this.uiRequests.outGameUIRequest === OutGameUIRequest.menu;
+  }
+
+  public sholdShowStageClearUI(): boolean {
+    return this.uiRequests.inGameUIRequests.stageClearUI;
+  }
+
+  public sholdShowStageFailedUI(): boolean {
+    return this.uiRequests.inGameUIRequests.stageFailedUI;
+  }
+
+  public sholdShowSTGUI(): boolean {
+    return this.uiRequests.inGameUIRequests.stgUI;
   }
 
   private async playMission(selectedMissionId: number): Promise<void> {
-    this.stgMode = true;
     const flow = new MissionFlow(this.stgGameManager);
     await flow.playMission(selectedMissionId);
-    this.stgMode = false;
   }
 }
 </script>

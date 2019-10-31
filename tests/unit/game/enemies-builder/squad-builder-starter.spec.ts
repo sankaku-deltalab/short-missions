@@ -113,6 +113,6 @@ describe("SquadBuilderStarter", (): void => {
 
     // Then SquadBuilderStarter can take squads
     const squads = args.builderInfo.map(v => v.squad);
-    expect(sbs.takeStartingSquads()).toEqual(squads);
+    expect(sbs.startingSquads()).toEqual(squads);
   });
 });
