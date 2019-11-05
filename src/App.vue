@@ -30,6 +30,7 @@ import { createEngine } from "@/game/engine-creator";
 import { STGGameManager } from "@/game/stg-game-manager";
 import { OutGameUIRequest, UIRequests } from "@/game/ui-request";
 import { MissionFlow } from "./game/mission-flow";
+import { EventDispatcher } from "./game/common/event-dispatcher";
 
 @Component({
   components: {
@@ -50,7 +51,8 @@ export default class App extends Vue {
     },
     stgPlayInfo: {
       healthMax: 2,
-      health: 1
+      health: 1,
+      missionAbortEvent: new EventDispatcher()
     }
   };
   private rate = 1;

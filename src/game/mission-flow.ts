@@ -153,13 +153,27 @@ export class MissionFlow {
       pc.onDied(wrappedResolve);
     };
 
+    // wait mission aborted
+    const waitMissionAborted = (
+      resolve: (err: Error | null, result: MissionFinishReason) => void
+    ): void => {
+      const wrappedResolve = (): void => {
+        resolve(null, MissionFinishReason.aborted);
+      };
+      this.stgGameManager.uiRequests.stgPlayInfo.missionAbortEvent.add(
+        wrappedResolve
+      );
+      pc.onDied(wrappedResolve);
+    };
+
     const pause = promisify((milliSec: number, f: Function): void => {
       setTimeout(f, milliSec);
     });
 
     const finishReason = await Promise.race<Promise<MissionFinishReason>>([
       promisify(waitEnemiesFinished)(),
-      promisify(waitPlayerDead)()
+      promisify(waitPlayerDead)(),
+      promisify(waitMissionAborted)()
     ]);
 
     if (finishReason === MissionFinishReason.clear) {
@@ -168,6 +182,8 @@ export class MissionFlow {
     } else if (finishReason === MissionFinishReason.failed) {
       uiRequests.inGameUIRequests.stageFailedUI = true;
       await pause(2 * 1000);
+    } else if (finishReason === MissionFinishReason.aborted) {
+      // do nothing
     }
 
     // TODO: Show result
