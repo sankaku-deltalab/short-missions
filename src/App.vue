@@ -1,6 +1,12 @@
 <template>
   <v-app id="app">
     <GameCanvas ref="game-canvas" />
+    <v-container fill-height v-show="shouldShowPauseMenu()">
+      <PauseMenu
+        v-on:request-resume-mission="hidePauseMenu"
+        v-on:request-abort-mission="abortMission"
+      />
+    </v-container>
     <v-container fill-height v-show="sholdShowStageClearUI()">
       <v-alert>Clear!</v-alert>
     </v-container>
@@ -10,6 +16,7 @@
     <STGUI
       v-if="sholdShowSTGUI()"
       :stg-play-info="uiRequests.stgPlayInfo"
+      v-on:request-pause="showPauseMenu"
     ></STGUI>
     <v-fade-transition>
       <span v-show="sholdShowMenu()">
@@ -26,6 +33,7 @@ import Menu from "./components/Menu.vue";
 import StageSelector from "./components/StageSelector.vue";
 import GameCanvas from "./components/GameCanvas.vue";
 import STGUI from "./components/STGUI.vue";
+import PauseMenu from "./components/PauseMenu.vue";
 import { createEngine } from "@/game/engine-creator";
 import { STGGameManager } from "@/game/stg-game-manager";
 import { OutGameUIRequest, UIRequests } from "@/game/ui-request";
@@ -37,7 +45,8 @@ import { EventDispatcher } from "./game/common/event-dispatcher";
     Menu,
     StageSelector,
     GameCanvas,
-    STGUI
+    STGUI,
+    PauseMenu
   }
 })
 export default class App extends Vue {
@@ -77,8 +86,29 @@ export default class App extends Vue {
     return this.uiRequests.inGameUIRequests.stageFailedUI;
   }
 
+  public shouldShowPauseMenu(): boolean {
+    return this.uiRequests.outGameUIRequest === OutGameUIRequest.pauseMenu;
+  }
+
   public sholdShowSTGUI(): boolean {
     return this.uiRequests.inGameUIRequests.stgUI;
+  }
+
+  private showPauseMenu(): void {
+    this.uiRequests.outGameUIRequest = OutGameUIRequest.pauseMenu;
+    this.stgGameManager.engine.stop();
+  }
+
+  private hidePauseMenu(): void {
+    this.uiRequests.outGameUIRequest = OutGameUIRequest.none;
+    this.stgGameManager.engine.start();
+  }
+
+  private abortMission(): void {
+    this.uiRequests.stgPlayInfo.missionAbortEvent.dispatch();
+    if (this.stgGameManager.engine.isPaused()) {
+      this.stgGameManager.engine.start();
+    }
   }
 
   private async playMission(selectedMissionId: number): Promise<void> {

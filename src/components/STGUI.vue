@@ -8,14 +8,16 @@
         <v-icon class="d-none">mdi-heart</v-icon>
       </v-col>
       <v-col cols="3">
-        <v-btn small>Pause</v-btn>
+        <v-btn text icon color="yellow" @click="requestPause">
+          <v-icon>mdi-pause</v-icon>
+        </v-btn>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop, Emit } from "vue-property-decorator";
 import { STGPlayInfo } from "@/game/ui-request";
 
 @Component
@@ -23,7 +25,8 @@ export default class STGUI extends Vue {
   @Prop()
   private stgPlayInfo!: STGPlayInfo;
 
-  private message = "";
+  @Emit()
+  private requestPause(): void {}
 }
 </script>
 
