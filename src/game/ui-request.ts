@@ -1,3 +1,5 @@
+import { EventDispatcher } from "./common/event-dispatcher";
+
 export enum OutGameUIRequest {
   menu = "menu",
   pauseMenu = "pauseMenu",
@@ -13,6 +15,7 @@ export interface InGameUIRequests {
 export interface STGPlayInfo {
   healthMax: number;
   health: number;
+  missionAbortEvent: EventDispatcher<void>;
 }
 
 export interface UIRequests {
