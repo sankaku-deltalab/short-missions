@@ -26,6 +26,8 @@ import {
 } from "./enemies-builder/stage-enemy-creator";
 import { SquadBuilderStarter } from "./enemies-builder/squad-builder-starter";
 import { OutGameUIRequest } from "./ui-request";
+// import { pcTexture } from "./resources";
+import pcTexturePath from "@/assets/game/pc.png";
 
 export enum MissionFinishReason {
   clear = "clear",
@@ -242,11 +244,12 @@ export class MissionFlow {
     const weapon = wc.create(muzzles);
 
     // Create player character
+    const collisionSize = coordinatesConverter.areaSizeInCanvas / 32;
     const pcActor = new ExtendedActor({
       posInArea,
       coordinatesConverter,
-      width: 50,
-      height: 50,
+      width: collisionSize,
+      height: collisionSize,
       color: ex.Color.Azure,
       collisions: this.stgGameManager.collisions,
       onEnteringToArea: new EventDispatcher<void>(),
@@ -264,6 +267,17 @@ export class MissionFlow {
       muzzles
     });
     pc.addSelfToScene(scene);
+
+    const pcTx = new ex.Texture(pcTexturePath);
+    pcTx.load().then(() => {
+      const requiredTextureHeight = coordinatesConverter.areaSizeInCanvas / 8;
+      const sprite = pcTx.asSprite();
+      sprite.scale = new ex.Vector(
+        requiredTextureHeight / sprite.width,
+        requiredTextureHeight / sprite.height
+      );
+      pcActor.addDrawing(sprite);
+    });
     return pc;
   }
 

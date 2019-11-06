@@ -18,7 +18,8 @@ export function createEngine(canvas: HTMLCanvasElement): ex.Engine {
     pointerScope: ex.Input.PointerScope.Document,
     backgroundColor: ex.Color.DarkGray,
     suppressMinimumBrowserFeatureDetection: true,
-    suppressConsoleBootMessage: true
+    suppressConsoleBootMessage: true,
+    suppressPlayButton: true
   });
 
   document.getElementById = originalGetElementById;
