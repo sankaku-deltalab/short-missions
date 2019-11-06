@@ -74,23 +74,23 @@ export default class App extends Vue {
     this.stgGameManager.start();
   }
 
-  public sholdShowMenu(): boolean {
+  private sholdShowMenu(): boolean {
     return this.uiRequests.outGameUIRequest === OutGameUIRequest.menu;
   }
 
-  public sholdShowStageClearUI(): boolean {
+  private sholdShowStageClearUI(): boolean {
     return this.uiRequests.inGameUIRequests.stageClearUI;
   }
 
-  public sholdShowStageFailedUI(): boolean {
+  private sholdShowStageFailedUI(): boolean {
     return this.uiRequests.inGameUIRequests.stageFailedUI;
   }
 
-  public shouldShowPauseMenu(): boolean {
+  private shouldShowPauseMenu(): boolean {
     return this.uiRequests.outGameUIRequest === OutGameUIRequest.pauseMenu;
   }
 
-  public sholdShowSTGUI(): boolean {
+  private sholdShowSTGUI(): boolean {
     return this.uiRequests.inGameUIRequests.stgUI;
   }
 
