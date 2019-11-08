@@ -26,8 +26,9 @@ import {
 } from "./enemies-builder/stage-enemy-creator";
 import { SquadBuilderStarter } from "./enemies-builder/squad-builder-starter";
 import { OutGameUIRequest } from "./ui-request";
-// import { pcTexture } from "./resources";
 import pcTexturePath from "@/assets/game/pc.png";
+import playerBulletTexturePath from "@/assets/game/pb.png";
+import enemyBulletTexturePath from "@/assets/game/eb.png";
 
 export enum MissionFinishReason {
   clear = "clear",
@@ -40,7 +41,9 @@ function createBulletsBool(
   bulletsNum: number,
   coordinatesConverter: CoordinatesConverter,
   collisions: Collisions,
-  sizeInArea: ex.Vector
+  sizeInArea: ex.Vector,
+  texturePath?: string,
+  textureSizeInArea?: number
 ): BulletsPool {
   const bulletsPool = new BulletsPool();
   for (const _ of Array(bulletsNum)) {
@@ -52,6 +55,17 @@ function createBulletsBool(
       onEnteringToArea: new EventDispatcher<void>(),
       onExitingFromArea: new EventDispatcher<void>()
     });
+    if (texturePath !== undefined && textureSizeInArea !== undefined) {
+      const texture = new ex.Texture(texturePath);
+      texture.load().then(() => {
+        const sprite = texture.asSprite();
+        sprite.scale = new ex.Vector(1, 1).scale(
+          (coordinatesConverter.areaSizeInCanvas * textureSizeInArea) /
+            sprite.height
+        );
+        bulletActor.addDrawing(sprite);
+      });
+    }
     const bullet = new Bullet(bulletActor);
     bulletActor.on("exitviewport", (): void => {
       bullet.kill();
@@ -213,7 +227,9 @@ export class MissionFlow {
       100,
       coordinatesConverter,
       collisions,
-      new ex.Vector(1 / 2 ** 3, 1 / 2 ** 4)
+      new ex.Vector(1 / 2 ** 3, 1 / 2 ** 4),
+      playerBulletTexturePath,
+      1 / 16
     );
     this.stgGameManager.bulletsPools.set("player", bulletsPool);
 
@@ -237,7 +253,7 @@ export class MissionFlow {
     const wc = new WeaponCreator(
       gt.concat(
         gt.useMuzzle("centerMuzzle"),
-        gt.mltSpeed(2),
+        gt.mltSpeed(4),
         gt.repeat({ times: 1, interval: 4 }, gt.fire(gt.bullet()))
       )
     );
@@ -323,7 +339,9 @@ export class MissionFlow {
       100,
       coordinatesConverter,
       collisions,
-      new ex.Vector(1 / 2 ** 5, 1 / 2 ** 5)
+      new ex.Vector(1 / 2 ** 6, 1 / 2 ** 6),
+      enemyBulletTexturePath,
+      1 / 20
     );
     this.stgGameManager.bulletsPools.set("enemy", bulletsPool);
 
