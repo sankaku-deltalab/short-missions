@@ -65,12 +65,16 @@ function createBulletsBool(
 
   const texture = new ex.Texture(texturePath);
   texture.load().then(() => {
-    const sprite = texture.asSprite();
-    sprite.scale = new ex.Vector(1, 1).scale(
-      (coordinatesConverter.areaSizeInCanvas * textureSizeInArea) /
-        sprite.height
-    );
     for (const bullet of bullets) {
+      const sprite = new ex.Sprite({
+        image: texture,
+        width: texture.width,
+        height: texture.height,
+        scale: ex.Vector.One.scale(
+          (coordinatesConverter.areaSizeInCanvas * textureSizeInArea) /
+            texture.height
+        )
+      });
       bullet.actor.addDrawing(sprite);
     }
   });

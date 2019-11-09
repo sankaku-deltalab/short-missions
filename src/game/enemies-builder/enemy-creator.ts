@@ -27,6 +27,7 @@ export interface MuzzleInfo {
 
 export class EnemyCreator {
   private readonly texture: ex.Texture;
+  private readonly spriteSizeInArea: ex.Vector;
   private readonly collisions: Collisions;
   private readonly coordinatedConverter: CoordinatesConverter;
   private readonly health: number;
@@ -43,13 +44,8 @@ export class EnemyCreator {
     this.sizeInArea = args.sizeInArea;
 
     this.texture = new ex.Texture(args.texturePath);
-    this.texture.load().then(() => {
-      const sprite = this.texture.asSprite();
-      sprite.scale = new ex.Vector(
-        args.textureSizeInArea.y / sprite.width,
-        args.textureSizeInArea.x / sprite.height
-      ).scale(this.coordinatedConverter.areaSizeInCanvas);
-    });
+    this.spriteSizeInArea = args.textureSizeInArea;
+    this.texture.load();
   }
 
   public create(mover: Mover): Character {
@@ -67,7 +63,16 @@ export class EnemyCreator {
       onExitingFromArea: new EventDispatcher<void>()
     });
     const setDrawing = (): void => {
-      actor.addDrawing(this.texture.asSprite());
+      const sprite = new ex.Sprite({
+        image: this.texture,
+        width: this.texture.width,
+        height: this.texture.height,
+        scale: new ex.Vector(
+          this.spriteSizeInArea.y / this.texture.width,
+          this.spriteSizeInArea.x / this.texture.height
+        ).scale(this.coordinatedConverter.areaSizeInCanvas)
+      });
+      actor.addDrawing(sprite);
     };
     if (this.texture.isLoaded()) {
       setDrawing();
