@@ -15,6 +15,8 @@ import { CoordinatesConverter } from "@/game/common/coordinates-converter";
 
 function createEnemyInfoMock(): EnemyInfo {
   return {
+    texturePath: "",
+    textureSizeInArea: ex.Vector.Zero,
     muzzleCreator: simpleMock<MuzzleCreator>({
       create: jest.fn()
     }),

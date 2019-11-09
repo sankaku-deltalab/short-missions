@@ -29,6 +29,7 @@ import { OutGameUIRequest } from "./ui-request";
 import pcTexturePath from "@/assets/game/pc.png";
 import playerBulletTexturePath from "@/assets/game/pb.png";
 import enemyBulletTexturePath from "@/assets/game/eb.png";
+import enemyTexturePath from "@/assets/game/en.png";
 
 export enum MissionFinishReason {
   clear = "clear",
@@ -390,7 +391,9 @@ export class MissionFlow {
           killTime,
           sizeInArea,
           isSmallSize,
-          moveSpeedInArea
+          moveSpeedInArea,
+          texturePath: enemyTexturePath,
+          textureSizeInArea: sizeInArea
         }
       ]
     ]);

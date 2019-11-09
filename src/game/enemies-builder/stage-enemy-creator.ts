@@ -24,7 +24,8 @@ export enum EnemyMoveType {
 }
 
 export interface EnemyInfo {
-  // TODO: Add visual thing
+  texturePath: string;
+  textureSizeInArea: ex.Vector;
   muzzleCreator: MuzzleCreator;
   weaponCreator: WeaponCreator;
   killTime: number;
@@ -159,6 +160,8 @@ export class StageEnemyCreator {
 
   private createEnemyCreator(info: EnemyInfo): EnemyCreator {
     return new EnemyCreator({
+      texturePath: info.texturePath,
+      textureSizeInArea: info.textureSizeInArea,
       collisions: this.collisions,
       coordinatesConverter: this.coordinatesConverter,
       health: info.killTime * this.playerDPS,

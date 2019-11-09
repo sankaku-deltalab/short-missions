@@ -10,7 +10,8 @@ import { Mover } from "../mover/mover";
 import { EventDispatcher } from "../common/event-dispatcher";
 
 export interface EnemyCreatorArgs {
-  // TODO: Add visual thing
+  texturePath: string;
+  textureSizeInArea: ex.Vector;
   collisions: Collisions;
   coordinatesConverter: CoordinatesConverter;
   health: number;
@@ -25,6 +26,7 @@ export interface MuzzleInfo {
 }
 
 export class EnemyCreator {
+  private readonly texture: ex.Texture;
   private readonly collisions: Collisions;
   private readonly coordinatedConverter: CoordinatesConverter;
   private readonly health: number;
@@ -39,6 +41,15 @@ export class EnemyCreator {
     this.muzzleCreator = args.muzzleCreator;
     this.weaponCreator = args.weaponCreator;
     this.sizeInArea = args.sizeInArea;
+
+    this.texture = new ex.Texture(args.texturePath);
+    this.texture.load().then(() => {
+      const sprite = this.texture.asSprite();
+      sprite.scale = new ex.Vector(
+        args.textureSizeInArea.y / sprite.width,
+        args.textureSizeInArea.x / sprite.height
+      ).scale(this.coordinatedConverter.areaSizeInCanvas);
+    });
   }
 
   public create(mover: Mover): Character {
@@ -58,6 +69,14 @@ export class EnemyCreator {
       onEnteringToArea: new EventDispatcher<void>(),
       onExitingFromArea: new EventDispatcher<void>()
     });
+    const setDrawing = (): void => {
+      actor.addDrawing(this.texture.asSprite());
+    };
+    if (this.texture.isLoaded()) {
+      setDrawing();
+    } else {
+      this.texture.loaded.then(setDrawing);
+    }
 
     // Create muzzles
     const muzzles = this.muzzleCreator.create();
