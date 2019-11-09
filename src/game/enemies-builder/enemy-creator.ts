@@ -54,13 +54,10 @@ export class EnemyCreator {
 
   public create(mover: Mover): Character {
     // Create actor
-    const color = ex.Color.Rose;
     const sizeInCanvasScale = this.sizeInArea.scale(
       this.coordinatedConverter.areaSizeInCanvas
     );
     const actor = new ExtendedActor({
-      // TODO: Add visual thing
-      color, // TODO: Remove color when visual was set
       posInArea: new ex.Vector(1, 1),
       coordinatesConverter: this.coordinatedConverter,
       width: sizeInCanvasScale.y,
