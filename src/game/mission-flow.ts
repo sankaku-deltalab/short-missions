@@ -43,35 +43,43 @@ function createBulletsBool(
   coordinatesConverter: CoordinatesConverter,
   collisions: Collisions,
   sizeInArea: ex.Vector,
-  texturePath?: string,
-  textureSizeInArea?: number
+  texturePath: string,
+  textureSizeInArea: number
 ): BulletsPool {
+  const bullets = Array(bulletsNum)
+    .fill(0)
+    .map(
+      (): Bullet => {
+        const bulletActor = new ExtendedActor({
+          coordinatesConverter,
+          sizeInArea,
+          color: ex.Color.Black,
+          collisions,
+          onEnteringToArea: new EventDispatcher<void>(),
+          onExitingFromArea: new EventDispatcher<void>()
+        });
+        return new Bullet(bulletActor);
+      }
+    );
   const bulletsPool = new BulletsPool();
-  for (const _ of Array(bulletsNum)) {
-    const bulletActor = new ExtendedActor({
-      coordinatesConverter,
-      sizeInArea,
-      color: ex.Color.Black,
-      collisions,
-      onEnteringToArea: new EventDispatcher<void>(),
-      onExitingFromArea: new EventDispatcher<void>()
-    });
-    if (texturePath !== undefined && textureSizeInArea !== undefined) {
-      const texture = new ex.Texture(texturePath);
-      texture.load().then(() => {
-        const sprite = texture.asSprite();
-        sprite.scale = new ex.Vector(1, 1).scale(
-          (coordinatesConverter.areaSizeInCanvas * textureSizeInArea) /
-            sprite.height
-        );
-        bulletActor.addDrawing(sprite);
-      });
+
+  const texture = new ex.Texture(texturePath);
+  texture.load().then(() => {
+    const sprite = texture.asSprite();
+    sprite.scale = new ex.Vector(1, 1).scale(
+      (coordinatesConverter.areaSizeInCanvas * textureSizeInArea) /
+        sprite.height
+    );
+    for (const bullet of bullets) {
+      bullet.actor.addDrawing(sprite);
     }
-    const bullet = new Bullet(bulletActor);
-    bulletActor.on("exitviewport", (): void => {
+  });
+
+  for (const bullet of bullets) {
+    bullet.actor.on("exitviewport", (): void => {
       bullet.kill();
     });
-    bulletActor.on("postkill", (): void => {
+    bullet.actor.on("postkill", (): void => {
       bulletsPool.push(bullet);
     });
     bulletsPool.push(bullet);
