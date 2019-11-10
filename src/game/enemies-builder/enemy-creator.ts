@@ -10,7 +10,8 @@ import { Mover } from "../mover/mover";
 import { EventDispatcher } from "../common/event-dispatcher";
 
 export interface EnemyCreatorArgs {
-  // TODO: Add visual thing
+  texturePath: string;
+  textureSizeInArea: ex.Vector;
   collisions: Collisions;
   coordinatesConverter: CoordinatesConverter;
   health: number;
@@ -25,6 +26,8 @@ export interface MuzzleInfo {
 }
 
 export class EnemyCreator {
+  private readonly texture: ex.Texture;
+  private readonly spriteSizeInArea: ex.Vector;
   private readonly collisions: Collisions;
   private readonly coordinatedConverter: CoordinatesConverter;
   private readonly health: number;
@@ -39,17 +42,18 @@ export class EnemyCreator {
     this.muzzleCreator = args.muzzleCreator;
     this.weaponCreator = args.weaponCreator;
     this.sizeInArea = args.sizeInArea;
+
+    this.texture = new ex.Texture(args.texturePath);
+    this.spriteSizeInArea = args.textureSizeInArea;
+    this.texture.load();
   }
 
   public create(mover: Mover): Character {
     // Create actor
-    const color = ex.Color.Rose;
     const sizeInCanvasScale = this.sizeInArea.scale(
       this.coordinatedConverter.areaSizeInCanvas
     );
     const actor = new ExtendedActor({
-      // TODO: Add visual thing
-      color, // TODO: Remove color when visual was set
       posInArea: new ex.Vector(1, 1),
       coordinatesConverter: this.coordinatedConverter,
       width: sizeInCanvasScale.y,
@@ -58,6 +62,23 @@ export class EnemyCreator {
       onEnteringToArea: new EventDispatcher<void>(),
       onExitingFromArea: new EventDispatcher<void>()
     });
+    const setDrawing = (): void => {
+      const sprite = new ex.Sprite({
+        image: this.texture,
+        width: this.texture.width,
+        height: this.texture.height,
+        scale: new ex.Vector(
+          this.spriteSizeInArea.y / this.texture.width,
+          this.spriteSizeInArea.x / this.texture.height
+        ).scale(this.coordinatedConverter.areaSizeInCanvas)
+      });
+      actor.addDrawing(sprite);
+    };
+    if (this.texture.isLoaded()) {
+      setDrawing();
+    } else {
+      this.texture.loaded.then(setDrawing);
+    }
 
     // Create muzzles
     const muzzles = this.muzzleCreator.create();

@@ -17,6 +17,8 @@ function createMoverMock(): Mover {
 
 function createEnemyCreatorArgs(): EnemyCreatorArgs {
   return {
+    texturePath: "",
+    textureSizeInArea: ex.Vector.Zero,
     collisions: createCollisionsMock(),
     coordinatesConverter: simpleMock<CoordinatesConverter>({
       toCanvasPoint: jest.fn().mockImplementation(v => v),

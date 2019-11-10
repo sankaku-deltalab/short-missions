@@ -26,6 +26,10 @@ import {
 } from "./enemies-builder/stage-enemy-creator";
 import { SquadBuilderStarter } from "./enemies-builder/squad-builder-starter";
 import { OutGameUIRequest } from "./ui-request";
+import pcTexturePath from "@/assets/game/pc.png";
+import playerBulletTexturePath from "@/assets/game/pb.png";
+import enemyBulletTexturePath from "@/assets/game/eb.png";
+import enemyTexturePath from "@/assets/game/en.png";
 
 export enum MissionFinishReason {
   clear = "clear",
@@ -38,23 +42,48 @@ function createBulletsBool(
   bulletsNum: number,
   coordinatesConverter: CoordinatesConverter,
   collisions: Collisions,
-  sizeInArea: ex.Vector
+  sizeInArea: ex.Vector,
+  texturePath: string,
+  textureSizeInArea: number
 ): BulletsPool {
+  const bullets = Array(bulletsNum)
+    .fill(0)
+    .map(
+      (): Bullet => {
+        const bulletActor = new ExtendedActor({
+          coordinatesConverter,
+          sizeInArea,
+          color: ex.Color.Black,
+          collisions,
+          onEnteringToArea: new EventDispatcher<void>(),
+          onExitingFromArea: new EventDispatcher<void>()
+        });
+        return new Bullet(bulletActor);
+      }
+    );
   const bulletsPool = new BulletsPool();
-  for (const _ of Array(bulletsNum)) {
-    const bulletActor = new ExtendedActor({
-      coordinatesConverter,
-      sizeInArea,
-      color: ex.Color.Black,
-      collisions,
-      onEnteringToArea: new EventDispatcher<void>(),
-      onExitingFromArea: new EventDispatcher<void>()
-    });
-    const bullet = new Bullet(bulletActor);
-    bulletActor.on("exitviewport", (): void => {
+
+  const texture = new ex.Texture(texturePath);
+  texture.load().then(() => {
+    for (const bullet of bullets) {
+      const sprite = new ex.Sprite({
+        image: texture,
+        width: texture.width,
+        height: texture.height,
+        scale: ex.Vector.One.scale(
+          (coordinatesConverter.areaSizeInCanvas * textureSizeInArea) /
+            texture.height
+        )
+      });
+      bullet.actor.addDrawing(sprite);
+    }
+  });
+
+  for (const bullet of bullets) {
+    bullet.actor.on("exitviewport", (): void => {
       bullet.kill();
     });
-    bulletActor.on("postkill", (): void => {
+    bullet.actor.on("postkill", (): void => {
       bulletsPool.push(bullet);
     });
     bulletsPool.push(bullet);
@@ -211,7 +240,9 @@ export class MissionFlow {
       100,
       coordinatesConverter,
       collisions,
-      new ex.Vector(1 / 2 ** 3, 1 / 2 ** 4)
+      new ex.Vector(1 / 2 ** 3, 1 / 2 ** 4),
+      playerBulletTexturePath,
+      1 / 16
     );
     this.stgGameManager.bulletsPools.set("player", bulletsPool);
 
@@ -235,18 +266,19 @@ export class MissionFlow {
     const wc = new WeaponCreator(
       gt.concat(
         gt.useMuzzle("centerMuzzle"),
-        gt.mltSpeed(2),
+        gt.mltSpeed(4),
         gt.repeat({ times: 1, interval: 4 }, gt.fire(gt.bullet()))
       )
     );
     const weapon = wc.create(muzzles);
 
     // Create player character
+    const collisionSize = coordinatesConverter.areaSizeInCanvas / 32;
     const pcActor = new ExtendedActor({
       posInArea,
       coordinatesConverter,
-      width: 50,
-      height: 50,
+      width: collisionSize,
+      height: collisionSize,
       color: ex.Color.Azure,
       collisions: this.stgGameManager.collisions,
       onEnteringToArea: new EventDispatcher<void>(),
@@ -264,6 +296,17 @@ export class MissionFlow {
       muzzles
     });
     pc.addSelfToScene(scene);
+
+    const pcTx = new ex.Texture(pcTexturePath);
+    pcTx.load().then(() => {
+      const requiredTextureHeight = coordinatesConverter.areaSizeInCanvas / 8;
+      const sprite = pcTx.asSprite();
+      sprite.scale = new ex.Vector(
+        requiredTextureHeight / sprite.width,
+        requiredTextureHeight / sprite.height
+      );
+      pcActor.addDrawing(sprite);
+    });
     return pc;
   }
 
@@ -309,7 +352,9 @@ export class MissionFlow {
       100,
       coordinatesConverter,
       collisions,
-      new ex.Vector(1 / 2 ** 5, 1 / 2 ** 5)
+      new ex.Vector(1 / 2 ** 6, 1 / 2 ** 6),
+      enemyBulletTexturePath,
+      1 / 20
     );
     this.stgGameManager.bulletsPools.set("enemy", bulletsPool);
 
@@ -358,7 +403,9 @@ export class MissionFlow {
           killTime,
           sizeInArea,
           isSmallSize,
-          moveSpeedInArea
+          moveSpeedInArea,
+          texturePath: enemyTexturePath,
+          textureSizeInArea: sizeInArea
         }
       ]
     ]);
