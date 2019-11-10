@@ -58,6 +58,7 @@ export class EnemyCreator {
       coordinatesConverter: this.coordinatedConverter,
       width: sizeInCanvasScale.y,
       height: sizeInCanvasScale.x,
+      rotation: Math.PI,
       collisions: this.collisions,
       onEnteringToArea: new EventDispatcher<void>(),
       onExitingFromArea: new EventDispatcher<void>()
