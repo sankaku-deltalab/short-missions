@@ -1,6 +1,7 @@
 import { promisify } from "util";
 import * as ex from "excalibur";
 import * as gt from "guntree";
+import { Random, MersenneTwister19937 } from "random-js";
 import { Character } from "./actor/character";
 import {
   MovementInputReceiver,
@@ -22,7 +23,8 @@ import { Collisions } from "./common/collision-groups";
 import {
   EnemyInfo,
   EnemyMoveType,
-  StageEnemyCreator
+  StageEnemyCreator,
+  SquadInfo
 } from "./enemies-builder/stage-enemy-creator";
 import { SquadBuilderStarter } from "./enemies-builder/squad-builder-starter";
 import { OutGameUIRequest } from "./ui-request";
@@ -30,6 +32,8 @@ import pcTexturePath from "@/assets/game/pc.png";
 import playerBulletTexturePath from "@/assets/game/pb.png";
 import enemyBulletTexturePath from "@/assets/game/eb.png";
 import enemyTexturePath from "@/assets/game/en.png";
+import * as smallGuns from "./guntree-patterns/small-guns";
+import * as middleGuns from "./guntree-patterns/middle-guns";
 
 export enum MissionFinishReason {
   clear = "clear",
@@ -98,7 +102,7 @@ export class MissionFlow {
     this.stgGameManager = stgGameManager;
   }
 
-  public async playMission(_missionId: number): Promise<void> {
+  public async playMission(missionId: number): Promise<void> {
     const engine = this.stgGameManager.engine;
     const coordinatesConverter = this.stgGameManager.coordinatesConverter;
     const uiRequests = this.stgGameManager.uiRequests;
@@ -107,7 +111,11 @@ export class MissionFlow {
     const scene = new ex.Scene(engine);
 
     // TODO: Setup enemy setting
-    const starter = this.setupSquadBuilder(scene, coordinatesConverter);
+    const starter = this.setupSquadBuilder(
+      missionId,
+      scene,
+      coordinatesConverter
+    );
     this.stgGameManager.engine.on(
       "preupdate",
       (event: ex.PreUpdateEvent): void => {
@@ -341,7 +349,110 @@ export class MissionFlow {
     return receiver;
   }
 
+  /**
+   * Generate small, primal middle and secondary middle enemy.
+   * @param randomSeed
+   * @param missionRank {0, ..., 3}
+   * @param muzzleCreator
+   */
+  private generateEnemyInfo(
+    randomSeed: number,
+    missionRank: number,
+    muzzleCreator: MuzzleCreator
+  ): [EnemyInfo, EnemyInfo, EnemyInfo] {
+    const createSmall = (weapon: gt.Gun): EnemyInfo => {
+      return {
+        texturePath: enemyTexturePath,
+        textureSizeInArea: new ex.Vector(0.125 / 2, 0.125 / 2),
+        muzzleCreator: muzzleCreator,
+        weaponCreator: new WeaponCreator(weapon),
+        killTime: 0.2,
+        sizeInArea: new ex.Vector(0.125 / 2, 0.125 / 2),
+        isSmallSize: true,
+        moveSpeedInArea: 0.5
+      };
+    };
+
+    const createMiddle = (weapon: gt.Gun): EnemyInfo => {
+      return {
+        texturePath: enemyTexturePath,
+        textureSizeInArea: new ex.Vector(0.125 / 2, 0.125),
+        muzzleCreator: muzzleCreator,
+        weaponCreator: new WeaponCreator(weapon),
+        killTime: 0.5,
+        sizeInArea: new ex.Vector(0.125 / 2, 0.125),
+        isSmallSize: false,
+        moveSpeedInArea: 0.25
+      };
+    };
+
+    const smallWeapons = [
+      smallGuns.basics,
+      smallGuns.bigBasics,
+      smallGuns.bursts
+    ];
+    const middleWeapons = [middleGuns.nWayBasics, middleGuns.sweepBasics];
+    const rand = new Random(MersenneTwister19937.seed(randomSeed));
+    const smallWeaponSet = rand.pick(smallWeapons);
+    const middleWeaponSet1 = rand.pick(middleWeapons);
+    const middleWeaponSet2 = rand.pick(middleWeapons);
+
+    const smallRank = missionRank + 1;
+    const middleRank1 = missionRank + 1;
+    const middleRank2 = missionRank;
+
+    return [
+      createSmall(smallWeaponSet[smallRank]),
+      createMiddle(middleWeaponSet1[middleRank1]),
+      createMiddle(middleWeaponSet2[middleRank2])
+    ];
+  }
+
+  private generateSquadInfo(
+    randomSeed: number,
+    enemyIds: number[],
+    enemyInfo: Map<number, EnemyInfo>
+  ): SquadInfo[] {
+    // TODO: Set overtime
+    const rand = new Random(MersenneTwister19937.seed(randomSeed));
+    return Array(10)
+      .fill(0)
+      .map(() => {
+        const enemyInfoId = rand.pick(enemyIds);
+        const ei = enemyInfo.get(enemyInfoId);
+        if (ei === undefined) throw new Error();
+        if (ei.isSmallSize) {
+          const moveType = rand.pick([
+            EnemyMoveType.sideIn,
+            EnemyMoveType.topIn,
+            EnemyMoveType.topWideIn
+          ]);
+          return {
+            enemyInfoId,
+            moveType,
+            activateInOtherSideOfPlayer: true,
+            overTime: 0,
+            killTime: 1,
+            activateTime: 0.5
+          };
+        }
+        const moveType = rand.pick([
+          EnemyMoveType.topIn,
+          EnemyMoveType.topWideIn
+        ]);
+        return {
+          enemyInfoId,
+          moveType,
+          activateInOtherSideOfPlayer: true,
+          overTime: 0,
+          killTime: 2,
+          activateTime: 0.75
+        };
+      });
+  }
+
   private setupSquadBuilder(
+    missionId: number,
     scene: ex.Scene,
     coordinatesConverter: CoordinatesConverter
   ): SquadBuilderStarter {
@@ -354,7 +465,7 @@ export class MissionFlow {
       collisions,
       new ex.Vector(1 / 2 ** 6, 1 / 2 ** 6),
       enemyBulletTexturePath,
-      1 / 20
+      1 / 40
     );
     this.stgGameManager.bulletsPools.set("enemy", bulletsPool);
 
@@ -369,45 +480,33 @@ export class MissionFlow {
           name: "centerMuzzle",
           offsetInArea: ex.Vector.Zero,
           damage: 1
+        },
+        {
+          bulletsPool,
+          name: "rightMuzzle",
+          offsetInArea: new ex.Vector(0, 0.05),
+          damage: 1
+        },
+        {
+          bulletsPool,
+          name: "leftMuzzle",
+          offsetInArea: new ex.Vector(0, -0.05),
+          damage: 1
         }
       ]
     });
-    const weaponCreator = new WeaponCreator(
-      gt.concat(
-        gt.useMuzzle("centerMuzzle"),
-        gt.useVirtualMuzzle(gt.aimingMuzzle()),
-        gt.mltSpeed(0.5),
-        gt.sequential(
-          gt.repeat({ times: 3, interval: 30 }, gt.fire(gt.bullet())),
-          gt.wait(15),
-          gt.repeat(
-            { times: 2, interval: 10 },
-            gt.nWay({ ways: 3, totalAngle: 90 }, gt.fire(gt.bullet()))
-          ),
-          gt.wait(30)
-        )
-      )
-    );
-    const killTime = 0.5;
-    const sizeInArea = new ex.Vector(0.125 / 2, 0.125);
-    const isSmallSize = false;
-    const moveSpeedInArea = 0.25;
 
-    const enemyInfoId = 0;
+    const missionIdMax = 20;
+    const missionRank = Math.floor((4 * missionId) / (missionIdMax + 1));
+    const enemyInfoRaw = this.generateEnemyInfo(
+      missionId,
+      missionRank,
+      muzzleCreator
+    );
     const enemyInfo: Map<number, EnemyInfo> = new Map([
-      [
-        enemyInfoId,
-        {
-          muzzleCreator,
-          weaponCreator,
-          killTime,
-          sizeInArea,
-          isSmallSize,
-          moveSpeedInArea,
-          texturePath: enemyTexturePath,
-          textureSizeInArea: sizeInArea
-        }
-      ]
+      [0, enemyInfoRaw[0]],
+      [1, enemyInfoRaw[1]],
+      [2, enemyInfoRaw[2]]
     ]);
 
     const playerDPS = 10 * (60 / 4);
@@ -418,32 +517,7 @@ export class MissionFlow {
       playerDPS,
       moveTime: 0.5,
       enemyInfo,
-      squadInfo: [
-        {
-          enemyInfoId,
-          moveType: EnemyMoveType.sideIn,
-          activateInOtherSideOfPlayer: true,
-          overTime: 0,
-          killTime: 2,
-          activateTime: 0.5
-        },
-        {
-          enemyInfoId,
-          moveType: EnemyMoveType.topIn,
-          activateInOtherSideOfPlayer: true,
-          overTime: 0,
-          killTime: 2,
-          activateTime: 0.5
-        },
-        {
-          enemyInfoId,
-          moveType: EnemyMoveType.topWideIn,
-          activateInOtherSideOfPlayer: true,
-          overTime: 0,
-          killTime: 2,
-          activateTime: 0.5
-        }
-      ]
+      squadInfo: this.generateSquadInfo(missionId, [0, 1, 2], enemyInfo)
     });
 
     return sec.create(true);
