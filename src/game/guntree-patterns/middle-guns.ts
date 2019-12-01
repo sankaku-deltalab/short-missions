@@ -1,6 +1,7 @@
 import * as gt from "guntree";
 import * as basic from "./middle-gun-elements/basic";
 import * as spread from "./middle-gun-elements/spread";
+import * as block from "./middle-gun-elements/block";
 
 const connect = (
   gun1: gt.Gun,
@@ -27,6 +28,28 @@ export const sweepBasics = Array(5)
   .map((_, idx) =>
     connect(
       spread.sweepSides[idx],
+      15,
+      basic.basicCenters[idx],
+      60
+    )
+  );
+
+export const static2WayHBlocks = Array(5)
+  .fill(0)
+  .map((_, idx) =>
+    connect(
+      block.static2WayHBlocks[idx],
+      15,
+      basic.basicSides[idx],
+      60
+    )
+  );
+
+export const staticNWayVBlocks = Array(5)
+  .fill(0)
+  .map((_, idx) =>
+    connect(
+      block.staticNWayVBlockSides[idx],
       15,
       basic.basicCenters[idx],
       60

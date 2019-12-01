@@ -3967,10 +3967,10 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha1-8QdIy+dq+WS3yWyTxrzCivEgwIE=
 
-guntree@^0.6.5:
-  version "0.6.5"
-  resolved "https://registry.yarnpkg.com/guntree/-/guntree-0.6.5.tgz#26a10a746434cd7d4837cdae9eaf17e06df8cf90"
-  integrity sha512-NPW6pqzONJ/4ZjY2PZ2U+gBfw0ajTj8T3zLgXzFoBvGcANknu5j1hmJbCf8eD1sfHvjPDZogPm0yRVNSAngNeg==
+guntree@^0.6.6:
+  version "0.6.6"
+  resolved "https://registry.yarnpkg.com/guntree/-/guntree-0.6.6.tgz#d1736a6c1df55e93a2175fa70a1ce10b82fea672"
+  integrity sha512-E0tENkPyKZRa+xoxmYKMZiW5S7O7F2IaXbG01vyvqb/ZNe9yXbxa8jZRbSloO5kMXbjJKTFj4J5Y1sZqnekfcA==
   dependencies:
     lodash "^4.17.15"
     transformation-matrix "^2.1.1"

@@ -391,7 +391,12 @@ export class MissionFlow {
       smallGuns.bigBasics,
       smallGuns.bursts
     ];
-    const middleWeapons = [middleGuns.nWayBasics, middleGuns.sweepBasics];
+    const middleWeapons = [
+      middleGuns.nWayBasics,
+      middleGuns.sweepBasics,
+      middleGuns.static2WayHBlocks,
+      middleGuns.staticNWayVBlocks
+    ];
     const rand = new Random(MersenneTwister19937.seed(randomSeed));
     const smallWeaponSet = rand.pick(smallWeapons);
     const middleWeaponSet1 = rand.pick(middleWeapons);
