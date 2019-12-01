@@ -12,7 +12,7 @@
     "@mdi/font": "^3.6.95",
     "excalibur": "^0.23.0",
     "file-loader": "^4.2.0",
-    "guntree": "^0.6.2",
+    "guntree": "^0.6.5",
     "register-service-worker": "^1.6.2",
     "roboto-fontface": "*",
     "transformation-matrix": "^2.1.0",
