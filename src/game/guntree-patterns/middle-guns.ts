@@ -3,6 +3,7 @@ import * as basic from "./middle-gun-elements/basic";
 import * as big from "./middle-gun-elements/big-basic";
 import * as spread from "./middle-gun-elements/spread";
 import * as block from "./middle-gun-elements/block";
+import * as snake from "./middle-gun-elements/snake-basic";
 
 const connect = (
   gun1: gt.Gun,
@@ -84,6 +85,28 @@ export const triangleBigCenters = Array(5)
   .map((_, idx) =>
     connect(
       big.triangleBigCenters[idx],
+      15,
+      basic.basicSides[idx],
+      60
+    )
+  );
+
+export const accelSnakeCenters = Array(5)
+  .fill(0)
+  .map((_, idx) =>
+    connect(
+      snake.accelSnakeCenters[idx],
+      15,
+      basic.basicSides[idx],
+      60
+    )
+  );
+
+export const triangleSnakeCenters = Array(5)
+  .fill(0)
+  .map((_, idx) =>
+    connect(
+      snake.triangleSnakeCenters[idx],
       15,
       basic.basicSides[idx],
       60
