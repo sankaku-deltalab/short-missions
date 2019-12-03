@@ -62,7 +62,7 @@ function createBulletsBool(
           onEnteringToArea: new EventDispatcher<void>(),
           onExitingFromArea: new EventDispatcher<void>()
         });
-        return new Bullet(bulletActor);
+        return new Bullet(bulletActor, new EventDispatcher());
       }
     );
   const bulletsPool = new BulletsPool();
