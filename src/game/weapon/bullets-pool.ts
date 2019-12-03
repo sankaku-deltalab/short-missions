@@ -14,4 +14,8 @@ export class BulletsPool {
   public pop(): Bullet | undefined {
     return this.pooledBullets.pop();
   }
+
+  public bullets(): Bullet[] {
+    return [...this.pooledBullets];
+  }
 }
