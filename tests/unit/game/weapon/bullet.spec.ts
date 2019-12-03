@@ -151,9 +151,7 @@ describe("Bullet", (): void => {
     // And Character
     const character = createEnemyCharacterMock(!bulletIsPlayerSide);
     const characterDealtDamage = 1;
-    character.takeDamage = jest
-      .fn()
-      .mockReturnValue(characterDealtDamage);
+    character.takeDamage = jest.fn().mockReturnValue(characterDealtDamage);
 
     // When initialize bullet
     const damage = 10;
