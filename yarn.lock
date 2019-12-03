@@ -3967,13 +3967,13 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha1-8QdIy+dq+WS3yWyTxrzCivEgwIE=
 
-guntree@^0.6.2:
-  version "0.6.2"
-  resolved "https://registry.yarnpkg.com/guntree/-/guntree-0.6.2.tgz#e276ea2112a39ee8371399388271374bc9d945e2"
-  integrity sha512-jQX5fj8tX3GP26jh4dXXA6GSyCECt6DS88JaMuOkOSwGylc8KOO6qOeu4dBRP1rk4vaUapocBX11NECWsS5LQA==
+guntree@^0.6.6:
+  version "0.6.6"
+  resolved "https://registry.yarnpkg.com/guntree/-/guntree-0.6.6.tgz#d1736a6c1df55e93a2175fa70a1ce10b82fea672"
+  integrity sha512-E0tENkPyKZRa+xoxmYKMZiW5S7O7F2IaXbG01vyvqb/ZNe9yXbxa8jZRbSloO5kMXbjJKTFj4J5Y1sZqnekfcA==
   dependencies:
-    lodash "^4.17.11"
-    transformation-matrix "^2.0.0"
+    lodash "^4.17.15"
+    transformation-matrix "^2.1.1"
 
 gzip-size@^5.0.0:
   version "5.1.1"
@@ -7499,6 +7499,11 @@ querystringify@^2.1.1:
   resolved "https://registry.yarnpkg.com/querystringify/-/querystringify-2.1.1.tgz#60e5a5fd64a7f8bfa4d2ab2ed6fdf4c85bad154e"
   integrity sha512-w7fLxIRCRT7U8Qu53jQnJyPkYZIaR4n5151KMfcJlO/A9397Wxb1amJvROTK6TOnp7PfoAmg/qXiNHI+08jRfA==
 
+random-js@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/random-js/-/random-js-2.1.0.tgz#0c03238b0a4f701f7a4c7303036ade3083d8ee14"
+  integrity sha512-CRUyWmnzmZBA7RZSVGq0xMqmgCyPPxbiKNLFA5ud7KenojVX2s7Gv+V7eB52beKTPGxWRnVZ7D/tCIgYJJ8vNQ==
+
 randomatic@^3.0.0:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/randomatic/-/randomatic-3.1.1.tgz#b776efc59375984e36c537b2f51a1f0aff0da1ed"
@@ -8898,10 +8903,15 @@ tr46@^1.0.1:
   dependencies:
     punycode "^2.1.0"
 
-transformation-matrix@^2.0.0, transformation-matrix@^2.1.0:
+transformation-matrix@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/transformation-matrix/-/transformation-matrix-2.1.0.tgz#6e132478a8cd484aa5a7ed50b5c36aa56a5512a2"
   integrity sha512-yVYlM73SwduIErgWKBCOr7cbQs6tovUHAtdYzhSv0ggnFR77heLJzz9Q0T6pH2Iip0xkmaBPuvagnQnSANhAWw==
+
+transformation-matrix@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/transformation-matrix/-/transformation-matrix-2.1.1.tgz#50c1cf4049ac9a2c778eda62bb404e158723657d"
+  integrity sha512-74MoNHhwLVuzwaPDcAecFjSkOA9vwWqyOdkeB0Be8Jc/IWSS5SNZKapFllqzkTliqZptkvqX5CZnVeDvfhN8cw==
 
 trim-right@^1.0.1:
   version "1.0.1"
