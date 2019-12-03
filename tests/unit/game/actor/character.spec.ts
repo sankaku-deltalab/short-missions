@@ -217,10 +217,11 @@ describe("Character", (): void => {
     // When take damage
     const initialHealth = character.health();
     const originalDamage = 1;
-    character.takeDamage(originalDamage);
+    const takenDamage = character.takeDamage(originalDamage);
 
     // Then health was not damaged
     expect(character.health()).toBe(initialHealth);
+    expect(takenDamage).toBe(0);
   });
 
   it("can take damage after entering to area", (): void => {
@@ -235,10 +236,11 @@ describe("Character", (): void => {
 
     // And take damage
     const damage = 1;
-    character.takeDamage(damage);
+    const takenDamage = character.takeDamage(damage);
 
     // Then health was damaged
     expect(args.health.takeDamage).toBeCalledWith(damage);
+    expect(takenDamage).toBe(damage);
   });
 
   it("do not take damage after exiting to area", (): void => {
