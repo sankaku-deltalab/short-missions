@@ -3,6 +3,7 @@ import { Character } from "../actor/character";
 import { ZIndex } from "../common/z-index";
 import { ActorWrapper } from "../actor/actor-wrapper";
 import { ExtendedActor } from "../actor/extended-actor";
+import { EventDispatcher } from "../common/event-dispatcher";
 
 export interface BulletInitializeArgs {
   damage: number;
@@ -15,11 +16,16 @@ export interface BulletInitializeArgs {
 export class Bullet implements ActorWrapper {
   private _isPlayerSide = true;
   public readonly actor: ExtendedActor;
+  private readonly _onDealDamage: EventDispatcher<number>;
   private damage = 0;
   private killTimer: ex.Timer;
 
-  public constructor(actor: ExtendedActor) {
+  public constructor(
+    actor: ExtendedActor,
+    onDealDamage: EventDispatcher<number>
+  ) {
     this.actor = actor;
+    this._onDealDamage = onDealDamage;
     this.actor.useSelfInWrapper(this);
     this.killTimer = new ex.Timer((): void => {
       this.kill();
@@ -78,8 +84,14 @@ export class Bullet implements ActorWrapper {
     }
   }
 
-  public hitTo(other: Character): void {
-    other.takeDamage(this.damage);
+  public hitTo(other: Character): number {
+    const damage = other.takeDamage(this.damage);
+    this._onDealDamage.dispatch(damage);
     this.kill();
+    return damage;
+  }
+
+  public onDealDamage(event: (damage: number) => void): () => void {
+    return this._onDealDamage.add(event);
   }
 }

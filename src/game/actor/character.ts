@@ -118,9 +118,10 @@ export class Character implements ActorWrapper {
    *
    * @param damage Damage amount
    */
-  public takeDamage(damage: number): void {
+  public takeDamage(damage: number): number {
     const absorbedDamage = this.isInArea ? damage : 0;
-    return this.healthComponent.takeDamage(absorbedDamage);
+    this.healthComponent.takeDamage(absorbedDamage);
+    return absorbedDamage;
   }
 
   /**

@@ -62,7 +62,7 @@ function createBulletsBool(
           onEnteringToArea: new EventDispatcher<void>(),
           onExitingFromArea: new EventDispatcher<void>()
         });
-        return new Bullet(bulletActor);
+        return new Bullet(bulletActor, new EventDispatcher());
       }
     );
   const bulletsPool = new BulletsPool();
@@ -252,6 +252,11 @@ export class MissionFlow {
       playerBulletTexturePath,
       1 / 16
     );
+    for (const bullet of bulletsPool.bullets()) {
+      bullet.onDealDamage(damage => {
+        console.log(`damage: ${damage}`);
+      });
+    }
     this.stgGameManager.bulletsPools.set("player", bulletsPool);
 
     // Create Muzzle
