@@ -397,12 +397,12 @@ export class MissionFlow {
       smallGuns.bursts
     ];
     const middleWeapons = [
-      // middleGuns.nWayBasics,
-      // middleGuns.sweepBasics,
-      // middleGuns.static2WayHBlocks,
-      // middleGuns.staticNWayVBlocks,
-      // middleGuns.nWayBigCenters,
-      // middleGuns.triangleBigCenters,
+      middleGuns.nWayBasics,
+      middleGuns.sweepBasics,
+      middleGuns.static2WayHBlocks,
+      middleGuns.staticNWayVBlocks,
+      middleGuns.nWayBigCenters,
+      middleGuns.triangleBigCenters,
       middleGuns.accelSnakeCenters,
       middleGuns.triangleSnakeCenters
     ];
