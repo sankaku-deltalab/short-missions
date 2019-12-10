@@ -97,6 +97,7 @@ function createBulletsBool(
 
 export class MissionFlow {
   private readonly stgGameManager: STGGameManager;
+  private score = 0;
 
   public constructor(stgGameManager: STGGameManager) {
     this.stgGameManager = stgGameManager;
@@ -152,6 +153,7 @@ export class MissionFlow {
     const updateUI = (_event: ex.PostUpdateEvent): void => {
       uiRequests.stgPlayInfo.health = pc.health();
       uiRequests.stgPlayInfo.healthMax = pc.maxHealth();
+      uiRequests.stgPlayInfo.score = this.score;
     };
     engine.on("postupdate", updateUI);
 
@@ -254,7 +256,7 @@ export class MissionFlow {
     );
     for (const bullet of bulletsPool.bullets()) {
       bullet.onDealDamage(damage => {
-        console.log(`damage: ${damage}`);
+        this.score += damage;
       });
     }
     this.stgGameManager.bulletsPools.set("player", bulletsPool);

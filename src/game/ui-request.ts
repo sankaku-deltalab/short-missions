@@ -16,6 +16,7 @@ export interface STGPlayInfo {
   healthMax: number;
   health: number;
   missionAbortEvent: EventDispatcher<void>;
+  score: number;
 }
 
 export interface UIRequests {

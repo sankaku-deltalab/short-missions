@@ -61,7 +61,8 @@ export default class App extends Vue {
     stgPlayInfo: {
       healthMax: 2,
       health: 1,
-      missionAbortEvent: new EventDispatcher()
+      missionAbortEvent: new EventDispatcher(),
+      score: 0
     }
   };
   private rate = 1;
