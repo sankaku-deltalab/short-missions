@@ -6,6 +6,7 @@
           mdi-heart
         </v-icon>
         <v-icon class="d-none">mdi-heart</v-icon>
+        <div>{{ `score: ${stgPlayInfo.score}` }}</div>
       </v-col>
       <v-col cols="3">
         <v-btn text icon color="yellow" @click="requestPause">
