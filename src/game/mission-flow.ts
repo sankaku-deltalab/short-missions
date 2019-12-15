@@ -103,7 +103,9 @@ export class MissionFlow {
     this.stgGameManager = stgGameManager;
   }
 
-  public async playMission(missionId: number): Promise<void> {
+  public async playMission(
+    missionId: number
+  ): Promise<[MissionFinishReason, number]> {
     const engine = this.stgGameManager.engine;
     const coordinatesConverter = this.stgGameManager.coordinatesConverter;
     const uiRequests = this.stgGameManager.uiRequests;
@@ -237,6 +239,8 @@ export class MissionFlow {
     uiRequests.inGameUIRequests.stageClearUI = false;
     uiRequests.inGameUIRequests.stageFailedUI = false;
     engine.off("postupdate", updateUI);
+
+    return [finishReason, this.score];
   }
 
   private setupPlayerCharacter(

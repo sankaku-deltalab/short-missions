@@ -21,7 +21,10 @@
     <v-fade-transition>
       <span v-show="sholdShowMenu()">
         <Menu />
-        <StageSelector @mission-selected="playMission" />
+        <StageSelector
+          v-bind:hi-scores="hiScores"
+          @mission-selected="playMission"
+        />
       </span>
     </v-fade-transition>
   </v-app>
@@ -37,8 +40,9 @@ import PauseMenu from "./components/PauseMenu.vue";
 import { createEngine } from "@/game/engine-creator";
 import { STGGameManager } from "@/game/stg-game-manager";
 import { OutGameUIRequest, UIRequests } from "@/game/ui-request";
-import { MissionFlow } from "./game/mission-flow";
+import { MissionFlow, MissionFinishReason } from "./game/mission-flow";
 import { EventDispatcher } from "./game/common/event-dispatcher";
+import * as hiScore from "@/game/hi-score";
 
 @Component({
   components: {
@@ -66,6 +70,8 @@ export default class App extends Vue {
     }
   };
   private rate = 1;
+
+  private readonly hiScores = hiScore.loadAllHiScore();
 
   public mounted(): void {
     // Setup game
@@ -114,7 +120,18 @@ export default class App extends Vue {
 
   private async playMission(selectedMissionId: number): Promise<void> {
     const flow = new MissionFlow(this.stgGameManager);
-    await flow.playMission(selectedMissionId);
+    const [finishReason, score] = await flow.playMission(selectedMissionId);
+
+    // Save score
+    if (finishReason === MissionFinishReason.clear) {
+      const oldHiScore = hiScore.loadHiScore(selectedMissionId);
+      alert(`hiscore ${oldHiScore}, ${score}`);
+      if (score > oldHiScore) {
+        hiScore.storeHiScore(selectedMissionId, score);
+      }
+      // Update score in UI
+      this.hiScores[selectedMissionId] = score;
+    }
   }
 }
 </script>

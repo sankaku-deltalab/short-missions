@@ -10,7 +10,7 @@
                   v-bind:key="i"
                   v-bind:id="item.id"
                   v-bind:title="item.title"
-                  v-bind:hiScore="item.hiScore"
+                  v-bind:hiScore="hiScores[item.id]"
                   @selected="missionSelected(item.id)"
                 />
               </template>
@@ -23,13 +23,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Vue } from "vue-property-decorator";
+import { Component, Emit, Vue, Prop } from "vue-property-decorator";
 import StageItem from "./StageItem.vue";
 
 interface MissionData {
   id: number;
   title: string;
-  hiScore: number;
 }
 
 @Component({
@@ -40,10 +39,12 @@ interface MissionData {
 export default class StageSelector extends Vue {
   private show = true;
   private showMenu = false;
-  private missions: MissionData[] = [
-    { id: 0, title: "First mission", hiScore: -1 },
-    { id: 1, title: "Second mission", hiScore: 10 }
-  ];
+  private missions: MissionData[] = Array(20)
+    .fill(0)
+    .map((_, i) => ({ id: i, title: `Mission ${i}` }));
+
+  @Prop()
+  private hiScores!: { [key: number]: number };
   private selecting = "selectMission";
 
   @Emit()
