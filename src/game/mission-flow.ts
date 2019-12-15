@@ -215,6 +215,7 @@ export class MissionFlow {
       promisify(waitMissionAborted)()
     ]);
 
+    // Show result
     if (finishReason === MissionFinishReason.clear) {
       uiRequests.inGameUIRequests.stageClearUI = true;
       await pause(2 * 1000);
@@ -225,7 +226,6 @@ export class MissionFlow {
       // do nothing
     }
 
-    // TODO: Show result
     // Clear all
     inputReceiver.disableInput(engine.input);
     engine.removeScene(scene);
