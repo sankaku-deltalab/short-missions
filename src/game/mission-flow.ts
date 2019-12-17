@@ -377,7 +377,7 @@ export class MissionFlow {
         textureSizeInArea: new ex.Vector(0.125 / 2, 0.125 / 2),
         muzzleCreator: muzzleCreator,
         weaponCreator: new WeaponCreator(weapon),
-        killTime: 0.2,
+        killTime: 0.1,
         sizeInArea: new ex.Vector(0.125 / 2, 0.125 / 2),
         isSmallSize: true,
         moveSpeedInArea: 0.5
@@ -535,7 +535,7 @@ export class MissionFlow {
       collisions,
       coordinatesConverter,
       playerDPS,
-      moveTime: 0.5,
+      moveTime: 1,
       enemyInfo,
       squadInfo: this.generateSquadInfo(missionId, [0, 1, 2], enemyInfo)
     });
