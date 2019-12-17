@@ -113,7 +113,7 @@ export class MissionFlow {
     // Setup scene
     const scene = new ex.Scene(engine);
 
-    // TODO: Setup enemy setting
+    // Setup enemy setting
     const starter = this.setupSquadBuilder(
       missionId,
       scene,
@@ -159,7 +159,7 @@ export class MissionFlow {
     };
     engine.on("postupdate", updateUI);
 
-    // TODO: Start game
+    // Start game
     starter.start();
 
     engine.addScene("mission", scene);
