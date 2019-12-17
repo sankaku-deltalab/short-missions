@@ -314,6 +314,17 @@ export class MissionFlow {
       weapon,
       muzzles
     });
+
+    pc.onTakeDamage(damage => {
+      if (damage == 0) return;
+      for (const act of scene.actors) {
+        if (!(act instanceof ExtendedActor)) continue;
+        const owner = act.owner();
+        if (owner instanceof Bullet && !owner.isPlayerSide()) {
+          owner.kill();
+        }
+      }
+    });
     pc.addSelfToScene(scene);
 
     const pcTx = new ex.Texture(pcTexturePath);

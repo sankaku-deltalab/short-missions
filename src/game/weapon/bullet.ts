@@ -85,6 +85,7 @@ export class Bullet implements ActorWrapper {
   }
 
   public hitTo(other: Character): number {
+    if (this.actor.isKilled()) return 0;
     const damage = other.takeDamage(this.damage);
     this._onDealDamage.dispatch(damage);
     this.kill();
