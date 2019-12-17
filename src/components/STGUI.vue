@@ -2,7 +2,11 @@
   <v-container fluid fill-hight class="on-top">
     <v-row justify="space-between">
       <v-col cols="3">
-        <v-icon v-for="_ in stgPlayInfo.health" :key="_" color="pink">
+        <v-icon
+          v-for="_ in Math.max(0, stgPlayInfo.health)"
+          :key="_"
+          color="pink"
+        >
           mdi-heart
         </v-icon>
         <v-icon class="d-none">mdi-heart</v-icon>
