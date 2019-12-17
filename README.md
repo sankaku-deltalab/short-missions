@@ -1,34 +1,9 @@
 # short-missions
 
-## Project setup
-```
-yarn install
-```
+short-missions is shmup developed with
+[Vue.js](https://vuejs.org/index.html),
+[Vuetify](https://vuetifyjs.com/),
+[excalibur](https://excaliburjs.com) and
+[TypeScript](https://www.typescriptlang.org).
 
-### Compiles and hot-reloads for development
-```
-yarn run serve
-```
-
-### Compiles and minifies for production
-```
-yarn run build
-```
-
-### Run your tests
-```
-yarn run test
-```
-
-### Lints and fixes files
-```
-yarn run lint
-```
-
-### Run your unit tests
-```
-yarn run test:unit
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+play: https://sankaku-deltalab.gitlab.io/short-missions
