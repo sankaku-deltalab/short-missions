@@ -125,7 +125,6 @@ export default class App extends Vue {
     // Save score
     if (finishReason === MissionFinishReason.clear) {
       const oldHiScore = hiScore.loadHiScore(selectedMissionId);
-      alert(`hiscore ${oldHiScore}, ${score}`);
       if (score > oldHiScore) {
         hiScore.storeHiScore(selectedMissionId, score);
       }
