@@ -13,7 +13,7 @@ test:
   before_script:
     - npm install
   script:
-    - npm test:unit
+    - npm test
   only:
       - master
 
