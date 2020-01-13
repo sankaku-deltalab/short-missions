@@ -5,23 +5,24 @@ cache:
     - node_modules/
 
 stages:
+  - test
   - deploy
 
 test:
   stage: test
   before_script:
-    - yarn install
+    - npm install
   script:
-    - yarn test:unit
+    - npm test:unit
   only:
       - master
 
 pages:
   stage: deploy
   before_script:
-    - yarn install
+    - npm install
   script:
-    - yarn build
+    - npm build
     - mv public public-vue
     - mv dist public
   artifacts:
